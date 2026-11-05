@@ -86,6 +86,15 @@
     #screen-team #pc-evo-all,#screen-team #pc-evo-all[hidden]{display:inline-flex!important;visibility:visible!important;align-items:center;gap:5px}
     #screen-team #pc-evo-all .full{display:inline!important}
     #screen-team #pc-evo-all .short{display:none!important}
+    #screen-team #pc-exp-all{display:inline-flex!important;visibility:visible!important;align-items:center;gap:5px}
+    .exp-use-modal{position:fixed;inset:0;z-index:10025;display:grid;place-items:center;padding:14px;background:#070a12d9}
+    .exp-use-panel{width:min(620px,96vw);max-height:88vh;overflow:auto;border:2px solid #47516d;border-radius:16px;background:#171c2b;color:#eef2ff;box-shadow:0 18px 60px #000c}
+    .exp-use-head{position:sticky;top:0;z-index:2;display:flex;align-items:center;justify-content:space-between;padding:13px 15px;background:#20283c;border-bottom:1px solid #3d4761}
+    .exp-use-head h3{margin:0;font-size:18px}.exp-use-close{border:0;background:transparent;color:#fff;font-size:22px;cursor:pointer}
+    .exp-use-body{padding:12px 15px}.exp-use-note{margin:0 0 10px;color:#cbd4ea;font-size:12px;line-height:1.45}
+    .exp-use-list{display:grid;gap:8px}.exp-use-row{display:grid;grid-template-columns:44px minmax(0,1fr) auto;gap:9px;align-items:center;padding:8px;border-radius:11px;background:#242c40}
+    .exp-use-row img{width:42px;height:42px;object-fit:contain;image-rendering:auto}.exp-use-row b,.exp-use-row small{display:block}.exp-use-row small{margin-top:2px;color:#b9c3dc;font-size:11px}
+    .exp-use-row .btn{white-space:nowrap}.exp-use-row.empty{opacity:.55}.mon-exp-action-btn{margin-right:8px!important}
 
     @media (max-width: 480px) {
       .dex-region-tabs { gap: 4px; padding: 4px 2px 6px; }
@@ -623,6 +632,168 @@ window.addEventListener('DOMContentLoaded', function () {
       window.addEventListener('load', function () {
         keepEvoAllVisible();
         setInterval(keepEvoAllVisible, 500);
+      });
+    })();
+  </script>
+
+  <script>
+    // Team/PC EXP controls: safely use one candy on one Pokémon or one candy
+    // per eligible Pokémon. The game's own useItem API performs the level-cap,
+    // inventory and evolution checks before consuming anything.
+    (function () {
+      var selectedUid = null;
+      var candies = [
+        {id:'exp-candy-s', label:'EXP Candy S'},
+        {id:'exp-candy-m', label:'EXP Candy M'},
+        {id:'exp-candy-xl', label:'EXP Candy XL'},
+        {id:'exp-candy-big', label:'EXP Candy Big'},
+        {id:'rare-candy', label:'Rare Candy'}
+      ];
+
+      function esc(value) {
+        return String(value == null ? '' : value).replace(/[&<>"']/g, function (ch) {
+          return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch];
+        });
+      }
+      function nameOf(Game, mon) { return Game.DEX?.[mon.id]?.name || ('No. ' + mon.id); }
+      function itemLabel(P, item) { return P.ITEM_NAMES?.[item.id] || item.label; }
+      function itemImage(item) { return 'assets/items/' + item.id + '.png'; }
+      function uniqueMons(Game) {
+        var seen = new Set();
+        var mons = typeof Game.allMons === 'function' ? Game.allMons() : (Game.S?.mons || []);
+        return mons.filter(function (mon) { return mon?.uid && !seen.has(mon.uid) && seen.add(mon.uid); });
+      }
+      function canReceive(Game, mon) {
+        if (!mon || mon.level >= 100) return false;
+        try { return typeof Game.capped === 'function' ? !Game.capped(mon) : mon.level < (Game.levelCap?.(mon) || 100); }
+        catch (_) { return mon.level < 100; }
+      }
+      function sync() {
+        var P = window.PokeCatch;
+        P.Game?.save?.();
+        P.Screens?.team?.render?.();
+        P.Screens?.adventure?.refreshTeam?.();
+        P.Screens?.adventure?.render?.();
+        P.App?.refresh?.();
+      }
+      function useOne(uid, itemId, modal) {
+        var P = window.PokeCatch, Game = P?.Game, mon = Game?.getMon?.(uid);
+        if (!mon) { P?.UI?.toast?.('Không tìm thấy Pokémon đã chọn.'); return; }
+        if (!canReceive(Game, mon)) { P.UI?.toast?.(nameOf(Game, mon) + ' đã đạt giới hạn level hiện tại.'); return; }
+        if ((Game.itemCount?.(itemId) || 0) <= 0) { P.UI?.toast?.('Không còn ' + itemLabel(P, {id:itemId,label:itemId})); return; }
+        var before = mon.level;
+        var result = Game.useItem?.(uid, itemId);
+        if (!result) { P.UI?.toast?.('Không thể dùng vật phẩm cho Pokémon này.'); return; }
+        sync();
+        modal?.remove();
+        P.Sfx?.upgrade?.(Math.max(1, result.levels || 1));
+        P.UI?.toast?.('✓ ' + nameOf(Game, mon) + ': Lv.' + before + ' → Lv.' + mon.level + (result.levels ? '' : ' · đã nhận EXP'));
+      }
+      function useAll(itemId, modal) {
+        var P = window.PokeCatch, Game = P?.Game;
+        if (!Game) return;
+        var available = Game.itemCount?.(itemId) || 0;
+        var eligible = uniqueMons(Game).filter(function (mon) { return canReceive(Game, mon); }).sort(function (a, b) {
+          return a.level - b.level || (a.xp || 0) - (b.xp || 0) || String(a.uid).localeCompare(String(b.uid));
+        });
+        var count = Math.min(available, eligible.length);
+        if (!count) {
+          P.UI?.toast?.(available ? 'Tất cả Pokémon đã đạt giới hạn level hiện tại.' : 'Không còn vật phẩm EXP này.');
+          return;
+        }
+        var label = itemLabel(P, {id:itemId,label:itemId});
+        if (!window.confirm('Dùng ' + count + ' ' + label + ' cho ' + count + ' Pokémon?\nMỗi Pokémon dùng 1 viên; ưu tiên Pokémon level thấp.')) return;
+        var used = 0, levels = 0, evolveReady = 0;
+        for (var i = 0; i < count; i++) {
+          var result = Game.useItem?.(eligible[i].uid, itemId);
+          if (!result) continue;
+          used++;
+          levels += result.levels || 0;
+          if (result.evolve) evolveReady++;
+        }
+        sync();
+        modal?.remove();
+        P.Sfx?.upgrade?.(2);
+        P.UI?.toast?.('✓ EXP All: ' + used + ' Pokémon · +' + levels + ' level' + (evolveReady ? ' · ' + evolveReady + ' có thể tiến hóa' : ''));
+      }
+      function showPicker(scope, uid) {
+        document.querySelector('.exp-use-modal')?.remove();
+        var P = window.PokeCatch, Game = P?.Game;
+        if (!Game) return;
+        var mon = scope === 'one' ? Game.getMon?.(uid) : null;
+        if (scope === 'one' && !mon) { P.UI?.toast?.('Hãy chọn lại Pokémon trong Team/PC.'); return; }
+        var eligibleCount = uniqueMons(Game).filter(function (entry) { return canReceive(Game, entry); }).length;
+        var rows = candies.map(function (item) {
+          var count = Game.itemCount?.(item.id) || 0;
+          var xp = item.id === 'rare-candy' ? 'Tăng đúng 1 level' : '+' + (Game.expCandyXp?.(item.id) || P.CONFIG?.EXP_CANDIES?.[item.id]?.xp || 0).toLocaleString() + ' EXP';
+          var action = scope === 'one' ? 'Dùng 1' : 'Dùng cho tất cả';
+          return '<div class="exp-use-row' + (count ? '' : ' empty') + '"><img src="' + esc(itemImage(item)) + '" alt=""><span><b>' + esc(itemLabel(P, item)) + ' ×' + count + '</b><small>' + esc(xp) + '</small></span><button class="btn small gold" data-exp-item="' + esc(item.id) + '"' + (count ? '' : ' disabled') + '>' + action + '</button></div>';
+        }).join('');
+        var modal = document.createElement('div');
+        modal.className = 'exp-use-modal';
+        modal.innerHTML = '<section class="exp-use-panel" role="dialog" aria-modal="true" aria-label="Dùng EXP"><header class="exp-use-head"><h3>' +
+          (scope === 'one' ? 'Dùng EXP · ' + esc(nameOf(Game, mon)) + ' Lv.' + mon.level : 'EXP All · ' + eligibleCount + ' Pokémon hợp lệ') +
+          '</h3><button class="exp-use-close" aria-label="Đóng">×</button></header><div class="exp-use-body"><p class="exp-use-note">' +
+          (scope === 'one' ? 'Chọn một vật phẩm. Game chỉ trừ item sau khi kiểm tra level và điều kiện.' : 'Mỗi Pokémon dùng 1 viên. Nếu không đủ item, hệ thống ưu tiên Pokémon level thấp; Pokémon đã chạm giới hạn không bị trừ item.') +
+          '</p><div class="exp-use-list">' + rows + '</div></div></section>';
+        document.body.appendChild(modal);
+        var close = function () { modal.remove(); };
+        modal.querySelector('.exp-use-close').onclick = close;
+        modal.addEventListener('click', function (event) {
+          if (event.target === modal) { close(); return; }
+          var button = event.target.closest('[data-exp-item]');
+          if (!button) return;
+          if (scope === 'one') useOne(uid, button.dataset.expItem, modal);
+          else useAll(button.dataset.expItem, modal);
+        });
+      }
+
+      document.addEventListener('pointerdown', function (event) {
+        var cell = event.target.closest('#pc-grid [data-uid], #team-slots [data-uid], #screen-team [data-uid]');
+        if (cell?.dataset?.uid) selectedUid = cell.dataset.uid;
+      }, true);
+
+      document.addEventListener('click', function (event) {
+        var all = event.target.closest('#pc-exp-all');
+        if (all) {
+          event.preventDefault(); event.stopPropagation(); event.stopImmediatePropagation();
+          showPicker('all');
+          return;
+        }
+        var one = event.target.closest('.mon-exp-action-btn');
+        if (one) { event.preventDefault(); showPicker('one', one.dataset.uid || selectedUid); }
+      }, true);
+
+      function injectControls() {
+        var evo = document.getElementById('pc-evo-all');
+        if (evo && !document.getElementById('pc-exp-all')) {
+          var all = document.createElement('button');
+          all.id = 'pc-exp-all';
+          all.className = 'btn small';
+          all.type = 'button';
+          all.title = 'Dùng vật phẩm EXP cho tất cả Pokémon hợp lệ';
+          all.textContent = 'EXP All';
+          evo.insertAdjacentElement('afterend', all);
+        }
+        var modal = document.querySelector('.dexcard.mon-card');
+        var sum = modal?.querySelector('.dc-sum');
+        if (sum && !modal.querySelector('.mon-exp-action-btn') && selectedUid) {
+          var Game = window.PokeCatch?.Game, mon = Game?.getMon?.(selectedUid);
+          if (mon) {
+            var one = document.createElement('button');
+            one.type = 'button';
+            one.className = 'btn small mon-exp-action-btn';
+            one.dataset.uid = selectedUid;
+            one.textContent = 'Dùng EXP';
+            one.title = 'Dùng EXP Candy hoặc Rare Candy cho Pokémon này';
+            sum.prepend(one);
+          }
+        }
+      }
+      window.addEventListener('load', function () {
+        injectControls();
+        new MutationObserver(injectControls).observe(document.body, {childList:true, subtree:true});
+        setInterval(injectControls, 500);
       });
     })();
   </script>
