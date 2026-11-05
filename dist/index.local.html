@@ -1823,6 +1823,7 @@ window.addEventListener('DOMContentLoaded', function () {
     .mon-card details.dc-sec.team-stats-panel > .stats-slot {
       display: block !important;
     }
+    #save-transfer-panel[hidden]{display:none!important}#save-transfer-panel{position:fixed;inset:0;z-index:2147483000;display:grid;place-items:center;padding:16px;background:#080b12cc}.save-transfer-box{width:min(390px,100%);box-sizing:border-box;padding:16px;border:2px solid #52638d;border-radius:16px;background:#171d2d;color:#eef2ff;box-shadow:0 18px 55px #000c}.save-transfer-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}.save-transfer-head h2{margin:0;font-size:18px}.save-transfer-close{width:32px;height:32px;border:0;border-radius:8px;background:#303a56;color:#fff;font-size:18px}.save-transfer-box p{margin:8px 0 14px;color:#bdc8df;font-size:12px;line-height:1.45}.save-transfer-actions{display:grid;gap:8px}.save-transfer-actions button{display:flex;align-items:center;justify-content:center;min-height:42px;border:1px solid #61709a;border-radius:10px;background:#29344f;color:#fff;font:800 13px system-ui}.save-transfer-actions button.primary{border-color:#ffd84c;background:#ffcb05;color:#171923}.save-transfer-status{min-height:18px;margin-top:10px!important;color:#91e6a8!important}.save-transfer-status.error{color:#ff9b9b!important}
   </style>
 
   <script>
@@ -1831,6 +1832,54 @@ window.addEventListener('DOMContentLoaded', function () {
       try {
         localStorage.setItem('poke-lang', 'en');
       } catch (e) {}
+
+      function saveKey() { return window.PokeCatch?.CONFIG?.SAVE_KEY || 'gachamon-save-v1'; }
+      function currentState() { return window.PokeCatch?.Game?.S || null; }
+      function validSaveState(state) {
+        return !!state && typeof state === 'object' && Array.isArray(state.mons) && Array.isArray(state.team) &&
+          state.items && typeof state.items === 'object';
+      }
+      function ensureSaveTransferPanel() {
+        var panel = document.getElementById('save-transfer-panel');
+        if (panel) return panel;
+        panel = document.createElement('div'); panel.id = 'save-transfer-panel'; panel.hidden = true;
+        panel.innerHTML = '<div class="save-transfer-box" role="dialog" aria-modal="true" aria-labelledby="save-transfer-title">' +
+          '<div class="save-transfer-head"><h2 id="save-transfer-title">Save / Transfer</h2><button class="save-transfer-close" type="button" aria-label="Close">×</button></div>' +
+          '<p>Xuất file JSON để chuyển save sang máy khác. Trên máy mới, chọn Load JSON và mở đúng file đã tải.</p>' +
+          '<div class="save-transfer-actions"><button type="button" data-save-action="local">💾 Save trên máy</button><button class="primary" type="button" data-save-action="export">⬇ Export Save JSON</button><button type="button" data-save-action="import">⬆ Load Save JSON</button></div>' +
+          '<input type="file" accept="application/json,.json" data-save-file hidden><p class="save-transfer-status" aria-live="polite"></p></div>';
+        document.body.appendChild(panel);
+        var status = panel.querySelector('.save-transfer-status'), file = panel.querySelector('[data-save-file]');
+        var close = function () { panel.hidden = true; status.textContent = ''; status.classList.remove('error'); };
+        panel.querySelector('.save-transfer-close').onclick = close;
+        panel.onclick = function (event) { if (event.target === panel) close(); };
+        panel.querySelector('[data-save-action="local"]').onclick = function () {
+          try { window.PokeCatch?.Game?.save?.(); window.PokeCatch?.Sfx?.buy?.(); status.textContent = 'Đã lưu game trên máy ✓'; }
+          catch (err) { status.textContent = 'Không thể lưu: ' + err.message; status.classList.add('error'); }
+        };
+        panel.querySelector('[data-save-action="export"]').onclick = function () {
+          try {
+            window.PokeCatch?.Game?.save?.(); var state = currentState();
+            if (!validSaveState(state)) throw new Error('Save hiện tại chưa sẵn sàng');
+            var payload = {app:'PokeCatch Offline',format:1,exportedAt:new Date().toISOString(),state:state};
+            var blob = new Blob([JSON.stringify(payload,null,2)],{type:'application/json'}), url = URL.createObjectURL(blob), link = document.createElement('a');
+            var stamp = new Date().toISOString().replace(/[:.]/g,'-'); link.href=url; link.download='PokeCatch-Save-'+stamp+'.json'; document.body.appendChild(link); link.click(); link.remove(); setTimeout(function(){URL.revokeObjectURL(url)},1000);
+            status.textContent = 'Đã tải file JSON ✓'; window.PokeCatch?.Sfx?.buy?.();
+          } catch (err) { status.textContent = 'Không thể export: ' + err.message; status.classList.add('error'); }
+        };
+        panel.querySelector('[data-save-action="import"]').onclick = function () { file.value=''; file.click(); };
+        file.onchange = async function () {
+          try {
+            var selected=file.files?.[0]; if(!selected)return; if(selected.size>25*1024*1024)throw new Error('File quá lớn');
+            var parsed=JSON.parse(await selected.text()), state=parsed?.state || parsed;
+            if(!validSaveState(state))throw new Error('Không đúng định dạng save PokeCatch');
+            state.updatedAt=Date.now(); state.lastTick=Date.now();
+            var key=saveKey(), old=localStorage.getItem(key); if(old)localStorage.setItem('pokecatch-save-before-import',old);
+            localStorage.setItem(key,JSON.stringify(state)); localStorage.removeItem('pokecatch-tab'); status.textContent='Load thành công, đang mở lại game…'; window.PokeCatch?.Sfx?.buy?.(); setTimeout(function(){location.reload()},450);
+          } catch(err) { status.textContent='Load thất bại: '+err.message; status.classList.add('error'); }
+        };
+        return panel;
+      }
 
       function initHandlers() {
         if (window.PokeCatch?.I18n) {
@@ -1892,20 +1941,7 @@ window.addEventListener('DOMContentLoaded', function () {
           saveBtn.addEventListener('click', function (e) {
             e.stopImmediatePropagation();
             e.preventDefault();
-            try {
-              if (window.PokeCatch?.Game?.save) {
-                window.PokeCatch.Game.save();
-              } else {
-                var S = window.PokeCatch?.Game?.S;
-                if (S) localStorage.setItem('gachamon-save-v1', JSON.stringify(S));
-              }
-              window.PokeCatch?.Sfx?.buy?.();
-              if (window.PokeCatch?.UI?.toast) {
-                window.PokeCatch.UI.toast('Game saved to phone! ✓');
-              }
-            } catch (err) {
-              console.error('Local save error:', err);
-            }
+            var panel=ensureSaveTransferPanel(); panel.hidden=false;
           }, true); // Capture phase overrides app Cloud listener
         }
       }
