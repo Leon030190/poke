@@ -83,7 +83,7 @@
     .evo-all-safe-list{display:grid;gap:7px}.evo-all-safe-row{display:grid;grid-template-columns:28px 42px 1fr;gap:8px;align-items:center;padding:7px;border-radius:10px;background:#242c40}
     .evo-all-safe-row.blocked{opacity:.68}.evo-all-safe-row img{width:40px;height:40px;object-fit:contain;image-rendering:auto}.evo-all-safe-row b,.evo-all-safe-row small{display:block}.evo-all-safe-row small{margin-top:2px;color:#b9c3dc;font-size:11px}
     .evo-all-safe-actions{position:sticky;bottom:0;display:flex;justify-content:flex-end;gap:8px;padding:11px 15px;background:#20283c;border-top:1px solid #3d4761}.evo-all-safe-actions .btn:disabled{opacity:.45}
-    #screen-team #pc-evo-all,#screen-team #pc-evo-all[hidden]{display:inline-flex!important;visibility:visible!important;align-items:center;gap:5px;background:#334155!important;border-color:#64748b!important;color:#fff!important;text-shadow:0 1px 1px #0008!important}
+    #screen-team #pc-evo-all,#screen-team #pc-evo-all[hidden]{display:inline-flex!important;visibility:visible!important;align-items:center;justify-content:center;flex:0 0 92px!important;width:92px!important;min-width:92px!important;max-width:92px!important;height:32px!important;min-height:32px!important;box-sizing:border-box!important;padding:6px 9px!important;gap:5px;overflow:hidden;white-space:nowrap;background:#334155!important;border-color:#64748b!important;color:#fff!important;text-shadow:0 1px 1px #0008!important}
     #screen-team #pc-evo-all:hover,#screen-team #pc-evo-all:focus-visible{background:#475569!important;color:#fff!important}
     #screen-team #pc-evo-all .full{display:inline!important;color:inherit!important}
     #screen-team #pc-evo-all .short{display:none!important}
@@ -465,6 +465,7 @@ window.addEventListener('DOMContentLoaded', function () {
   <script>
     // Safe Evo All: preview, reserve items, revalidate, and evolve one stage.
     (function () {
+      var evoAllBusy = false;
       function esc(value) {
         return String(value == null ? '' : value).replace(/[&<>"']/g, function (ch) {
           return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch];
@@ -552,13 +553,14 @@ window.addEventListener('DOMContentLoaded', function () {
 
       function syncAfterEvolution() {
         var P = window.PokeCatch;
-        // App.refresh already renders the current screen and refreshes the
-        // Adventure team. Calling every renderer here rebuilt Team/PC several
-        // times and accumulated animated canvases after repeated Evo All use.
-        P.App?.refresh?.();
+        P.Screens?.team?.render?.();
+        P.Screens?.adventure?.refreshTeam?.();
+        P.App?.refreshHeader?.();
       }
 
       function showPreview() {
+        if (evoAllBusy) return;
+        evoAllBusy = true;
         document.querySelector('.evo-all-safe-modal')?.remove();
         var P = window.PokeCatch, Game = P?.Game, scan = inspectAll();
         var modal = document.createElement('div');
@@ -569,9 +571,9 @@ window.addEventListener('DOMContentLoaded', function () {
             '<img src="' + esc(monImage(mon)) + '" alt=""><span><b>' + esc(monName(Game, entry.from)) + ' Lv.' + mon.level + ' → ' + esc(monName(Game, entry.to)) + '</b><small>' +
             (entry.item ? 'Dùng 1 ' + esc(itemName(P, entry.item)) : 'Đủ điều kiện level') + (mon.shiny ? ' · ✨ Shiny' : '') + '</small></span></label>';
         }).join('');
-        var blockedRows = scan.blocked.map(function (entry) {
+        var blockedRows = scan.blocked.slice(0, 12).map(function (entry) {
           return '<div class="evo-all-safe-row blocked"><span>—</span><img src="' + esc(monImage(entry.mon)) + '" alt=""><span><b>' + esc(monName(Game, entry.mon.id)) + ' Lv.' + entry.mon.level + '</b><small>' + esc(entry.reason) + '</small></span></div>';
-        }).join('');
+        }).join('') + (scan.blocked.length > 12 ? '<p class="evo-all-safe-summary">… và ' + (scan.blocked.length - 12) + ' Pokémon khác chưa đủ điều kiện.</p>' : '');
         modal.innerHTML = '<section class="evo-all-safe-panel" role="dialog" aria-modal="true" aria-label="Evo All">' +
           '<header class="evo-all-safe-head"><h3>Evo All · Kiểm tra trước</h3><button class="evo-all-safe-close" aria-label="Đóng">×</button></header>' +
           '<div class="evo-all-safe-body"><p class="evo-all-safe-summary"><b>' + scan.ready.length + '</b> Pokémon sẵn sàng · <b>' + scan.blocked.length + '</b> Pokémon chưa đủ điều kiện. Mỗi Pokémon chỉ tiến hóa một cấp.</p>' +
@@ -579,7 +581,7 @@ window.addEventListener('DOMContentLoaded', function () {
           '<footer class="evo-all-safe-actions"><button class="btn evo-all-cancel">Hủy</button><button class="btn gold evo-all-confirm"' + (scan.ready.length ? '' : ' disabled') + '>Tiến hóa đã chọn</button></footer></section>';
         document.body.appendChild(modal);
 
-        var close = function () { modal.remove(); };
+        var close = function () { modal.remove(); evoAllBusy = false; };
         modal.querySelector('.evo-all-safe-close').onclick = close;
         modal.querySelector('.evo-all-cancel').onclick = close;
         modal.addEventListener('click', function (event) { if (event.target === modal) close(); });
@@ -595,16 +597,22 @@ window.addEventListener('DOMContentLoaded', function () {
             if (check.ok) valid.push(entry); else failed.push(monName(Game, entry.from) + ': ' + check.reason);
           });
           var evolved = 0;
-          valid.forEach(function (entry) {
-            var before = Game.getMon(entry.uid);
-            if (!before || before.id !== entry.from) return;
-            var result = Game.evolveMon(entry.uid, entry.to);
-            if (!result) { failed.push(monName(Game, entry.from) + ': tiến hóa thất bại'); return; }
-            if (entry.item) Game.addItem?.(entry.item, -1);
-            evolved++;
-          });
-          syncAfterEvolution();
+          Game.holdSave?.(true);
+          try {
+            valid.forEach(function (entry) {
+              var before = Game.getMon(entry.uid);
+              if (!before || before.id !== entry.from) return;
+              var result = Game.evolveMon(entry.uid, entry.to);
+              if (!result) { failed.push(monName(Game, entry.from) + ': tiến hóa thất bại'); return; }
+              if (entry.item) Game.addItem?.(entry.item, -1);
+              evolved++;
+            });
+          } finally {
+            Game.holdSave?.(false);
+            Game.save?.();
+          }
           close();
+          requestAnimationFrame(syncAfterEvolution);
           P.Sfx?.upgrade?.(2);
           P.UI?.toast?.('✓ Đã tiến hóa ' + evolved + ' Pokémon' + (failed.length ? ' · ' + failed.length + ' không thể thực hiện' : ''));
           if (failed.length) console.warn('Evo All skipped:', failed);
@@ -634,7 +642,12 @@ window.addEventListener('DOMContentLoaded', function () {
       }
       window.addEventListener('load', function () {
         keepEvoAllVisible();
-        setInterval(keepEvoAllVisible, 500);
+        var queued = false;
+        new MutationObserver(function () {
+          if (queued) return;
+          queued = true;
+          requestAnimationFrame(function () { queued = false; keepEvoAllVisible(); });
+        }).observe(document.getElementById('screen-team') || document.body, {childList:true, subtree:true});
       });
     })();
   </script>
@@ -2551,25 +2564,30 @@ window.addEventListener('DOMContentLoaded', function () {
 
   <style id="admin-panel-style">
     #admin-tools-btn{position:fixed;left:12px;bottom:12px;z-index:999998;border:1px solid #61709a;border-radius:999px;padding:7px 11px;background:#20283d;color:#fff;font:700 11px/1 system-ui;box-shadow:0 3px 12px #0008}body.titled #admin-tools-btn{display:none}#admin-tools-panel[hidden]{display:none}#admin-tools-panel{position:fixed;inset:0;z-index:2147483000;display:grid;place-items:center;padding:16px;background:#080b12bb}.admin-box{width:min(420px,100%);max-height:85vh;overflow:auto;box-sizing:border-box;padding:16px;border:2px solid #56658d;border-radius:16px;background:#171d2d;color:#eef2ff;box-shadow:0 18px 55px #000c}.admin-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}.admin-head h2{margin:0;font-size:18px}.admin-close{border:0;background:#303a56;color:#fff;border-radius:8px;width:32px;height:32px;font-size:18px}.admin-block{display:grid;grid-template-columns:1fr auto;gap:8px;margin-top:12px;padding-top:12px;border-top:1px solid #35405f}.admin-block label{grid-column:1/-1;font-weight:800;font-size:13px}.admin-block input,.admin-block select{min-width:0;padding:9px;border:1px solid #4c587c;border-radius:9px;background:#0e1422;color:#fff;font:600 13px system-ui}.admin-block button{padding:9px 12px;border:0;border-radius:9px;background:#ffcb05;color:#171923;font-weight:900}.admin-item-row{grid-column:1/-1;display:grid;grid-template-columns:minmax(0,1fr) 84px;gap:8px}#admin-status{min-height:18px;margin:12px 0 0;color:#91e6a8;font-size:12px}
-    #admin-tools-btn{position:static!important;left:auto!important;bottom:auto!important;flex:0 0 auto;padding:6px 9px;font-size:10px;white-space:nowrap}@media(max-width:480px){#admin-tools-btn{padding:5px 7px;font-size:9px}}
+    #admin-tools-btn{position:static!important;left:auto!important;bottom:auto!important;flex:0 0 auto;padding:6px 9px;font-size:10px;white-space:nowrap}.admin-env-grid{grid-column:1/-1;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.admin-env-grid button{background:#34405f;color:#fff}.admin-env-grid button.on{background:#ffcb05;color:#171923}@media(max-width:480px){#admin-tools-btn{padding:5px 7px;font-size:9px}}
   </style>
   <button id="admin-tools-btn" type="button">ADMIN</button>
   <div id="admin-tools-panel" hidden><div class="admin-box" role="dialog" aria-modal="true" aria-labelledby="admin-tools-title">
     <div class="admin-head"><h2 id="admin-tools-title">Game Admin</h2><button class="admin-close" type="button" aria-label="Close">×</button></div>
     <div class="admin-block"><label for="admin-money">Add money</label><input id="admin-money" type="number" min="1" step="100" value="10000"><button id="admin-add-money" type="button">Add ₽</button></div>
     <div class="admin-block"><label>Add item</label><div class="admin-item-row"><select id="admin-item"></select><input id="admin-item-qty" type="number" min="1" max="9999" value="1"></div><button id="admin-add-item" type="button">Add item</button></div>
+    <div class="admin-block"><label>Time &amp; Weather</label><div class="admin-env-grid"><button type="button" data-admin-env="time:day">☀ Day</button><button type="button" data-admin-env="time:night">🌙 Night</button><button type="button" data-admin-env="weather:rain">🌧 Rain</button><button type="button" data-admin-env="weather:sun">🌞 Sunny</button><button type="button" data-admin-env="auto" style="grid-column:1/-1">↻ Automatic</button></div></div>
     <p id="admin-status" aria-live="polite"></p>
   </div></div>
   <script>
     window.addEventListener('load',function(){
       var open=document.getElementById('admin-tools-btn'),panel=document.getElementById('admin-tools-panel'),close=panel.querySelector('.admin-close'),select=document.getElementById('admin-item'),status=document.getElementById('admin-status');
       var sleepButton=document.getElementById('sleep-btn'),topActions=sleepButton?.parentElement||document.querySelector('.topbar .tb-acts');
+      var adminEnv={time:null,weather:null};
       if(topActions)topActions.insertBefore(open,sleepButton||null);
       function game(){return window.PokeCatch?.Game}
       function fillItems(){var names=window.PokeCatch?.ITEM_NAMES||{},current=select.value;select.replaceChildren(...Object.keys(names).sort(function(a,b){return String(names[a]).localeCompare(String(names[b]))}).map(function(key){var option=document.createElement('option');option.value=key;option.textContent=String(names[key])+' · '+key;return option}));if(current&&names[current])select.value=current}
+      function applyEnvironment(value,quiet){var P=window.PokeCatch;if(!P?.DAYTIME||!P?.WEATHER)return;var parts=String(value||'auto').split(':');if(parts[0]==='time')adminEnv.time=parts[1];else if(parts[0]==='weather')adminEnv.weather=parts[1];else adminEnv={time:null,weather:null};P.DAYTIME.force(adminEnv.time);P.WEATHER.force(adminEnv.weather);document.querySelectorAll('[data-admin-env]').forEach(function(b){var p=b.dataset.adminEnv.split(':');b.classList.toggle('on',b.dataset.adminEnv==='auto'?!adminEnv.time&&!adminEnv.weather:adminEnv[p[0]]===p[1])});try{adminEnv.time||adminEnv.weather?localStorage.setItem('pokecatch.admin.environment',JSON.stringify(adminEnv)):localStorage.removeItem('pokecatch.admin.environment')}catch{}if(!quiet){P.App?.refresh?.();status.textContent='Time: '+(adminEnv.time||'auto')+' · Weather: '+(adminEnv.weather||'auto')}}
       open.onclick=function(){fillItems();panel.hidden=false;status.textContent=''};close.onclick=function(){panel.hidden=true};panel.onclick=function(event){if(event.target===panel)panel.hidden=true};
       document.getElementById('admin-add-money').onclick=function(){var amount=Math.max(1,Math.floor(+document.getElementById('admin-money').value||0)),G=game();if(!G)return;if(typeof G.moneyIn==='function')G.moneyIn(amount);else G.S.money=Math.max(0,(+G.S.money||0)+amount);G.save();window.PokeCatch.App?.refresh?.();status.textContent='Added '+amount.toLocaleString()+' ₽'};
       document.getElementById('admin-add-item').onclick=function(){var key=select.value,qty=Math.max(1,Math.min(9999,Math.floor(+document.getElementById('admin-item-qty').value||1))),G=game();if(!G||!key)return;G.addItem(key,qty);G.save();window.PokeCatch.App?.refresh?.();status.textContent='Added '+qty+' × '+(window.PokeCatch.ITEM_NAMES[key]||key)};
+      panel.querySelector('.admin-env-grid').onclick=function(event){var button=event.target.closest('[data-admin-env]');if(button)applyEnvironment(button.dataset.adminEnv,false)};
+      try{var savedEnv=localStorage.getItem('pokecatch.admin.environment');if(savedEnv){var parsedEnv=JSON.parse(savedEnv);adminEnv.time=parsedEnv.time||null;adminEnv.weather=parsedEnv.weather||null;applyEnvironment(adminEnv.time?'time:'+adminEnv.time:adminEnv.weather?'weather:'+adminEnv.weather:'auto',true);if(parsedEnv.time&&parsedEnv.weather)applyEnvironment('weather:'+parsedEnv.weather,true)}else applyEnvironment('auto',true)}catch{applyEnvironment('auto',true)}
     });
   </script>
 
@@ -2886,66 +2904,55 @@ window.addEventListener('DOMContentLoaded', function () {
         });
       }
 
-      // Mega stones are never accepted from generic/random Gen 1-4 drops.
-      // Only a win whose last visible enemy is the exact Mega form authorizes
-      // the corresponding stone reward.
-      let megaById={}, stoneCounts={}, authorizedStone=null, lastEnemyId=0, lastWins=0;
-      function installMegaBossSteps(P,list){
-        if(!P?.STORY?.CHAPTERS||P.STORY.__megaBossStepsInstalled)return;
-        const regionKeys=['unova','kalos','alola','galar','paldea'];
-        const chapters=regionKeys.flatMap(function(key){
-          const ids=P.STORY.chaptersOf?.(key)||[];
-          return ids.length?[ids[ids.length-1]]:[];
-        });
-        if(!chapters.length)return;
-        list.forEach(function(mega,index){
-          const chapter=P.STORY.CHAPTERS[chapters[index%chapters.length]];
-          if(!chapter?.steps||chapter.steps.some(step=>step.once==='mega-boss-'+mega.id))return;
-          chapter.steps.push({
-            kind:'static',name:'Mega Boss · '+mega.name,bg:'cave',id:mega.id,
-            level:Math.min(100,82+Math.floor(index/5)*3),power:2.15,boss:true,
-            rate:0,catch:false,noCatch:true,once:'mega-boss-'+mega.id,
-            text:mega.name+' xuất hiện! Đánh bại đúng Mega Boss này để nhận '+mega.stoneName+'.'
-          });
-        });
-        Object.defineProperty(P.STORY,'__megaBossStepsInstalled',{value:true});
+      // Mega Stones are Raid Boss rewards only. Adventures never inject Mega
+      // encounters and ordinary wins cannot grant a stone.
+      let megaById={};
+      function installMegaRaids(P,list){
+        const R=P?.Raids,G=P?.Game;
+        if(!R?.swapEntry||R.__megaRaidInstalled||!G)return;
+        const today=R.dateKey?.()||new Date().toISOString().slice(0,10);
+        const regions=(R.regions?.()||[]).filter(r=>r?.dex);
+        if(regions.length){
+          const day=Math.max(0,R.dayOf?.(today)||0),region=regions[day%regions.length];
+          const pool=list.filter(m=>m.base>=region.dex[0]&&m.base<=region.dex[1]);
+          if(pool.length){
+            const mega=pool[Math.floor(day/Math.max(1,regions.length))%pool.length];
+            R.swapEntry(region.key,today,mega.id);
+          }
+        }
+        const nativeResult=R.result.bind(R);
+        R.result=function(run,event){
+          const out=nativeResult(run,event),mega=megaById[run?.id];
+          if(mega&&event?.type==='capture'){
+            const rewards=G.S.megaRaidRewards||(G.S.megaRaidRewards={});
+            const key=(run.date||today)+'|'+run.reg+'|'+mega.id;
+            if(!rewards[key]){
+              rewards[key]=1;G.addItem(mega.stone,1);G.save();
+              P.UI?.toast?.('Mega Raid Boss '+mega.name+' rớt '+mega.stoneName+'!');
+            }
+          }
+          return out;
+        };
+        Object.defineProperty(R,'__megaRaidInstalled',{value:true});
+        R.emit?.();
       }
       fetch('/data/mega_stones.json').then(r=>r.json()).then(list=>{
         megaList=list;
         megaById=Object.fromEntries(list.map(m=>[m.id,m]));
-        const P=window.PokeCatch,G=P?.Game;if(G)for(const m of list)stoneCounts[m.stone]=G.itemCount(m.stone)||0;
-        installMegaBossSteps(P,list);
+        installMegaRaids(window.PokeCatch,list);
       }).catch(()=>{});
-      function monitorMegaBossDrops(){
-        const P=window.PokeCatch,G=P?.Game;if(!G?.S)return;
-        document.querySelectorAll('.enemy canvas,.enemy img,#enemy-slots canvas,#enemy-slots img').forEach(el=>{
-          const id=+(el._pokePlayer?.rawDex||el.dataset.id||(el.getAttribute('src')||'').match(/(\d+)\.(?:png|gif)/)?.[1]||0);
-          if(megaById[id])lastEnemyId=id;
-        });
-        const wins=+G.S.stats?.wins||0;
-        if(wins>lastWins&&megaById[lastEnemyId]){
-          const mega=megaById[lastEnemyId];authorizedStone=mega.stone;G.addItem(mega.stone,1);G.save();stoneCounts[mega.stone]=G.itemCount(mega.stone)||0;
-          P.UI?.toast?.('Boss '+mega.name+' đã rớt '+mega.stoneName+'!');
-        }
-        lastWins=wins;
-        for(const mega of Object.values(megaById)){
-          const now=G.itemCount(mega.stone)||0,prev=stoneCounts[mega.stone]??now;
-          if(now>prev&&authorizedStone!==mega.stone){G.addItem(mega.stone,-(now-prev));G.save();stoneCounts[mega.stone]=prev;}
-          else stoneCounts[mega.stone]=now;
-        }
-        authorizedStone=null;
-      }
 
       const boot=setInterval(function(){
         const P=window.PokeCatch;
-        if(!P?.Game?.S)return;
+        if(!P?.Game?.S||!megaList.length)return;
+        installMegaRaids(P,megaList);
         trackSelectedPokemon(P);
         patchStats(P);
         for(const [id,info] of Object.entries(VITAMINS)) P.ITEM_NAMES[id]=info.label;
         clearInterval(boot);
       },25);
       new MutationObserver(function(){const modal=document.querySelector('.dexcard.mon-card');if(modal){installVitaminPanel(modal);installMegaPanel(modal);}injectVitaminShop();}).observe(document.body,{childList:true,subtree:true});
-      setInterval(function(){injectVitaminShop();monitorMegaBossDrops();},250);
+      setInterval(injectVitaminShop,500);
     })();
   </script>
 
