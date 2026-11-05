@@ -494,9 +494,20 @@
     return player;
   }
 
+  function detachPlayer(canvas) {
+    if (!canvas) return;
+    if (observer) observer.unobserve(canvas);
+    if (canvas._pokePlayer) {
+      canvas._pokePlayer.destroy();
+      delete canvas._pokePlayer;
+    }
+  }
+
   global.CanvasPokemonEngine = {
     CanvasPokemonPlayer,
     attachPlayer,
+    detachPlayer,
+    activePlayerCount: () => activePlayers.size,
     loadMetadata,
     MEGA_SPRITE_MAP,
     FORM_SPRITE_MAP

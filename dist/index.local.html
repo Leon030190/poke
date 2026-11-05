@@ -552,10 +552,9 @@ window.addEventListener('DOMContentLoaded', function () {
 
       function syncAfterEvolution() {
         var P = window.PokeCatch;
-        P.Game?.save?.();
-        P.Screens?.team?.render?.();
-        P.Screens?.adventure?.refreshTeam?.();
-        P.Screens?.adventure?.render?.();
+        // App.refresh already renders the current screen and refreshes the
+        // Adventure team. Calling every renderer here rebuilt Team/PC several
+        // times and accumulated animated canvases after repeated Evo All use.
         P.App?.refresh?.();
       }
 
@@ -585,8 +584,11 @@ window.addEventListener('DOMContentLoaded', function () {
         modal.querySelector('.evo-all-cancel').onclick = close;
         modal.addEventListener('click', function (event) { if (event.target === modal) close(); });
         modal.querySelector('.evo-all-confirm').onclick = function () {
+          var confirmButton = this;
+          if (confirmButton.disabled) return;
+          confirmButton.disabled = true;
           var selected = Array.from(modal.querySelectorAll('[data-evo-index]:checked')).map(function (box) { return scan.ready[+box.dataset.evoIndex]; });
-          if (!selected.length) { P.UI?.toast?.('Chưa chọn Pokémon nào.'); return; }
+          if (!selected.length) { confirmButton.disabled = false; P.UI?.toast?.('Chưa chọn Pokémon nào.'); return; }
           var reserved = {}, valid = [], failed = [];
           selected.forEach(function (entry) {
             var check = revalidate(entry, reserved);
@@ -669,12 +671,11 @@ window.addEventListener('DOMContentLoaded', function () {
         try { return typeof Game.capped === 'function' ? !Game.capped(mon) : mon.level < (Game.levelCap?.(mon) || 100); }
         catch (_) { return mon.level < 100; }
       }
-      function sync() {
+      function sync(saveNeeded) {
         var P = window.PokeCatch;
-        P.Game?.save?.();
-        P.Screens?.team?.render?.();
-        P.Screens?.adventure?.refreshTeam?.();
-        P.Screens?.adventure?.render?.();
+        if (saveNeeded) P.Game?.save?.();
+        // One refresh is enough: the app renders the active screen and syncs
+        // the Adventure team itself. The old five-render chain caused freezes.
         P.App?.refresh?.();
       }
       function useOne(uid, itemId, modal) {
@@ -685,7 +686,7 @@ window.addEventListener('DOMContentLoaded', function () {
         var before = mon.level;
         var result = Game.useItem?.(uid, itemId);
         if (!result) { P.UI?.toast?.('Không thể dùng vật phẩm cho Pokémon này.'); return; }
-        sync();
+        sync(false);
         modal?.remove();
         P.Sfx?.upgrade?.(Math.max(1, result.levels || 1));
         P.UI?.toast?.('✓ ' + nameOf(Game, mon) + ': Lv.' + before + ' → Lv.' + mon.level + (result.levels ? '' : ' · đã nhận EXP'));
@@ -704,15 +705,22 @@ window.addEventListener('DOMContentLoaded', function () {
         }
         var label = itemLabel(P, {id:itemId,label:itemId});
         if (!window.confirm('Dùng ' + count + ' ' + label + ' cho ' + count + ' Pokémon?\nMỗi Pokémon dùng 1 viên; ưu tiên Pokémon level thấp.')) return;
+        // Batch directly through the game's level APIs, then subtract the
+        // total once and save once. Calling useItem N times serialized the
+        // complete save N times and was the main EXP All freeze on large PCs.
         var used = 0, levels = 0, evolveReady = 0;
+        var candyXp = itemId === 'rare-candy' ? 0 : (Game.expCandyXp?.(itemId) || 0);
         for (var i = 0; i < count; i++) {
-          var result = Game.useItem?.(eligible[i].uid, itemId);
+          var mon = Game.getMon?.(eligible[i].uid);
+          if (!canReceive(Game, mon)) continue;
+          var result = itemId === 'rare-candy' ? Game.levelUp?.(mon) : Game.gainXp?.(mon, candyXp);
           if (!result) continue;
           used++;
           levels += result.levels || 0;
           if (result.evolve) evolveReady++;
         }
-        sync();
+        if (used) Game.addItem?.(itemId, -used);
+        sync(true);
         modal?.remove();
         P.Sfx?.upgrade?.(2);
         P.UI?.toast?.('✓ EXP All: ' + used + ' Pokémon · +' + levels + ' level' + (evolveReady ? ' · ' + evolveReady + ' có thể tiến hóa' : ''));
@@ -744,8 +752,17 @@ window.addEventListener('DOMContentLoaded', function () {
           if (event.target === modal) { close(); return; }
           var button = event.target.closest('[data-exp-item]');
           if (!button) return;
+          if (button.disabled || modal.dataset.busy === '1') return;
+          modal.dataset.busy = '1';
+          modal.querySelectorAll('button').forEach(function (entry) { entry.disabled = true; });
           if (scope === 'one') useOne(uid, button.dataset.expItem, modal);
           else useAll(button.dataset.expItem, modal);
+          if (modal.isConnected) {
+            modal.dataset.busy = '';
+            modal.querySelectorAll('button').forEach(function (entry) {
+              entry.disabled = entry.dataset.expItem ? (Game.itemCount?.(entry.dataset.expItem) || 0) <= 0 : false;
+            });
+          }
         });
       }
 
@@ -792,9 +809,14 @@ window.addEventListener('DOMContentLoaded', function () {
         }
       }
       window.addEventListener('load', function () {
-        injectControls();
-        new MutationObserver(injectControls).observe(document.body, {childList:true, subtree:true});
-        setInterval(injectControls, 500);
+        var scheduled = false;
+        function scheduleInject() {
+          if (scheduled) return;
+          scheduled = true;
+          requestAnimationFrame(function () { scheduled = false; injectControls(); });
+        }
+        scheduleInject();
+        new MutationObserver(scheduleInject).observe(document.body, {childList:true, subtree:true});
       });
     })();
   </script>
@@ -1072,7 +1094,7 @@ window.addEventListener('DOMContentLoaded', function () {
   </script>
 
   <link rel="stylesheet" href="css/borderless_sprites.css?v=mobile-bottom-2">
-  <script src="js/canvas_sprite_engine.js?v=pokedex-native-ball-v47"></script>
+  <script src="js/canvas_sprite_engine.js?v=bulk-actions-freeze-fix-v52"></script>
 </head>
 <body>
 
@@ -2282,6 +2304,32 @@ window.addEventListener('DOMContentLoaded', function () {
           attachPcCell(entry.target);
         });
       }, { root: document.getElementById('pc-grid'), rootMargin: '180px 0px' });
+
+      // Team/PC is rebuilt after item use and evolution. Explicitly detach
+      // players and observers from removed cards so repeated bulk actions do
+      // not leave animation loops or DOM references alive in Android/iOS.
+      function cleanupRemovedSpriteTree(root) {
+        if (!root || root.nodeType !== 1) return;
+        var cells = [];
+        if (root.matches?.('.pc-cell')) cells.push(root);
+        root.querySelectorAll?.('.pc-cell').forEach(function (cell) { cells.push(cell); });
+        cells.forEach(function (cell) { try { pcCellObserver.unobserve(cell); } catch (_) {} });
+        var dexCells = [];
+        if (root.matches?.('.dex-cell')) dexCells.push(root);
+        root.querySelectorAll?.('.dex-cell').forEach(function (cell) { dexCells.push(cell); });
+        dexCells.forEach(function (cell) { try { dexCellObserver.unobserve(cell); } catch (_) {} });
+        var canvases = [];
+        if (root.matches?.('canvas')) canvases.push(root);
+        root.querySelectorAll?.('canvas').forEach(function (canvas) { canvases.push(canvas); });
+        canvases.forEach(function (canvas) {
+          try { CanvasPokemonEngine.detachPlayer?.(canvas) || canvas._pokePlayer?.destroy?.(); } catch (_) {}
+        });
+      }
+      new MutationObserver(function (records) {
+        records.forEach(function (record) {
+          record.removedNodes.forEach(cleanupRemovedSpriteTree);
+        });
+      }).observe(document.body, { childList:true, subtree:true });
 
       // Observe DOM changes to replace static hero images with interactive canvas
       var heroObserver = new MutationObserver(function (mutations) {
