@@ -2571,7 +2571,8 @@ window.addEventListener('DOMContentLoaded', function () {
     <div class="admin-head"><h2 id="admin-tools-title">Game Admin</h2><button class="admin-close" type="button" aria-label="Close">×</button></div>
     <div class="admin-block"><label for="admin-money">Add money</label><input id="admin-money" type="number" min="1" step="100" value="10000"><button id="admin-add-money" type="button">Add ₽</button></div>
     <div class="admin-block"><label>Add item</label><div class="admin-item-row"><select id="admin-item"></select><input id="admin-item-qty" type="number" min="1" max="9999" value="1"></div><button id="admin-add-item" type="button">Add item</button></div>
-    <div class="admin-block"><label>Time &amp; Weather</label><div class="admin-env-grid"><button type="button" data-admin-env="time:day">☀ Day</button><button type="button" data-admin-env="time:night">🌙 Night</button><button type="button" data-admin-env="weather:rain">🌧 Rain</button><button type="button" data-admin-env="weather:sun">🌞 Sunny</button><button type="button" data-admin-env="auto" style="grid-column:1/-1">↻ Automatic</button></div></div>
+    <div class="admin-block"><label>Time · Ngày / Đêm</label><div class="admin-env-grid"><button type="button" data-admin-env="time:day">☀ Day · Ngày</button><button type="button" data-admin-env="time:night">🌙 Night · Đêm</button></div></div>
+    <div class="admin-block"><label>Weather · Thời tiết</label><div class="admin-env-grid"><button type="button" data-admin-env="weather:rain">🌧 Rain · Mưa</button><button type="button" data-admin-env="weather:sun">🌞 Sunny · Nắng</button><button type="button" data-admin-env="auto" style="grid-column:1/-1">↻ Automatic · Tự động</button></div></div>
     <p id="admin-status" aria-live="polite"></p>
   </div></div>
   <script>
@@ -2582,12 +2583,15 @@ window.addEventListener('DOMContentLoaded', function () {
       if(topActions)topActions.insertBefore(open,sleepButton||null);
       function game(){return window.PokeCatch?.Game}
       function fillItems(){var names=window.PokeCatch?.ITEM_NAMES||{},current=select.value;select.replaceChildren(...Object.keys(names).sort(function(a,b){return String(names[a]).localeCompare(String(names[b]))}).map(function(key){var option=document.createElement('option');option.value=key;option.textContent=String(names[key])+' · '+key;return option}));if(current&&names[current])select.value=current}
-      function applyEnvironment(value,quiet){var P=window.PokeCatch;if(!P?.DAYTIME||!P?.WEATHER)return;var parts=String(value||'auto').split(':');if(parts[0]==='time')adminEnv.time=parts[1];else if(parts[0]==='weather')adminEnv.weather=parts[1];else adminEnv={time:null,weather:null};P.DAYTIME.force(adminEnv.time);P.WEATHER.force(adminEnv.weather);document.querySelectorAll('[data-admin-env]').forEach(function(b){var p=b.dataset.adminEnv.split(':');b.classList.toggle('on',b.dataset.adminEnv==='auto'?!adminEnv.time&&!adminEnv.weather:adminEnv[p[0]]===p[1])});try{adminEnv.time||adminEnv.weather?localStorage.setItem('pokecatch.admin.environment',JSON.stringify(adminEnv)):localStorage.removeItem('pokecatch.admin.environment')}catch{}if(!quiet){P.App?.refresh?.();status.textContent='Time: '+(adminEnv.time||'auto')+' · Weather: '+(adminEnv.weather||'auto')}}
+      function paintEnvironment(){document.querySelectorAll('[data-admin-env]').forEach(function(b){var p=b.dataset.adminEnv.split(':');b.classList.toggle('on',b.dataset.adminEnv==='auto'?!adminEnv.time&&!adminEnv.weather:adminEnv[p[0]]===p[1])})}
+      function environmentReady(P){return !!(P?.Game?.S?.adv?.nodes?.length&&P?.Adventure?.state)}
+      function applyEnvironment(value,quiet){var P=window.PokeCatch,parts=String(value||'auto').split(':');if(parts[0]==='time')adminEnv.time=parts[1];else if(parts[0]==='weather')adminEnv.weather=parts[1];else adminEnv={time:null,weather:null};paintEnvironment();try{adminEnv.time||adminEnv.weather?localStorage.setItem('pokecatch.admin.environment',JSON.stringify(adminEnv)):localStorage.removeItem('pokecatch.admin.environment')}catch{}if(!quiet&&environmentReady(P)){if(parts[0]==='time')P.DAYTIME?.force?.(adminEnv.time);else if(parts[0]==='weather')P.WEATHER?.force?.(adminEnv.weather);else{P.DAYTIME?.force?.(null);P.WEATHER?.force?.(null)}}if(!quiet)status.textContent='Time: '+(adminEnv.time||'auto')+' · Weather: '+(adminEnv.weather||'auto')}
       open.onclick=function(){fillItems();panel.hidden=false;status.textContent=''};close.onclick=function(){panel.hidden=true};panel.onclick=function(event){if(event.target===panel)panel.hidden=true};
       document.getElementById('admin-add-money').onclick=function(){var amount=Math.max(1,Math.floor(+document.getElementById('admin-money').value||0)),G=game();if(!G)return;if(typeof G.moneyIn==='function')G.moneyIn(amount);else G.S.money=Math.max(0,(+G.S.money||0)+amount);G.save();window.PokeCatch.App?.refresh?.();status.textContent='Added '+amount.toLocaleString()+' ₽'};
       document.getElementById('admin-add-item').onclick=function(){var key=select.value,qty=Math.max(1,Math.min(9999,Math.floor(+document.getElementById('admin-item-qty').value||1))),G=game();if(!G||!key)return;G.addItem(key,qty);G.save();window.PokeCatch.App?.refresh?.();status.textContent='Added '+qty+' × '+(window.PokeCatch.ITEM_NAMES[key]||key)};
-      panel.querySelector('.admin-env-grid').onclick=function(event){var button=event.target.closest('[data-admin-env]');if(button)applyEnvironment(button.dataset.adminEnv,false)};
-      try{var savedEnv=localStorage.getItem('pokecatch.admin.environment');if(savedEnv){var parsedEnv=JSON.parse(savedEnv);adminEnv.time=parsedEnv.time||null;adminEnv.weather=parsedEnv.weather||null;applyEnvironment(adminEnv.time?'time:'+adminEnv.time:adminEnv.weather?'weather:'+adminEnv.weather:'auto',true);if(parsedEnv.time&&parsedEnv.weather)applyEnvironment('weather:'+parsedEnv.weather,true)}else applyEnvironment('auto',true)}catch{applyEnvironment('auto',true)}
+      panel.querySelectorAll('.admin-env-grid').forEach(function(grid){grid.onclick=function(event){var button=event.target.closest('[data-admin-env]');if(button)applyEnvironment(button.dataset.adminEnv,false)}});
+      try{var savedEnv=localStorage.getItem('pokecatch.admin.environment');if(savedEnv){var parsedEnv=JSON.parse(savedEnv);adminEnv.time=parsedEnv.time||null;adminEnv.weather=parsedEnv.weather||null}}catch{adminEnv={time:null,weather:null}}paintEnvironment();
+      if(adminEnv.time||adminEnv.weather){var restoreEnv=setInterval(function(){var P=window.PokeCatch;if(!environmentReady(P))return;clearInterval(restoreEnv);if(adminEnv.time)P.DAYTIME?.force?.(adminEnv.time);if(adminEnv.weather)P.WEATHER?.force?.(adminEnv.weather)},100)}
     });
   </script>
 
@@ -2707,7 +2711,7 @@ window.addEventListener('DOMContentLoaded', function () {
             try { localStorage.setItem(storageKey, String(count)); } catch (_) {}
           }
         }, 100);
-        Game.save(); P.App?.refresh?.(); injectShopCard(); return true;
+        Game.save(); injectShopCard(); return true;
       }
       var installTimer = setInterval(function () { if (installMasterBall()) clearInterval(installTimer); }, 250);
       document.addEventListener('click', function (event) {
