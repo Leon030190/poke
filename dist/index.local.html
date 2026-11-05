@@ -2717,6 +2717,11 @@ window.addEventListener('DOMContentLoaded', function () {
     .statbars>span.vit-flash,.statbars>b.vit-flash,.statbars>div.vit-flash{animation:statFlash .75s ease}
     @keyframes statFlash{35%{color:#6dff9c;filter:drop-shadow(0 0 5px #37e978);transform:scale(1.08)}100%{color:inherit;filter:none;transform:none}}
     .vitamin-shop{--c:#6ddc91}.vitamin-shop .sh-ic img{image-rendering:auto}
+    .mega-evolve-panel{margin:8px 0;padding:9px;border:1px solid #7657c8;border-radius:10px;background:linear-gradient(135deg,#17142a,#251943)}
+    .mega-evolve-panel h4{margin:0 0 7px;color:#e9ddff;font-size:13px}
+    .mega-evolve-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+    .mega-evolve-use{display:grid;grid-template-columns:32px 1fr;align-items:center;gap:6px;min-width:0;padding:7px;border:1px solid #8f73df;border-radius:9px;background:#302355;color:#fff;text-align:left;font:700 11px/1.15 system-ui}
+    .mega-evolve-use img{width:32px;height:32px;object-fit:contain;image-rendering:auto}.mega-evolve-use small{display:block;margin-top:3px;color:#c9b8f5;font-size:9px}.mega-evolve-use:disabled{opacity:.42}
   </style>
   <script>
     (function () {
@@ -2730,6 +2735,16 @@ window.addEventListener('DOMContentLoaded', function () {
       };
       const STAT_ORDER = ['hp','atk','def','spa','spd','spe'];
       let selectedUid = null;
+      let megaList = [];
+
+      function trackSelectedPokemon(P) {
+        const UI=P?.UI;
+        if(!UI?.monDetail||UI.monDetail.__tracksSelectedUid)return;
+        const native=UI.monDetail;
+        const wrapped=function(uid){selectedUid=uid;return native.apply(this,arguments);};
+        Object.defineProperty(wrapped,'__tracksSelectedUid',{value:true});
+        UI.monDetail=wrapped;
+      }
 
       document.addEventListener('pointerdown', function (event) {
         const holder = event.target.closest('#pc-grid [data-uid],#team-slots [data-uid],#screen-team [data-uid]');
@@ -2819,6 +2834,46 @@ window.addEventListener('DOMContentLoaded', function () {
         (statsPanel||modal.querySelector('.fam-sec')||modal.querySelector('.item-actions'))?.insertAdjacentElement('afterend',panel);
       }
 
+      function installMegaPanel(modal) {
+        if (modal.querySelector('.mega-evolve-panel') || !megaList.length) return;
+        const P=window.PokeCatch,G=P?.Game;
+        let mon=selectedUid&&G?.getMon?.(selectedUid);
+        if(!mon){
+          const name=modal.querySelector('h2')?.textContent?.trim();
+          mon=G?.allMons?.().find(m=>G.DEX[m.id]?.name===name);
+        }
+        if(!mon)return;
+        const choices=megaList.filter(m=>+m.base===+mon.id);
+        if(!choices.length)return;
+        const panel=document.createElement('div');panel.className='mega-evolve-panel';
+        panel.innerHTML='<h4>MEGA EVOLUTION</h4><div class="mega-evolve-grid"></div>';
+        const grid=panel.querySelector('.mega-evolve-grid');
+        for(const mega of choices){
+          const count=G.itemCount(mega.stone)||0;
+          const btn=document.createElement('button');btn.type='button';btn.className='mega-evolve-use';
+          btn.disabled=count<=0;
+          btn.innerHTML='<img src="assets/items/'+mega.stone+'.png" alt=""><span>'+mega.name+'<small>'+mega.stoneName+' ×'+count+'</small></span>';
+          btn.title=count>0?'Dùng '+mega.stoneName+' để tiến hóa':'Chưa có '+mega.stoneName;
+          btn.onclick=function(){
+            if(btn.dataset.busy==='1')return;
+            btn.dataset.busy='1';btn.disabled=true;
+            try{
+              const current=G.getMon(mon.uid);
+              if(!current||+current.id!==+mega.base){P.UI?.toast?.('Pokémon không còn phù hợp để Mega Evolution.');return;}
+              if((G.itemCount(mega.stone)||0)<=0){P.UI?.toast?.('Bạn chưa có '+mega.stoneName+'.');return;}
+              const evolved=G.evolveMon(mon.uid,mega.id);
+              if(!evolved){P.UI?.toast?.('Mega Evolution thất bại, đá không bị mất.');return;}
+              G.addItem(mega.stone,-1);
+              G.save();P.Sfx?.upgrade?.(2);P.UI?.toast?.(G.DEX[mega.id]?.name+' Mega Evolution thành công!');
+              modal.querySelector('.dc-x')?.click();P.Screens?.team?.render?.();P.Screens?.adventure?.refreshTeam?.();P.App?.refreshHeader?.();
+            }finally{btn.dataset.busy='0';}
+          };
+          grid.appendChild(btn);
+        }
+        const actions=modal.querySelector('.item-actions');
+        (actions||modal.querySelector('.fam-sec'))?.insertAdjacentElement('beforebegin',panel);
+      }
+
       function injectVitaminShop() {
         const P=window.PokeCatch,G=P?.Game,grid=document.querySelector('#screen-shop.active .sh-grid');
         if(!G||!grid)return;
@@ -2856,6 +2911,7 @@ window.addEventListener('DOMContentLoaded', function () {
         Object.defineProperty(P.STORY,'__megaBossStepsInstalled',{value:true});
       }
       fetch('/data/mega_stones.json').then(r=>r.json()).then(list=>{
+        megaList=list;
         megaById=Object.fromEntries(list.map(m=>[m.id,m]));
         const P=window.PokeCatch,G=P?.Game;if(G)for(const m of list)stoneCounts[m.stone]=G.itemCount(m.stone)||0;
         installMegaBossSteps(P,list);
@@ -2883,11 +2939,12 @@ window.addEventListener('DOMContentLoaded', function () {
       const boot=setInterval(function(){
         const P=window.PokeCatch;
         if(!P?.Game?.S)return;
+        trackSelectedPokemon(P);
         patchStats(P);
         for(const [id,info] of Object.entries(VITAMINS)) P.ITEM_NAMES[id]=info.label;
         clearInterval(boot);
       },25);
-      new MutationObserver(function(){const modal=document.querySelector('.dexcard.mon-card');if(modal)installVitaminPanel(modal);injectVitaminShop();}).observe(document.body,{childList:true,subtree:true});
+      new MutationObserver(function(){const modal=document.querySelector('.dexcard.mon-card');if(modal){installVitaminPanel(modal);installMegaPanel(modal);}injectVitaminShop();}).observe(document.body,{childList:true,subtree:true});
       setInterval(function(){injectVitaminShop();monitorMegaBossDrops();},250);
     })();
   </script>
