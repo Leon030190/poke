@@ -1,0 +1,69 @@
+name: Build unsigned iOS IPA
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "dist/**"
+      - "ios-app/**"
+      - ".github/workflows/build-ios-unsigned.yml"
+
+jobs:
+  build:
+    runs-on: macos-15
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: ios-app/package-lock.json
+
+      - name: Install Capacitor
+        working-directory: ios-app
+        run: npm ci
+
+      - name: Copy offline game and sync iOS
+        working-directory: ios-app
+        run: npm run sync:ios
+
+      - name: Build unsigned device app
+        run: |
+          set -euo pipefail
+          xcodebuild \
+            -project ios-app/ios/App/App.xcodeproj \
+            -scheme App \
+            -configuration Release \
+            -sdk iphoneos \
+            -destination 'generic/platform=iOS' \
+            -derivedDataPath build/DerivedData \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY='' \
+            clean build
+
+      - name: Package unsigned IPA
+        run: |
+          set -euo pipefail
+          APP='build/DerivedData/Build/Products/Release-iphoneos/App.app'
+          test -d "$APP"
+          mkdir -p build/Payload
+          cp -R "$APP" build/Payload/PokeCatch.app
+          cd build
+          ditto -c -k --sequesterRsrc --keepParent Payload PokeCatch-Offline-unsigned.ipa
+          shasum -a 256 PokeCatch-Offline-unsigned.ipa > PokeCatch-Offline-unsigned.ipa.sha256
+
+      - name: Upload unsigned IPA
+        uses: actions/upload-artifact@v4
+        with:
+          name: PokeCatch-Offline-unsigned-IPA
+          path: |
+            build/PokeCatch-Offline-unsigned.ipa
+            build/PokeCatch-Offline-unsigned.ipa.sha256
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 30
+

@@ -1,0 +1,2208 @@
+{
+  "specials": [
+    {
+      "id": 90025,
+      "base": 25,
+      "name": "Pika'Squette",
+      "slug": "pikachu-cap",
+      "types": [
+        "electric"
+      ]
+    }
+  ],
+  "unown": {
+    "base": 201,
+    "letters": [
+      {
+        "id": 201,
+        "letter": "A",
+        "name": "Zarbi A"
+      },
+      {
+        "id": 20101,
+        "letter": "B",
+        "name": "Zarbi B"
+      },
+      {
+        "id": 20102,
+        "letter": "C",
+        "name": "Zarbi C"
+      },
+      {
+        "id": 20103,
+        "letter": "D",
+        "name": "Zarbi D"
+      },
+      {
+        "id": 20104,
+        "letter": "E",
+        "name": "Zarbi E"
+      },
+      {
+        "id": 20105,
+        "letter": "F",
+        "name": "Zarbi F"
+      },
+      {
+        "id": 20106,
+        "letter": "G",
+        "name": "Zarbi G"
+      },
+      {
+        "id": 20107,
+        "letter": "H",
+        "name": "Zarbi H"
+      },
+      {
+        "id": 20108,
+        "letter": "I",
+        "name": "Zarbi I"
+      },
+      {
+        "id": 20109,
+        "letter": "J",
+        "name": "Zarbi J"
+      },
+      {
+        "id": 20110,
+        "letter": "K",
+        "name": "Zarbi K"
+      },
+      {
+        "id": 20111,
+        "letter": "L",
+        "name": "Zarbi L"
+      },
+      {
+        "id": 20112,
+        "letter": "M",
+        "name": "Zarbi M"
+      },
+      {
+        "id": 20113,
+        "letter": "N",
+        "name": "Zarbi N"
+      },
+      {
+        "id": 20114,
+        "letter": "O",
+        "name": "Zarbi O"
+      },
+      {
+        "id": 20115,
+        "letter": "P",
+        "name": "Zarbi P"
+      },
+      {
+        "id": 20116,
+        "letter": "Q",
+        "name": "Zarbi Q"
+      },
+      {
+        "id": 20117,
+        "letter": "R",
+        "name": "Zarbi R"
+      },
+      {
+        "id": 20118,
+        "letter": "S",
+        "name": "Zarbi S"
+      },
+      {
+        "id": 20119,
+        "letter": "T",
+        "name": "Zarbi T"
+      },
+      {
+        "id": 20120,
+        "letter": "U",
+        "name": "Zarbi U"
+      },
+      {
+        "id": 20121,
+        "letter": "V",
+        "name": "Zarbi V"
+      },
+      {
+        "id": 20122,
+        "letter": "W",
+        "name": "Zarbi W"
+      },
+      {
+        "id": 20123,
+        "letter": "X",
+        "name": "Zarbi X"
+      },
+      {
+        "id": 20124,
+        "letter": "Y",
+        "name": "Zarbi Y"
+      },
+      {
+        "id": 20125,
+        "letter": "Z",
+        "name": "Zarbi Z"
+      },
+      {
+        "id": 20126,
+        "letter": "!",
+        "name": "Zarbi !"
+      },
+      {
+        "id": 20127,
+        "letter": "?",
+        "name": "Zarbi ?"
+      }
+    ]
+  },
+  "forms": [
+    {
+      "id": 35101,
+      "base": 351,
+      "slug": "castform-sunny",
+      "form": "Forme Solaire",
+      "types": [
+        "fire"
+      ],
+      "weather": [
+        "sun"
+      ]
+    },
+    {
+      "id": 35102,
+      "base": 351,
+      "slug": "castform-rainy",
+      "form": "Forme Eau de Pluie",
+      "types": [
+        "water"
+      ],
+      "weather": [
+        "rain",
+        "storm"
+      ]
+    },
+    {
+      "id": 35103,
+      "base": 351,
+      "slug": "castform-snowy",
+      "form": "Forme Blizzard",
+      "types": [
+        "ice"
+      ],
+      "weather": [
+        "snow"
+      ]
+    },
+    {
+      "id": 38601,
+      "base": 386,
+      "slug": "deoxys-attack",
+      "form": "Forme Attaque",
+      "types": [
+        "psychic"
+      ],
+      "single": true,
+      "stats": {
+        "hp": 50,
+        "atk": 180,
+        "def": 20,
+        "spa": 180,
+        "spd": 20,
+        "spe": 150
+      }
+    },
+    {
+      "id": 38602,
+      "base": 386,
+      "slug": "deoxys-defense",
+      "form": "Forme Défense",
+      "types": [
+        "psychic"
+      ],
+      "single": true,
+      "stats": {
+        "hp": 50,
+        "atk": 70,
+        "def": 160,
+        "spa": 70,
+        "spd": 160,
+        "spe": 90
+      }
+    },
+    {
+      "id": 38603,
+      "base": 386,
+      "slug": "deoxys-speed",
+      "form": "Forme Vitesse",
+      "types": [
+        "psychic"
+      ],
+      "single": true,
+      "stats": {
+        "hp": 50,
+        "atk": 95,
+        "def": 90,
+        "spa": 95,
+        "spd": 90,
+        "spe": 180
+      }
+    },
+    {
+      "id": 41201,
+      "base": 412,
+      "slug": "burmy-sandy",
+      "form": "Cape Sable",
+      "types": [
+        "bug"
+      ],
+      "evo": [
+        {
+          "to": 41301,
+          "level": 20
+        },
+        {
+          "to": 414,
+          "level": 20
+        }
+      ]
+    },
+    {
+      "id": 41202,
+      "base": 412,
+      "slug": "burmy-trash",
+      "form": "Cape Déchet",
+      "types": [
+        "bug"
+      ],
+      "evo": [
+        {
+          "to": 41302,
+          "level": 20
+        },
+        {
+          "to": 414,
+          "level": 20
+        }
+      ]
+    },
+    {
+      "id": 41301,
+      "base": 413,
+      "slug": "wormadam-sandy",
+      "form": "Cape Sable",
+      "types": [
+        "bug",
+        "ground"
+      ],
+      "stats": {
+        "hp": 60,
+        "atk": 79,
+        "def": 105,
+        "spa": 59,
+        "spd": 85,
+        "spe": 36
+      }
+    },
+    {
+      "id": 41302,
+      "base": 413,
+      "slug": "wormadam-trash",
+      "form": "Cape Déchet",
+      "types": [
+        "bug",
+        "steel"
+      ],
+      "stats": {
+        "hp": 60,
+        "atk": 69,
+        "def": 95,
+        "spa": 69,
+        "spd": 95,
+        "spe": 36
+      }
+    },
+    {
+      "id": 42201,
+      "base": 422,
+      "slug": "shellos-east",
+      "form": "Mer Orient",
+      "types": [
+        "water"
+      ],
+      "evo": [
+        {
+          "to": 42301,
+          "level": 30
+        }
+      ]
+    },
+    {
+      "id": 42301,
+      "base": 423,
+      "slug": "gastrodon-east",
+      "form": "Mer Orient",
+      "types": [
+        "water",
+        "ground"
+      ]
+    },
+    {
+      "id": 47901,
+      "base": 479,
+      "slug": "rotom-heat",
+      "form": "Forme Chaleur",
+      "types": [
+        "electric",
+        "fire"
+      ],
+      "single": true,
+      "move": "overheat",
+      "stats": {
+        "hp": 50,
+        "atk": 65,
+        "def": 107,
+        "spa": 105,
+        "spd": 107,
+        "spe": 86
+      }
+    },
+    {
+      "id": 47902,
+      "base": 479,
+      "slug": "rotom-wash",
+      "form": "Forme Lavage",
+      "types": [
+        "electric",
+        "water"
+      ],
+      "single": true,
+      "move": "hydro-pump",
+      "stats": {
+        "hp": 50,
+        "atk": 65,
+        "def": 107,
+        "spa": 105,
+        "spd": 107,
+        "spe": 86
+      }
+    },
+    {
+      "id": 47903,
+      "base": 479,
+      "slug": "rotom-frost",
+      "form": "Forme Froid",
+      "types": [
+        "electric",
+        "ice"
+      ],
+      "single": true,
+      "move": "blizzard",
+      "stats": {
+        "hp": 50,
+        "atk": 65,
+        "def": 107,
+        "spa": 105,
+        "spd": 107,
+        "spe": 86
+      }
+    },
+    {
+      "id": 47904,
+      "base": 479,
+      "slug": "rotom-fan",
+      "form": "Forme Hélice",
+      "types": [
+        "electric",
+        "flying"
+      ],
+      "single": true,
+      "move": "air-slash",
+      "stats": {
+        "hp": 50,
+        "atk": 65,
+        "def": 107,
+        "spa": 105,
+        "spd": 107,
+        "spe": 86
+      }
+    },
+    {
+      "id": 47905,
+      "base": 479,
+      "slug": "rotom-mow",
+      "form": "Forme Tonte",
+      "types": [
+        "electric",
+        "grass"
+      ],
+      "single": true,
+      "move": "leaf-storm",
+      "stats": {
+        "hp": 50,
+        "atk": 65,
+        "def": 107,
+        "spa": 105,
+        "spd": 107,
+        "spe": 86
+      }
+    },
+    {
+      "id": 48701,
+      "base": 487,
+      "slug": "giratina-origin",
+      "form": "Forme Originelle",
+      "types": [
+        "ghost",
+        "dragon"
+      ],
+      "single": true,
+      "stats": {
+        "hp": 150,
+        "atk": 120,
+        "def": 100,
+        "spa": 120,
+        "spd": 100,
+        "spe": 90
+      }
+    },
+    {
+      "id": 49201,
+      "base": 492,
+      "slug": "shaymin-sky",
+      "form": "Forme Céleste",
+      "types": [
+        "grass",
+        "flying"
+      ],
+      "single": true,
+      "stats": {
+        "hp": 100,
+        "atk": 103,
+        "def": 75,
+        "spa": 120,
+        "spd": 75,
+        "spe": 127
+      }
+    },
+    {
+      "id": 49301,
+      "base": 493,
+      "slug": "arceus-fire",
+      "form": "Arceus (Feu)",
+      "types": [
+        "fire"
+      ],
+      "single": true,
+      "plate": "fire",
+      "judgmentMove": "judgment-fire"
+    },
+    {
+      "id": 49302,
+      "base": 493,
+      "slug": "arceus-water",
+      "form": "Arceus (Eau)",
+      "types": [
+        "water"
+      ],
+      "single": true,
+      "plate": "water",
+      "judgmentMove": "judgment-water"
+    },
+    {
+      "id": 49303,
+      "base": 493,
+      "slug": "arceus-grass",
+      "form": "Arceus (Plante)",
+      "types": [
+        "grass"
+      ],
+      "single": true,
+      "plate": "grass",
+      "judgmentMove": "judgment-grass"
+    },
+    {
+      "id": 49304,
+      "base": 493,
+      "slug": "arceus-electric",
+      "form": "Arceus (Électrik)",
+      "types": [
+        "electric"
+      ],
+      "single": true,
+      "plate": "electric",
+      "judgmentMove": "judgment-electric"
+    },
+    {
+      "id": 49305,
+      "base": 493,
+      "slug": "arceus-ice",
+      "form": "Arceus (Glace)",
+      "types": [
+        "ice"
+      ],
+      "single": true,
+      "plate": "ice",
+      "judgmentMove": "judgment-ice"
+    },
+    {
+      "id": 49306,
+      "base": 493,
+      "slug": "arceus-fighting",
+      "form": "Arceus (Combat)",
+      "types": [
+        "fighting"
+      ],
+      "single": true,
+      "plate": "fighting",
+      "judgmentMove": "judgment-fighting"
+    },
+    {
+      "id": 49307,
+      "base": 493,
+      "slug": "arceus-poison",
+      "form": "Arceus (Poison)",
+      "types": [
+        "poison"
+      ],
+      "single": true,
+      "plate": "poison",
+      "judgmentMove": "judgment-poison"
+    },
+    {
+      "id": 49308,
+      "base": 493,
+      "slug": "arceus-ground",
+      "form": "Arceus (Sol)",
+      "types": [
+        "ground"
+      ],
+      "single": true,
+      "plate": "ground",
+      "judgmentMove": "judgment-ground"
+    },
+    {
+      "id": 49309,
+      "base": 493,
+      "slug": "arceus-flying",
+      "form": "Arceus (Vol)",
+      "types": [
+        "flying"
+      ],
+      "single": true,
+      "plate": "flying",
+      "judgmentMove": "judgment-flying"
+    },
+    {
+      "id": 49310,
+      "base": 493,
+      "slug": "arceus-psychic",
+      "form": "Arceus (Psy)",
+      "types": [
+        "psychic"
+      ],
+      "single": true,
+      "plate": "psychic",
+      "judgmentMove": "judgment-psychic"
+    },
+    {
+      "id": 49311,
+      "base": 493,
+      "slug": "arceus-bug",
+      "form": "Arceus (Insecte)",
+      "types": [
+        "bug"
+      ],
+      "single": true,
+      "plate": "bug",
+      "judgmentMove": "judgment-bug"
+    },
+    {
+      "id": 49312,
+      "base": 493,
+      "slug": "arceus-rock",
+      "form": "Arceus (Roche)",
+      "types": [
+        "rock"
+      ],
+      "single": true,
+      "plate": "rock",
+      "judgmentMove": "judgment-rock"
+    },
+    {
+      "id": 49313,
+      "base": 493,
+      "slug": "arceus-ghost",
+      "form": "Arceus (Spectre)",
+      "types": [
+        "ghost"
+      ],
+      "single": true,
+      "plate": "ghost",
+      "judgmentMove": "judgment-ghost"
+    },
+    {
+      "id": 49314,
+      "base": 493,
+      "slug": "arceus-dragon",
+      "form": "Arceus (Dragon)",
+      "types": [
+        "dragon"
+      ],
+      "single": true,
+      "plate": "dragon",
+      "judgmentMove": "judgment-dragon"
+    },
+    {
+      "id": 49315,
+      "base": 493,
+      "slug": "arceus-dark",
+      "form": "Arceus (Ténèbres)",
+      "types": [
+        "dark"
+      ],
+      "single": true,
+      "plate": "dark",
+      "judgmentMove": "judgment-dark"
+    },
+    {
+      "id": 49316,
+      "base": 493,
+      "slug": "arceus-steel",
+      "form": "Arceus (Acier)",
+      "types": [
+        "steel"
+      ],
+      "single": true,
+      "plate": "steel",
+      "judgmentMove": "judgment-steel"
+    },
+    {
+      "id": 10001,
+      "base": 100,
+      "slug": "voltorb-hisui",
+      "form": "Hisui",
+      "types": [
+        "electric",
+        "grass"
+      ],
+      "single": true
+    },
+    {
+      "id": 10101,
+      "base": 101,
+      "slug": "electrode-hisui",
+      "form": "Hisui",
+      "types": [
+        "electric",
+        "grass"
+      ],
+      "single": true
+    },
+    {
+      "id": 101701,
+      "base": 1017,
+      "slug": "ogerpon-ogerpon-cornerstone-mask",
+      "form": "Ogerpon Cornerstone Mask",
+      "types": [
+        "grass"
+      ],
+      "single": true
+    },
+    {
+      "id": 101702,
+      "base": 1017,
+      "slug": "ogerpon-ogerpon-hearthflame-mask",
+      "form": "Ogerpon Hearthflame Mask",
+      "types": [
+        "grass"
+      ],
+      "single": true
+    },
+    {
+      "id": 101703,
+      "base": 1017,
+      "slug": "ogerpon-ogerpon-wellspring-mask",
+      "form": "Ogerpon Wellspring Mask",
+      "types": [
+        "grass"
+      ],
+      "single": true
+    },
+    {
+      "id": 102401,
+      "base": 1024,
+      "slug": "terapagos-terapagos-terastal",
+      "form": "Terapagos Terastal",
+      "types": [
+        "normal"
+      ],
+      "single": true
+    },
+    {
+      "id": 10301,
+      "base": 103,
+      "slug": "exeggutor-alola",
+      "form": "Alola",
+      "types": [
+        "grass",
+        "dragon"
+      ],
+      "single": true
+    },
+    {
+      "id": 10501,
+      "base": 105,
+      "slug": "marowak-alola",
+      "form": "Alola",
+      "types": [
+        "fire",
+        "ghost"
+      ],
+      "single": true
+    },
+    {
+      "id": 7701,
+      "base": 77,
+      "slug": "ponyta-galar",
+      "form": "Galar",
+      "types": ["psychic"],
+      "stats": {"hp": 50, "atk": 85, "def": 55, "spa": 65, "spd": 65, "spe": 90},
+      "single": true
+    },
+    {
+      "id": 7801,
+      "base": 78,
+      "slug": "rapidash-galar",
+      "form": "Galar",
+      "types": ["psychic", "fairy"],
+      "stats": {"hp": 65, "atk": 100, "def": 70, "spa": 80, "spd": 80, "spe": 105},
+      "single": true
+    },
+    {
+      "id": 7901,
+      "base": 79,
+      "slug": "slowpoke-galar",
+      "form": "Galar",
+      "types": ["psychic"],
+      "stats": {"hp": 90, "atk": 65, "def": 65, "spa": 40, "spd": 40, "spe": 15},
+      "single": true
+    },
+    {
+      "id": 8001,
+      "base": 80,
+      "slug": "slowbro-galar",
+      "form": "Galar",
+      "types": ["poison", "psychic"],
+      "stats": {"hp": 95, "atk": 100, "def": 95, "spa": 100, "spd": 70, "spe": 30},
+      "single": true
+    },
+    {
+      "id": 8301,
+      "base": 83,
+      "slug": "farfetchd-galar",
+      "form": "Galar",
+      "types": ["fighting"],
+      "stats": {"hp": 52, "atk": 95, "def": 55, "spa": 58, "spd": 62, "spe": 55},
+      "single": true
+    },
+    {
+      "id": 11001,
+      "base": 110,
+      "slug": "weezing-galar",
+      "form": "Galar",
+      "types": [
+        "poison",
+        "fairy"
+      ],
+      "single": true
+    },
+    {
+      "id": 12201,
+      "base": 122,
+      "slug": "mr-mime-galar",
+      "form": "Galar",
+      "types": [
+        "ice",
+        "psychic"
+      ],
+      "single": true
+    },
+    {
+      "id": 12801,
+      "base": 128,
+      "slug": "tauros-paldea",
+      "form": "Paldea",
+      "types": [
+        "fighting"
+      ],
+      "single": true
+    },
+    {
+      "id": 13001,
+      "base": 130,
+      "slug": "gyarados-mega",
+      "form": "Méga",
+      "types": [
+        "water",
+        "flying"
+      ],
+      "single": true
+    },
+    {
+      "id": 14401,
+      "base": 144,
+      "slug": "articuno-articuno-galar",
+      "form": "Articuno Galar",
+      "types": [
+        "ice",
+        "flying"
+      ],
+      "single": true
+    },
+    {
+      "id": 14501,
+      "base": 145,
+      "slug": "zapdos-zapdos-galar",
+      "form": "Zapdos Galar",
+      "types": [
+        "electric",
+        "flying"
+      ],
+      "single": true
+    },
+    {
+      "id": 14601,
+      "base": 146,
+      "slug": "moltres-moltres-galar",
+      "form": "Moltres Galar",
+      "types": [
+        "fire",
+        "flying"
+      ],
+      "single": true
+    },
+    {
+      "id": 14901,
+      "base": 149,
+      "slug": "dragonite-mega",
+      "form": "Méga",
+      "types": [
+        "dragon",
+        "flying"
+      ],
+      "single": true
+    },
+    {
+      "id": 15002,
+      "base": 150,
+      "slug": "mewtwo-megaY",
+      "form": "Méga Y",
+      "types": [
+        "psychic"
+      ],
+      "single": true
+    },
+    {
+      "id": 15011,
+      "base": 150,
+      "slug": "mewtwo-mewtwo-mega-y",
+      "form": "Mewtwo Mega Y",
+      "types": [
+        "psychic"
+      ],
+      "single": true
+    },
+    {
+      "id": 15401,
+      "base": 154,
+      "slug": "meganium-mega",
+      "form": "Méga",
+      "types": [
+        "grass"
+      ],
+      "single": true
+    },
+    {
+      "id": 15701,
+      "base": 157,
+      "slug": "typhlosion-hisui",
+      "form": "Hisui",
+      "types": [
+        "fire",
+        "ghost"
+      ],
+      "single": true
+    },
+    {
+      "id": 16001,
+      "base": 160,
+      "slug": "feraligatr-mega",
+      "form": "Méga",
+      "types": [
+        "water"
+      ],
+      "single": true
+    },
+    {
+      "id": 1801,
+      "base": 18,
+      "slug": "pidgeot-mega",
+      "form": "Méga",
+      "types": [
+        "normal",
+        "flying"
+      ],
+      "single": true
+    },
+    {
+      "id": 18101,
+      "base": 181,
+      "slug": "ampharos-mega",
+      "form": "Méga",
+      "types": [
+        "electric"
+      ],
+      "single": true
+    },
+    {
+      "id": 1901,
+      "base": 19,
+      "slug": "rattata-alola",
+      "form": "Alola",
+      "types": [
+        "dark",
+        "normal"
+      ],
+      "single": true
+    },
+    {
+      "id": 19401,
+      "base": 194,
+      "slug": "wooper-paldea",
+      "form": "Paldea",
+      "types": [
+        "poison",
+        "ground"
+      ],
+      "single": true
+    },
+    {
+      "id": 19901,
+      "base": 199,
+      "slug": "slowking-galar",
+      "form": "Galar",
+      "types": [
+        "poison",
+        "psychic"
+      ],
+      "single": true
+    },
+    {
+      "id": 2001,
+      "base": 20,
+      "slug": "raticate-alola",
+      "form": "Alola",
+      "types": [
+        "dark",
+        "normal"
+      ],
+      "single": true
+    },
+    {
+      "id": 21101,
+      "base": 211,
+      "slug": "qwilfish-hisui",
+      "form": "Hisui",
+      "types": [
+        "dark",
+        "poison"
+      ],
+      "single": true
+    },
+    {
+      "id": 21201,
+      "base": 212,
+      "slug": "scizor-mega",
+      "form": "Méga",
+      "types": [
+        "bug",
+        "steel"
+      ],
+      "single": true
+    },
+    {
+      "id": 21501,
+      "base": 215,
+      "slug": "sneasel-hisui",
+      "form": "Hisui",
+      "types": [
+        "fighting",
+        "poison"
+      ],
+      "single": true
+    },
+    {
+      "id": 22201,
+      "base": 222,
+      "slug": "corsola-galar",
+      "form": "Galar",
+      "types": [
+        "ghost"
+      ],
+      "single": true
+    },
+    {
+      "id": 22901,
+      "base": 229,
+      "slug": "houndoom-mega",
+      "form": "Méga",
+      "types": [
+        "dark",
+        "fire"
+      ],
+      "single": true
+    },
+    {
+      "id": 24801,
+      "base": 248,
+      "slug": "tyranitar-mega",
+      "form": "Méga",
+      "types": [
+        "rock",
+        "dark"
+      ],
+      "single": true
+    },
+    {
+      "id": 2501,
+      "base": 25,
+      "slug": "pikachu-alola",
+      "form": "Alola",
+      "types": [
+        "electric"
+      ],
+      "single": true
+    },
+    {
+      "id": 25401,
+      "base": 254,
+      "slug": "sceptile-mega",
+      "form": "Méga",
+      "types": [
+        "grass"
+      ],
+      "single": true
+    },
+    {
+      "id": 25701,
+      "base": 257,
+      "slug": "blaziken-mega",
+      "form": "Méga",
+      "types": [
+        "fire",
+        "fighting"
+      ],
+      "single": true
+    },
+    {
+      "id": 2601,
+      "base": 26,
+      "slug": "raichu-alola",
+      "form": "Alola",
+      "types": [
+        "electric",
+        "psychic"
+      ],
+      "single": true
+    },
+    {
+      "id": 2612,
+      "base": 26,
+      "slug": "raichu-megaX",
+      "form": "Méga X",
+      "types": [
+        "electric"
+      ],
+      "single": true
+    },
+    {
+      "id": 2602,
+      "base": 26,
+      "slug": "raichu-megaY",
+      "form": "Méga Y",
+      "types": [
+        "electric"
+      ],
+      "single": true
+    },
+    {
+      "id": 26001,
+      "base": 260,
+      "slug": "swampert-mega",
+      "form": "Méga",
+      "types": [
+        "water",
+        "ground"
+      ],
+      "single": true
+    },
+    {
+      "id": 26301,
+      "base": 263,
+      "slug": "zigzagoon-galar",
+      "form": "Galar",
+      "types": [
+        "dark",
+        "normal"
+      ],
+      "single": true
+    },
+    {
+      "id": 26401,
+      "base": 264,
+      "slug": "linoone-galar",
+      "form": "Galar",
+      "types": [
+        "dark",
+        "normal"
+      ],
+      "single": true
+    },
+    {
+      "id": 2701,
+      "base": 27,
+      "slug": "sandshrew-alola",
+      "form": "Alola",
+      "types": [
+        "ice",
+        "steel"
+      ],
+      "single": true
+    },
+    {
+      "id": 2801,
+      "base": 28,
+      "slug": "sandslash-alola",
+      "form": "Alola",
+      "types": [
+        "ice",
+        "steel"
+      ],
+      "single": true
+    },
+    {
+      "id": 28201,
+      "base": 282,
+      "slug": "gardevoir-mega",
+      "form": "Méga",
+      "types": [
+        "psychic",
+        "fairy"
+      ],
+      "single": true
+    },
+    {
+      "id": 301,
+      "base": 3,
+      "slug": "venusaur-mega",
+      "form": "Méga",
+      "types": [
+        "grass",
+        "poison"
+      ],
+      "single": true
+    },
+    {
+      "id": 30601,
+      "base": 306,
+      "slug": "aggron-mega",
+      "form": "Méga",
+      "types": [
+        "steel",
+        "rock"
+      ],
+      "single": true
+    },
+    {
+      "id": 31001,
+      "base": 310,
+      "slug": "manectric-mega",
+      "form": "Méga",
+      "types": [
+        "electric"
+      ],
+      "single": true
+    },
+    {
+      "id": 33401,
+      "base": 334,
+      "slug": "altaria-mega",
+      "form": "Méga",
+      "types": [
+        "dragon",
+        "flying"
+      ],
+      "single": true
+    },
+    {
+      "id": 35401,
+      "base": 354,
+      "slug": "banette-mega",
+      "form": "Méga",
+      "types": [
+        "ghost"
+      ],
+      "single": true
+    },
+    {
+      "id": 36201,
+      "base": 362,
+      "slug": "glalie-mega",
+      "form": "Méga",
+      "types": [
+        "ice"
+      ],
+      "single": true
+    },
+    {
+      "id": 3701,
+      "base": 37,
+      "slug": "vulpix-alola",
+      "form": "Alola",
+      "types": [
+        "ice"
+      ],
+      "single": true
+    },
+    {
+      "id": 37301,
+      "base": 373,
+      "slug": "salamence-mega",
+      "form": "Méga",
+      "types": [
+        "dragon",
+        "flying"
+      ],
+      "single": true
+    },
+    {
+      "id": 37601,
+      "base": 376,
+      "slug": "metagross-mega",
+      "form": "Méga",
+      "types": [
+        "steel",
+        "psychic"
+      ],
+      "single": true
+    },
+    {
+      "id": 3801,
+      "base": 38,
+      "slug": "ninetales-alola",
+      "form": "Alola",
+      "types": [
+        "ice",
+        "fairy"
+      ],
+      "single": true
+    },
+    {
+      "id": 38001,
+      "base": 380,
+      "slug": "latias-latias-mega",
+      "form": "Latias Mega",
+      "types": [
+        "dragon",
+        "psychic"
+      ],
+      "single": true
+    },
+    {
+      "id": 38011,
+      "base": 380,
+      "slug": "latias-mega",
+      "form": "Méga",
+      "types": [
+        "dragon",
+        "psychic"
+      ],
+      "single": true
+    },
+    {
+      "id": 38101,
+      "base": 381,
+      "slug": "latios-latios-mega",
+      "form": "Latios Mega",
+      "types": [
+        "dragon",
+        "psychic"
+      ],
+      "single": true
+    },
+    {
+      "id": 38111,
+      "base": 381,
+      "slug": "latios-mega",
+      "form": "Méga",
+      "types": [
+        "dragon",
+        "psychic"
+      ],
+      "single": true
+    },
+    {
+      "id": 38201,
+      "base": 382,
+      "slug": "kyogre-kyogre-primal",
+      "form": "Kyogre Primal",
+      "types": [
+        "water"
+      ],
+      "single": true
+    },
+    {
+      "id": 38202,
+      "base": 382,
+      "slug": "kyogre-primal",
+      "form": "Primo",
+      "types": [
+        "water"
+      ],
+      "single": true
+    },
+    {
+      "id": 38301,
+      "base": 383,
+      "slug": "groudon-groudon-primal",
+      "form": "Groudon Primal",
+      "types": [
+        "ground"
+      ],
+      "single": true
+    },
+    {
+      "id": 38302,
+      "base": 383,
+      "slug": "groudon-primal",
+      "form": "Primo",
+      "types": [
+        "ground"
+      ],
+      "single": true
+    },
+    {
+      "id": 38401,
+      "base": 384,
+      "slug": "rayquaza-mega",
+      "form": "Méga",
+      "types": [
+        "dragon",
+        "flying"
+      ],
+      "single": true
+    },
+    {
+      "id": 38411,
+      "base": 384,
+      "slug": "rayquaza-rayquaza-mega",
+      "form": "Rayquaza Mega",
+      "types": [
+        "dragon",
+        "flying"
+      ],
+      "single": true
+    },
+    {
+      "id": 38612,
+      "base": 386,
+      "slug": "deoxys-normal-attack",
+      "form": "Attack",
+      "types": [
+        "psychic"
+      ],
+      "single": true
+    },
+    {
+      "id": 38614,
+      "base": 386,
+      "slug": "deoxys-normal-defense",
+      "form": "Defense",
+      "types": [
+        "psychic"
+      ],
+      "single": true
+    },
+    {
+      "id": 38605,
+      "base": 386,
+      "slug": "deoxys-normal-deoxys-attack",
+      "form": "Deoxys Attack",
+      "types": [
+        "psychic"
+      ],
+      "single": true
+    },
+    {
+      "id": 38606,
+      "base": 386,
+      "slug": "deoxys-normal-deoxys-defense",
+      "form": "Deoxys Defense",
+      "types": [
+        "psychic"
+      ],
+      "single": true
+    },
+    {
+      "id": 38607,
+      "base": 386,
+      "slug": "deoxys-normal-deoxys-speed",
+      "form": "Deoxys Speed",
+      "types": [
+        "psychic"
+      ],
+      "single": true
+    },
+    {
+      "id": 38608,
+      "base": 386,
+      "slug": "deoxys-normal-speed",
+      "form": "Speed",
+      "types": [
+        "psychic"
+      ],
+      "single": true
+    },
+    {
+      "id": 39801,
+      "base": 398,
+      "slug": "staraptor-mega",
+      "form": "Méga",
+      "types": [
+        "normal",
+        "flying"
+      ],
+      "single": true
+    },
+    {
+      "id": 44501,
+      "base": 445,
+      "slug": "garchomp-mega",
+      "form": "Méga",
+      "types": [
+        "dragon",
+        "ground"
+      ],
+      "single": true
+    },
+    {
+      "id": 44503,
+      "base": 445,
+      "slug": "garchomp-megaZ",
+      "form": "Méga Z",
+      "types": [
+        "dragon",
+        "ground"
+      ],
+      "single": true
+    },
+    {
+      "id": 44801,
+      "base": 448,
+      "slug": "lucario-mega",
+      "form": "Méga",
+      "types": [
+        "fighting",
+        "steel"
+      ],
+      "single": true
+    },
+    {
+      "id": 44803,
+      "base": 448,
+      "slug": "lucario-megaZ",
+      "form": "Méga Z",
+      "types": [
+        "fighting",
+        "steel"
+      ],
+      "single": true
+    },
+    {
+      "id": 47501,
+      "base": 475,
+      "slug": "gallade-mega",
+      "form": "Méga",
+      "types": [
+        "psychic",
+        "fighting"
+      ],
+      "single": true
+    },
+    {
+      "id": 48301,
+      "base": 483,
+      "slug": "dialga-origin",
+      "form": "Forme Originelle",
+      "types": [
+        "steel",
+        "dragon"
+      ],
+      "single": true
+    },
+    {
+      "id": 48401,
+      "base": 484,
+      "slug": "palkia-palkia-origin",
+      "form": "Palkia Origin",
+      "types": [
+        "water",
+        "dragon"
+      ],
+      "single": true
+    },
+    {
+      "id": 48712,
+      "base": 487,
+      "slug": "giratina-altered-giratina-origin",
+      "form": "Giratina Origin",
+      "types": [
+        "ghost",
+        "dragon"
+      ],
+      "single": true
+    },
+    {
+      "id": 49101,
+      "base": 491,
+      "slug": "darkrai-darkrai-mega",
+      "form": "Darkrai Mega",
+      "types": [
+        "dark"
+      ],
+      "single": true
+    },
+    {
+      "id": 49111,
+      "base": 491,
+      "slug": "darkrai-mega",
+      "form": "Méga",
+      "types": [
+        "dark"
+      ],
+      "single": true
+    },
+    {
+      "id": 49212,
+      "base": 492,
+      "slug": "shaymin-land-shaymin-sky",
+      "form": "Shaymin Sky",
+      "types": [
+        "grass"
+      ],
+      "single": true
+    },
+    {
+      "id": 5001,
+      "base": 50,
+      "slug": "diglett-alola",
+      "form": "Alola",
+      "types": [
+        "ground",
+        "steel"
+      ],
+      "single": true
+    },
+    {
+      "id": 50001,
+      "base": 500,
+      "slug": "emboar-mega",
+      "form": "Méga",
+      "types": [
+        "fire",
+        "fighting"
+      ],
+      "single": true
+    },
+    {
+      "id": 50301,
+      "base": 503,
+      "slug": "samurott-hisui",
+      "form": "Hisui",
+      "types": [
+        "water",
+        "dark"
+      ],
+      "single": true
+    },
+    {
+      "id": 5101,
+      "base": 51,
+      "slug": "dugtrio-alola",
+      "form": "Alola",
+      "types": [
+        "ground",
+        "steel"
+      ],
+      "single": true
+    },
+    {
+      "id": 5201,
+      "base": 52,
+      "slug": "meowth-alola",
+      "form": "Alola",
+      "types": [
+        "dark"
+      ],
+      "single": true
+    },
+    {
+      "id": 5202,
+      "base": 52,
+      "slug": "meowth-galar",
+      "form": "Galar",
+      "types": [
+        "steel"
+      ],
+      "single": true
+    },
+    {
+      "id": 5301,
+      "base": 53,
+      "slug": "persian-alola",
+      "form": "Alola",
+      "types": [
+        "dark"
+      ],
+      "single": true
+    },
+    {
+      "id": 54901,
+      "base": 549,
+      "slug": "lilligant-hisui",
+      "form": "Hisui",
+      "types": [
+        "grass",
+        "fighting"
+      ],
+      "single": true
+    },
+    {
+      "id": 55401,
+      "base": 554,
+      "slug": "darumaka-galar",
+      "form": "Galar",
+      "types": [
+        "ice"
+      ],
+      "single": true
+    },
+    {
+      "id": 55501,
+      "base": 555,
+      "slug": "darmanitan-galar",
+      "form": "Galar",
+      "types": [
+        "ice"
+      ],
+      "single": true
+    },
+    {
+      "id": 56201,
+      "base": 562,
+      "slug": "yamask-galar",
+      "form": "Galar",
+      "types": [
+        "ground",
+        "ghost"
+      ],
+      "single": true
+    },
+    {
+      "id": 57001,
+      "base": 570,
+      "slug": "zorua-hisui",
+      "form": "Hisui",
+      "types": [
+        "normal",
+        "ghost"
+      ],
+      "single": true
+    },
+    {
+      "id": 57101,
+      "base": 571,
+      "slug": "zoroark-hisui",
+      "form": "Hisui",
+      "types": [
+        "normal",
+        "ghost"
+      ],
+      "single": true
+    },
+    {
+      "id": 5801,
+      "base": 58,
+      "slug": "growlithe-hisui",
+      "form": "Hisui",
+      "types": [
+        "fire",
+        "rock"
+      ],
+      "single": true
+    },
+    {
+      "id": 5901,
+      "base": 59,
+      "slug": "arcanine-hisui",
+      "form": "Hisui",
+      "types": [
+        "fire",
+        "rock"
+      ],
+      "single": true
+    },
+    {
+      "id": 601,
+      "base": 6,
+      "slug": "charizard-megaX",
+      "form": "Méga X",
+      "types": [
+        "fire",
+        "flying"
+      ],
+      "single": true
+    },
+    {
+      "id": 602,
+      "base": 6,
+      "slug": "charizard-megaY",
+      "form": "Méga Y",
+      "types": [
+        "fire",
+        "flying"
+      ],
+      "single": true
+    },
+    {
+      "id": 61801,
+      "base": 618,
+      "slug": "stunfisk-galar",
+      "form": "Galar",
+      "types": [
+        "ground",
+        "steel"
+      ],
+      "single": true
+    },
+    {
+      "id": 62801,
+      "base": 628,
+      "slug": "braviary-hisui",
+      "form": "Hisui",
+      "types": [
+        "psychic",
+        "flying"
+      ],
+      "single": true
+    },
+    {
+      "id": 64501,
+      "base": 645,
+      "slug": "landorus-landorus-therian",
+      "form": "Landorus Therian",
+      "types": [
+        "ground",
+        "flying"
+      ],
+      "single": true
+    },
+    {
+      "id": 64601,
+      "base": 646,
+      "slug": "kyurem-kyurem-black",
+      "form": "Kyurem Black",
+      "types": [
+        "dragon",
+        "ice"
+      ],
+      "single": true
+    },
+    {
+      "id": 64602,
+      "base": 646,
+      "slug": "kyurem-kyurem-white",
+      "form": "Kyurem White",
+      "types": [
+        "dragon",
+        "ice"
+      ],
+      "single": true
+    },
+    {
+      "id": 64801,
+      "base": 648,
+      "slug": "meloetta-meloetta-pirouette",
+      "form": "Meloetta Pirouette",
+      "types": [
+        "normal",
+        "psychic"
+      ],
+      "single": true
+    },
+    {
+      "id": 6501,
+      "base": 65,
+      "slug": "alakazam-mega",
+      "form": "Méga",
+      "types": [
+        "psychic"
+      ],
+      "single": true
+    },
+    {
+      "id": 65201,
+      "base": 652,
+      "slug": "chesnaught-mega",
+      "form": "Méga",
+      "types": [
+        "grass",
+        "fighting"
+      ],
+      "single": true
+    },
+    {
+      "id": 65501,
+      "base": 655,
+      "slug": "delphox-mega",
+      "form": "Méga",
+      "types": [
+        "fire",
+        "psychic"
+      ],
+      "single": true
+    },
+    {
+      "id": 65801,
+      "base": 658,
+      "slug": "greninja-mega",
+      "form": "Méga",
+      "types": [
+        "water",
+        "dark"
+      ],
+      "single": true
+    },
+    {
+      "id": 68101,
+      "base": 681,
+      "slug": "aegislash-blade",
+      "form": "Forme Assaut",
+      "types": [
+        "steel",
+        "ghost"
+      ],
+      "single": true
+    },
+    {
+      "id": 70501,
+      "base": 705,
+      "slug": "sliggoo-hisui",
+      "form": "Hisui",
+      "types": [
+        "steel",
+        "dragon"
+      ],
+      "single": true
+    },
+    {
+      "id": 70601,
+      "base": 706,
+      "slug": "goodra-hisui",
+      "form": "Hisui",
+      "types": [
+        "steel",
+        "dragon"
+      ],
+      "single": true
+    },
+    {
+      "id": 71301,
+      "base": 713,
+      "slug": "avalugg-hisui",
+      "form": "Hisui",
+      "types": [
+        "ice",
+        "rock"
+      ],
+      "single": true
+    },
+    {
+      "id": 71801,
+      "base": 718,
+      "slug": "zygarde-zygarde-10",
+      "form": "Zygarde 10",
+      "types": [
+        "dragon",
+        "ground"
+      ],
+      "single": true
+    },
+    {
+      "id": 71802,
+      "base": 718,
+      "slug": "zygarde-zygarde-10-power-construct",
+      "form": "Zygarde 10 Power Construct",
+      "types": [
+        "dragon",
+        "ground"
+      ],
+      "single": true
+    },
+    {
+      "id": 71803,
+      "base": 718,
+      "slug": "zygarde-zygarde-complete",
+      "form": "Zygarde Complete",
+      "types": [
+        "dragon",
+        "ground"
+      ],
+      "single": true
+    },
+    {
+      "id": 71901,
+      "base": 719,
+      "slug": "diancie-diancie-mega",
+      "form": "Diancie Mega",
+      "types": [
+        "rock",
+        "fairy"
+      ],
+      "single": true
+    },
+    {
+      "id": 72001,
+      "base": 720,
+      "slug": "hoopa-hoopa-unbound",
+      "form": "Hoopa Unbound",
+      "types": [
+        "psychic",
+        "ghost"
+      ],
+      "single": true
+    },
+    {
+      "id": 72401,
+      "base": 724,
+      "slug": "decidueye-hisui",
+      "form": "Hisui",
+      "types": [
+        "grass",
+        "fighting"
+      ],
+      "single": true
+    },
+    {
+      "id": 7401,
+      "base": 74,
+      "slug": "geodude-alola",
+      "form": "Alola",
+      "types": [
+        "rock",
+        "electric"
+      ],
+      "single": true
+    },
+    {
+      "id": 7501,
+      "base": 75,
+      "slug": "graveler-alola",
+      "form": "Alola",
+      "types": [
+        "rock",
+        "electric"
+      ],
+      "single": true
+    },
+    {
+      "id": 7601,
+      "base": 76,
+      "slug": "golem-alola",
+      "form": "Alola",
+      "types": [
+        "rock",
+        "electric"
+      ],
+      "single": true
+    },
+    {
+      "id": 7701,
+      "base": 77,
+      "slug": "ponyta-galar",
+      "form": "Galar",
+      "types": [
+        "psychic"
+      ],
+      "single": true
+    },
+    {
+      "id": 7801,
+      "base": 78,
+      "slug": "rapidash-galar",
+      "form": "Galar",
+      "types": [
+        "psychic",
+        "fairy"
+      ],
+      "single": true
+    },
+    {
+      "id": 7901,
+      "base": 79,
+      "slug": "slowpoke-galar",
+      "form": "Galar",
+      "types": [
+        "psychic"
+      ],
+      "single": true
+    },
+    {
+      "id": 8001,
+      "base": 80,
+      "slug": "slowbro-galar",
+      "form": "Galar",
+      "types": [
+        "poison",
+        "psychic"
+      ],
+      "single": true
+    },
+    {
+      "id": 80001,
+      "base": 800,
+      "slug": "necrozma-necrozma-ultra",
+      "form": "Necrozma Ultra",
+      "types": [
+        "psychic"
+      ],
+      "single": true
+    },
+    {
+      "id": 80101,
+      "base": 801,
+      "slug": "magearna-magearna-original",
+      "form": "Magearna Original",
+      "types": [
+        "steel",
+        "fairy"
+      ],
+      "single": true
+    },
+    {
+      "id": 80701,
+      "base": 807,
+      "slug": "zeraora-zeraora-mega",
+      "form": "Zeraora Mega",
+      "types": [
+        "electric"
+      ],
+      "single": true
+    },
+    {
+      "id": 8301,
+      "base": 83,
+      "slug": "farfetchd-galar",
+      "form": "Galar",
+      "types": [
+        "fighting"
+      ],
+      "single": true
+    },
+    {
+      "id": 8801,
+      "base": 88,
+      "slug": "grimer-alola",
+      "form": "Alola",
+      "types": [
+        "poison",
+        "dark"
+      ],
+      "single": true
+    },
+    {
+      "id": 88801,
+      "base": 888,
+      "slug": "zacian-zacian-crowned",
+      "form": "Zacian Crowned",
+      "types": [
+        "fairy"
+      ],
+      "single": true
+    },
+    {
+      "id": 88901,
+      "base": 889,
+      "slug": "zamazenta-zamazenta-crowned",
+      "form": "Zamazenta Crowned",
+      "types": [
+        "fighting"
+      ],
+      "single": true
+    },
+    {
+      "id": 8901,
+      "base": 89,
+      "slug": "muk-alola",
+      "form": "Alola",
+      "types": [
+        "poison",
+        "dark"
+      ],
+      "single": true
+    },
+    {
+      "id": 89201,
+      "base": 892,
+      "slug": "urshifu-urshifu-rapid-strike",
+      "form": "Urshifu Rapid Strike",
+      "types": [
+        "fighting",
+        "dark"
+      ],
+      "single": true
+    },
+    {
+      "id": 901,
+      "base": 9,
+      "slug": "blastoise-mega",
+      "form": "Méga",
+      "types": [
+        "water"
+      ],
+      "single": true
+    },
+    {
+      "id": 90501,
+      "base": 905,
+      "slug": "enamorus-enamorus-therian",
+      "form": "Enamorus Therian",
+      "types": [
+        "fairy",
+        "flying"
+      ],
+      "single": true
+    },
+    {
+      "id": 9401,
+      "base": 94,
+      "slug": "gengar-mega",
+      "form": "Méga",
+      "types": [
+        "ghost",
+        "poison"
+      ],
+      "single": true
+    }
+  ]
+}

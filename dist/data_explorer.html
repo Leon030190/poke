@@ -1,0 +1,1034 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Poke'Catch - REA Reverse Engineering Data Explorer</title>
+  <style>
+    :root {
+      --bg-main: #0d1117;
+      --bg-card: #161b22;
+      --bg-elevated: #21262d;
+      --border-color: #30363d;
+      --text-main: #f0f6fc;
+      --text-muted: #8b949e;
+      --accent: #58a6ff;
+      --accent-hover: #79c0ff;
+      --success: #3fb950;
+      --warning: #d29922;
+      --danger: #f85149;
+      --purple: #bc8cff;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+    body { background-color: var(--bg-main); color: var(--text-main); min-height: 100vh; display: flex; flex-direction: column; }
+    header { background: #010409; border-bottom: 1px solid var(--border-color); padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; }
+    .brand { display: flex; align-items: center; gap: 0.75rem; }
+    .brand h1 { font-size: 1.25rem; font-weight: 700; background: linear-gradient(90deg, #58a6ff, #bc8cff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .brand span { font-size: 0.75rem; background: #238636; color: white; padding: 2px 6px; border-radius: 4px; font-weight: 600; }
+    .nav-links { display: flex; gap: 1rem; align-items: center; }
+    .nav-btn { background: none; border: none; color: var(--text-muted); font-size: 0.95rem; font-weight: 500; padding: 6px 14px; border-radius: 6px; cursor: pointer; transition: all 0.2s; }
+    .nav-btn:hover { color: var(--text-main); background: var(--bg-elevated); }
+    .nav-btn.active { color: white; background: #1f6feb; }
+    .play-link { background: linear-gradient(135deg, #238636, #2ea043); color: white; text-decoration: none; padding: 6px 14px; border-radius: 6px; font-weight: 600; font-size: 0.9rem; margin-left: 0.5rem; transition: filter 0.2s; }
+    .play-link:hover { filter: brightness(1.1); }
+
+    main { flex: 1; padding: 1.5rem 2rem; max-width: 1600px; margin: 0 auto; width: 100%; }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* Search & Filter Bar */
+    .filter-panel { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; padding: 1rem; margin-bottom: 1.5rem; display: flex; flex-direction: column; gap: 0.75rem; }
+    .search-row { display: flex; gap: 1rem; flex-wrap: wrap; }
+    .search-input { flex: 1; min-width: 260px; background: var(--bg-main); border: 1px solid var(--border-color); border-radius: 6px; padding: 8px 12px; color: white; font-size: 0.95rem; outline: none; }
+    .search-input:focus { border-color: var(--accent); }
+    .select-filter { background: var(--bg-main); border: 1px solid var(--border-color); border-radius: 6px; padding: 8px 12px; color: white; font-size: 0.9rem; outline: none; }
+    .chip-row { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; }
+    .chip-label { font-size: 0.8rem; color: var(--text-muted); font-weight: 600; margin-right: 0.25rem; }
+    .chip { background: var(--bg-elevated); border: 1px solid var(--border-color); border-radius: 20px; padding: 4px 10px; font-size: 0.75rem; cursor: pointer; color: var(--text-muted); transition: all 0.15s; }
+    .chip:hover { color: white; border-color: var(--text-muted); }
+    .chip.active { background: #388bfd33; border-color: var(--accent); color: var(--accent); font-weight: 600; }
+
+    /* Type Badges */
+    .type-badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; color: white; text-shadow: 0 1px 2px rgba(0,0,0,0.5); }
+    .type-normal { background-color: #A8A878; }
+    .type-fire { background-color: #F08030; }
+    .type-water { background-color: #6890F0; }
+    .type-grass { background-color: #78C850; }
+    .type-electric { background-color: #F8D030; color: #222; text-shadow: none; }
+    .type-ice { background-color: #98D8D8; color: #222; text-shadow: none; }
+    .type-fighting { background-color: #C03028; }
+    .type-poison { background-color: #A040A0; }
+    .type-ground { background-color: #E0C068; color: #222; text-shadow: none; }
+    .type-flying { background-color: #A890F0; }
+    .type-psychic { background-color: #F85888; }
+    .type-bug { background-color: #A8B820; }
+    .type-rock { background-color: #B8A038; }
+    .type-ghost { background-color: #705898; }
+    .type-dragon { background-color: #7038F8; }
+    .type-dark { background-color: #705848; }
+    .type-steel { background-color: #B8B8D0; color: #222; text-shadow: none; }
+    .type-fairy { background-color: #EE99AC; color: #222; text-shadow: none; }
+
+    /* Mon Grid */
+    .mon-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1rem; }
+    .mon-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; padding: 1rem; cursor: pointer; transition: transform 0.15s, border-color 0.15s; display: flex; flex-direction: column; align-items: center; position: relative; overflow: hidden; }
+    .mon-card:hover { transform: translateY(-3px); border-color: var(--accent); }
+    .mon-card .dex-num { position: absolute; top: 8px; left: 10px; font-size: 0.75rem; font-weight: 700; color: var(--text-muted); }
+    .mon-card .rarity-badge { position: absolute; top: 8px; right: 10px; font-size: 0.65rem; padding: 2px 6px; border-radius: 4px; font-weight: 700; text-transform: uppercase; }
+    .rarity-legend { background: #f5c51822; color: #f5c518; border: 1px solid #f5c51866; }
+    .rarity-mythic { background: #bc8cff22; color: #bc8cff; border: 1px solid #bc8cff66; }
+    .rarity-form { background: #58a6ff22; color: #58a6ff; border: 1px solid #58a6ff66; }
+    .mon-card .sprite-box { width: 96px; height: 96px; display: flex; align-items: center; justify-content: center; margin: 0.5rem 0; }
+    .mon-card img { max-width: 90px; max-height: 90px; image-rendering: pixelated; object-fit: contain; }
+    .mon-card .mon-name { font-weight: 600; font-size: 0.95rem; margin-bottom: 0.4rem; text-align: center; }
+    .mon-card .types { display: flex; gap: 4px; margin-bottom: 0.5rem; }
+    .mon-card .bst-row { font-size: 0.75rem; color: var(--text-muted); }
+
+    /* Modal / Drawer */
+    .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.75); z-index: 1000; justify-content: center; align-items: center; padding: 1rem; }
+    .modal-overlay.active { display: flex; }
+    .modal-content { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; width: 100%; max-width: 900px; max-height: 90vh; overflow-y: auto; position: relative; padding: 1.5rem; }
+    .close-modal { position: absolute; top: 1rem; right: 1rem; background: var(--bg-elevated); border: none; color: white; width: 32px; height: 32px; border-radius: 50%; font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+    .modal-header { display: flex; gap: 1.5rem; align-items: center; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem; }
+    .modal-sprites { display: flex; gap: 1rem; align-items: center; }
+    .sprite-frame { text-align: center; background: var(--bg-main); border: 1px solid var(--border-color); border-radius: 8px; padding: 0.5rem; width: 120px; }
+    .sprite-frame img { width: 96px; height: 96px; object-fit: contain; image-rendering: pixelated; }
+    .sprite-frame span { display: block; font-size: 0.7rem; color: var(--text-muted); margin-top: 4px; }
+    .modal-info h2 { font-size: 1.5rem; display: flex; align-items: center; gap: 0.5rem; }
+    .modal-info .sub-meta { color: var(--text-muted); font-size: 0.85rem; margin: 0.25rem 0 0.5rem 0; }
+    .stat-bars { display: flex; flex-direction: column; gap: 0.4rem; margin: 1rem 0; }
+    .stat-row { display: grid; grid-template-columns: 80px 40px 1fr; align-items: center; gap: 0.5rem; font-size: 0.8rem; }
+    .stat-fill-track { background: var(--bg-main); height: 8px; border-radius: 4px; overflow: hidden; border: 1px solid var(--border-color); }
+    .stat-fill { height: 100%; border-radius: 4px; }
+
+    /* Tables */
+    .table-container { overflow-x: auto; margin-top: 1rem; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.85rem; text-align: left; }
+    th { background: var(--bg-elevated); padding: 8px 12px; border-bottom: 1px solid var(--border-color); color: var(--text-muted); font-weight: 600; }
+    td { padding: 8px 12px; border-bottom: 1px solid var(--border-color); }
+    tr:hover td { background: rgba(255,255,255,0.02); }
+
+    /* Calculator Cards */
+    .calc-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); gap: 1.5rem; }
+    .calc-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; padding: 1.5rem; }
+    .calc-card h3 { font-size: 1.15rem; margin-bottom: 1rem; color: var(--accent); display: flex; align-items: center; gap: 0.5rem; }
+    .form-group { margin-bottom: 1rem; }
+    .form-group label { display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 4px; font-weight: 600; }
+    .form-group input, .form-group select { width: 100%; background: var(--bg-main); border: 1px solid var(--border-color); border-radius: 6px; padding: 8px 12px; color: white; font-size: 0.9rem; }
+    .calc-result { background: var(--bg-elevated); border: 1px solid var(--border-color); border-radius: 8px; padding: 1rem; margin-top: 1rem; }
+    .result-big { font-size: 2rem; font-weight: 800; color: var(--success); }
+
+    /* Underground view */
+    .loot-band { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; padding: 1rem; margin-bottom: 1rem; }
+    .loot-band h4 { color: var(--accent); margin-bottom: 0.5rem; }
+  </style>
+  <link rel="stylesheet" href="css/borderless_sprites.css">
+  <script src="js/canvas_sprite_engine.js"></script>
+</head>
+<body>
+
+  <header>
+    <div class="brand">
+      <h1>Poke'Catch Online Explorer</h1>
+      <span>REA RECONSTRUCTED</span>
+    </div>
+    <div class="nav-links">
+      <button class="nav-btn active" data-tab="pokedex">Pokédex Toàn Diện (Gen 1 - 9: 1,038 Loài)</button>
+      <button class="nav-btn" data-tab="moves">Attaques / Moves (503)</button>
+      <button class="nav-btn" data-tab="skills">Kỹ năng Survivors (34 Skills)</button>
+      <button class="nav-btn" data-tab="calculators">Calculateurs REA</button>
+      <button class="nav-btn" data-tab="underground">Souterrains / Mining</button>
+      <a class="play-link" href="/index.local.html" target="_blank">Chơi Game Offline 🎮</a>
+    </div>
+  </header>
+
+  <main>
+    <!-- TAB 1: POKEDEX & FORMS -->
+    <section id="tab-pokedex" class="tab-content active">
+      <div class="filter-panel">
+        <div class="search-row">
+          <input type="text" id="poke-search" class="search-input" placeholder="Tìm kiếm theo Tên, Số ID, Hệ (ví dụ: charizard, 25, fire)...">
+          <select id="type-select" class="select-filter">
+            <option value="">Tất cả Hệ (Types)</option>
+            <option value="normal">Normal</option>
+            <option value="fire">Fire</option>
+            <option value="water">Water</option>
+            <option value="grass">Grass</option>
+            <option value="electric">Electric</option>
+            <option value="ice">Ice</option>
+            <option value="fighting">Fighting</option>
+            <option value="poison">Poison</option>
+            <option value="ground">Ground</option>
+            <option value="flying">Flying</option>
+            <option value="psychic">Psychic</option>
+            <option value="bug">Bug</option>
+            <option value="rock">Rock</option>
+            <option value="ghost">Ghost</option>
+            <option value="dragon">Dragon</option>
+            <option value="dark">Dark</option>
+            <option value="steel">Steel</option>
+            <option value="fairy">Fairy</option>
+          </select>
+          <select id="sort-select" class="select-filter">
+            <option value="id-asc">Sắp xếp: ID (Tăng dần)</option>
+            <option value="id-desc">Sắp xếp: ID (Giảm dần)</option>
+            <option value="bst-desc">Sắp xếp: Tổng chỉ số (BST cao -> thấp)</option>
+            <option value="name-asc">Sắp xếp: Tên (A-Z)</option>
+          </select>
+        </div>
+        <div class="chip-row">
+          <span class="chip-label">Thế hệ / Gen:</span>
+          <span class="chip active" data-gen="all">Tất cả (1,038)</span>
+          <span class="chip" data-gen="kanto">Gen 1: Kanto (1-151)</span>
+          <span class="chip" data-gen="johto">Gen 2: Johto (152-251)</span>
+          <span class="chip" data-gen="hoenn">Gen 3: Hoenn (252-386)</span>
+          <span class="chip" data-gen="sinnoh">Gen 4: Sinnoh (387-493)</span>
+          <span class="chip" data-gen="unova">Gen 5: Unova (494-649)</span>
+          <span class="chip" data-gen="kalos">Gen 6: Kalos (650-721)</span>
+          <span class="chip" data-gen="alola">Gen 7: Alola (722-809)</span>
+          <span class="chip" data-gen="galar">Gen 8: Galar/Hisui (810-905)</span>
+          <span class="chip" data-gen="paldea">Gen 9: Paldea (906-1025)</span>
+          <span class="chip" data-gen="forms">Formes & Megas (174)</span>
+          <span class="chip" data-gen="legendary">Légendaires / Mythiques</span>
+          <span class="chip" id="anim-toggle-btn" style="margin-left: auto;">🧘 Động tác: Đứng yên (Idle)</span>
+          <span class="chip" id="scale-toggle-btn">🔍 Tỷ lệ: 2x</span>
+          <span class="chip" id="shiny-toggle-btn">✨ Hiển thị Shiny</span>
+        </div>
+      </div>
+
+      <div class="mon-grid" id="mon-grid">
+        <!-- Rendered by JS -->
+      </div>
+    </section>
+
+    <!-- TAB 2: MOVES -->
+    <section id="tab-moves" class="tab-content">
+      <div class="filter-panel">
+        <div class="search-row">
+          <input type="text" id="move-search" class="search-input" placeholder="Tìm chiêu thức theo tên (ví dụ: hydro-pump, flame, judgment)...">
+          <select id="move-type-select" class="select-filter">
+            <option value="">Tất cả Hệ</option>
+          </select>
+          <select id="move-cat-select" class="select-filter">
+            <option value="">Tất cả Phân loại (Cat)</option>
+            <option value="phys">Vật lý (Physical)</option>
+            <option value="spec">Đặc biệt (Special)</option>
+            <option value="status">Biến hóa (Status)</option>
+          </select>
+        </div>
+      </div>
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>ID / Slug</th>
+              <th>Tên chiêu</th>
+              <th>Hệ (Type)</th>
+              <th>Loại (Cat)</th>
+              <th>Sức mạnh (Power)</th>
+              <th>Độ chính xác (Acc)</th>
+            </tr>
+          </thead>
+          <tbody id="moves-tbody">
+            <!-- Rendered by JS -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- TAB 3: SKILLS SURVIVORS -->
+    <section id="tab-skills" class="tab-content">
+      <div class="filter-panel">
+        <h3 style="color:var(--accent);margin-bottom:0.5rem;">Kho Kỹ năng & Chiêu thức Đặc trưng (Pokemon Survivors Skills)</h3>
+        <p style="font-size:0.85rem;color:var(--text-muted);">Toàn bộ 34 hoạt ảnh chiêu thức tối thượng (Dynamax Cannon, Eternabeam, Origin Pulse, Precipice Blades, Dragon Ascent, Psystrike...) đã được trích xuất từ Pokemon Survivors và tích hợp vào hệ thống Poke'Catch.</p>
+      </div>
+      <div class="mon-grid" id="skills-grid">
+        <!-- Rendered by JS -->
+      </div>
+    </section>
+
+    <!-- TAB 4: CALCULATORS -->
+    <section id="tab-calculators" class="tab-content">
+      <div class="calc-grid">
+        <!-- Catch Rate Calculator -->
+        <div class="calc-card">
+          <h3>🎯 Máy tính Tỷ lệ Bắt (Catch Rate Calculator)</h3>
+          <p style="color:var(--text-muted);font-size:0.8rem;margin-bottom:1rem;">Triển khai chính xác thuật toán từ <code>app.224d481e7b.js</code> (4 lần rung cầu kiểm tra <code>P ** 0.25</code>).</p>
+          <div class="form-group">
+            <label>Pokémon Mục tiêu</label>
+            <select id="calc-catch-mon" class="select-filter"></select>
+          </div>
+          <div class="form-group">
+            <label>Loại Bóng (Pokéball)</label>
+            <select id="calc-catch-ball" class="select-filter">
+              <option value="poke-ball">Poké Ball (Chuẩn)</option>
+              <option value="great-ball">Super Ball (Great Ball)</option>
+              <option value="ultra-ball">Hyper Ball (Ultra Ball)</option>
+              <option value="master-ball">Master Ball (100% bắt trúng)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Quả Mọng (Berry Buff)</label>
+            <select id="calc-catch-berry" class="select-filter">
+              <option value="1">Không dùng quả mọng (1.0x)</option>
+              <option value="1.25">Baie Framby / Razz Berry (1.25x)</option>
+              <option value="1.5">Baie Framby Dorée / Golden Razz (1.50x)</option>
+            </select>
+          </div>
+          <div class="calc-result">
+            <div style="font-size:0.8rem;color:var(--text-muted);">TỶ LỆ BẮT THÀNH CÔNG (4 RUNG)</div>
+            <div class="result-big" id="calc-catch-rate-result">--%</div>
+            <div style="font-size:0.75rem;color:var(--text-muted);margin-top:0.5rem;" id="calc-catch-breakdown"></div>
+          </div>
+        </div>
+
+        <!-- Damage Calculator -->
+        <div class="calc-card">
+          <h3>⚔️ Máy tính Sát thương Trận đấu (Battle Damage Calculator)</h3>
+          <p style="color:var(--text-muted);font-size:0.8rem;margin-bottom:1rem;">Dựa trên công thức <code>oe(l, g, I, J, ue, lt)</code> của game engine.</p>
+          <div class="form-group">
+            <label>Bên Tấn công (Attacker)</label>
+            <select id="calc-dmg-atk" class="select-filter"></select>
+          </div>
+          <div class="form-group">
+            <label>Cấp độ Kẻ tấn công (Lv 1 - 100)</label>
+            <input type="number" id="calc-dmg-atk-lv" value="50" min="1" max="100">
+          </div>
+          <div class="form-group">
+            <label>Chiêu thức Sử dụng (Move)</label>
+            <select id="calc-dmg-move" class="select-filter"></select>
+          </div>
+          <div class="form-group">
+            <label>Bên Phòng thủ (Defender)</label>
+            <select id="calc-dmg-def" class="select-filter"></select>
+          </div>
+          <div class="form-group">
+            <label>Cấp độ Phòng thủ (Lv 1 - 100)</label>
+            <input type="number" id="calc-dmg-def-lv" value="50" min="1" max="100">
+          </div>
+          <div class="form-group">
+            <label>Thời tiết (Weather)</label>
+            <select id="calc-dmg-weather" class="select-filter">
+              <option value="clear">Bình thường (Clear)</option>
+              <option value="sun">Soleil ardent (Nắng gắt - Lửa 1.1x, Nước 0.9x)</option>
+              <option value="rain">Pluie (Mưa to - Nước 1.1x, Lửa 0.9x)</option>
+              <option value="sand">Tempête de sable (Bão cát)</option>
+              <option value="snow">Neige (Bão tuyết - Băng 1.1x)</option>
+            </select>
+          </div>
+          <div class="calc-result">
+            <div style="font-size:0.8rem;color:var(--text-muted);">SÁT THƯƠNG DỰ TÍNH (DAMAGE RANGE)</div>
+            <div class="result-big" id="calc-dmg-result">-- HP</div>
+            <div style="font-size:0.75rem;color:var(--text-muted);margin-top:0.5rem;" id="calc-dmg-breakdown"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 4: UNDERGROUND / SOUTERRAINS -->
+    <section id="tab-underground" class="tab-content">
+      <div class="filter-panel">
+        <h3 style="color:var(--accent);margin-bottom:0.5rem;">Cơ chế Đào Khoáng Souterrains (Sinnoh Underground Mining)</h3>
+        <p style="font-size:0.85rem;color:var(--text-muted);">Hệ thống thám hiểm lòng đất gồm 300 tầng, yêu cầu Huy hiệu Forêt (Forest Badge), mỗi ngày tối đa 8 chuyến với đội hình 3 Pokémon. Pokémon cùng hệ với chủ đề tầng nhận +30% chỉ số.</p>
+      </div>
+
+      <div class="loot-band">
+        <h4>Bảng Tầng và Phần thưởng Tài nguyên (Loot Bands)</h4>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Khoảng tầng (Floors)</th>
+                <th>Tiền thưởng (Money)</th>
+                <th>Mảnh sự kiện (Shards)</th>
+                <th>Cấp quái (Enemy Lv)</th>
+                <th>Vật phẩm rớt chính (Drop Items)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Tầng 1 - 24</td>
+                <td>150 🪙</td>
+                <td>1 💎</td>
+                <td>Lv 30 - 46</td>
+                <td>Money, Shards, Exp Candy S, Geode 0 (3.2%)</td>
+              </tr>
+              <tr>
+                <td>Tầng 25 - 49</td>
+                <td>300 🪙</td>
+                <td>1 💎</td>
+                <td>Lv 47 - 64</td>
+                <td>Exp Candy M, Đá tiến hóa thế hệ 1-2, Geode 1 (2.8%)</td>
+              </tr>
+              <tr>
+                <td>Tầng 50 - 74</td>
+                <td>450 🪙</td>
+                <td>1 💎</td>
+                <td>Lv 65 - 81</td>
+                <td>Super Bonbon (Rare Candy 6%), Geode 1/2, Sinnoh Items</td>
+              </tr>
+              <tr>
+                <td>Tầng 75 - 99</td>
+                <td>600 🪙</td>
+                <td>1 💎</td>
+                <td>Lv 82 - 99</td>
+                <td>Hóa thạch Pokémon (Fossil 2%), Plaque Arceus (0.6%)</td>
+              </tr>
+              <tr>
+                <td>Tầng 100 - 149</td>
+                <td>800 🪙</td>
+                <td>2 💎</td>
+                <td>Lv 100 (Stat boost)</td>
+                <td>Plaque Arceus (1.2%), Geode 2/3, Baie Frista (Starf Berry 2%)</td>
+              </tr>
+              <tr>
+                <td>Tầng 150 - 300</td>
+                <td>1,000 🪙</td>
+                <td>2 💎</td>
+                <td>Lv 100 (+0.7%/tầng)</td>
+                <td>Tỷ lệ Geode Huyền thoại cao nhất, Full 16 Phiến đá Arceus</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="loot-band">
+        <h4>16 Phiến đá Nguyên tố Arceus (Arceus Elemental Plates)</h4>
+        <p style="font-size:0.8rem;color:var(--text-muted);margin-bottom:0.75rem;">Khi đào được phiến đá, Arceus sẽ chuyển thành hệ tương ứng và chiêu Judgment biến đổi thành hệ đó.</p>
+        <div class="chip-row" id="plates-container">
+          <!-- Rendered by JS -->
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- DETAIL MODAL -->
+  <div class="modal-overlay" id="detail-modal">
+    <div class="modal-content">
+      <button class="close-modal" id="modal-close">&times;</button>
+      <div class="modal-header">
+        <div class="modal-sprites">
+          <div class="sprite-frame">
+            <img id="modal-img-normal" class="fallback-img" alt="" style="max-width:96px;max-height:96px;image-rendering:pixelated;object-fit:contain;margin-bottom:4px;">
+            <canvas id="modal-canvas-normal" class="poke-canvas"></canvas>
+            <span>Bình thường</span>
+          </div>
+          <div class="sprite-frame">
+            <img id="modal-img-shiny" class="fallback-img" alt="" style="max-width:96px;max-height:96px;image-rendering:pixelated;object-fit:contain;margin-bottom:4px;">
+            <canvas id="modal-canvas-shiny" class="poke-canvas"></canvas>
+            <span style="color:#f5c518;">✨ Shiny</span>
+          </div>
+        </div>
+        <div class="modal-info">
+          <h2 id="modal-title">Pokemon</h2>
+          <div class="sub-meta" id="modal-meta">#001 · Seed Pokémon</div>
+          <div class="types" id="modal-types"></div>
+          <div style="font-size:0.8rem;margin-top:0.5rem;color:var(--text-muted);">
+            Tỷ lệ bắt gốc: <b id="modal-catchrate" style="color:var(--accent);">--</b>/255 | 
+            Exp gốc: <b id="modal-baseexp" style="color:var(--success);">--</b>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <h3 style="font-size:1rem;color:var(--accent);margin-bottom:0.5rem;">Chỉ số Cơ bản (Base Stats)</h3>
+      <div class="stat-bars" id="modal-stats"></div>
+
+      <!-- Evolution -->
+      <h3 style="font-size:1rem;color:var(--accent);margin:1.2rem 0 0.5rem 0;">Tiến hóa (Evolutions)</h3>
+      <div id="modal-evos" style="font-size:0.85rem;color:var(--text-muted);">Không có thông tin tiến hóa.</div>
+
+      <!-- Learnset -->
+      <h3 style="font-size:1rem;color:var(--accent);margin:1.2rem 0 0.5rem 0;">Bộ Chiêu thức Học theo Cấp (Learnset)</h3>
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Cấp học</th>
+              <th>Chiêu thức</th>
+              <th>Hệ</th>
+              <th>Loại</th>
+              <th>Sức mạnh</th>
+              <th>Chính xác</th>
+            </tr>
+          </thead>
+          <tbody id="modal-learnset"></tbody>
+        </table>
+      </div>
+
+      <!-- Habitats -->
+      <h3 style="font-size:1rem;color:var(--accent);margin:1.2rem 0 0.5rem 0;">Vị trí Xuất hiện trong Game (Habitats & Encounters)</h3>
+      <div id="modal-habitats" style="font-size:0.85rem;color:var(--text-muted);">Chưa tìm thấy khu vực spawn hoang dã.</div>
+    </div>
+  </div>
+
+  <script>
+    // State
+    let pokedex = [];
+    let moves = {};
+    let evolutions = {};
+    let habitats = {};
+    let formsData = {};
+    let mechanics = {};
+    let showShiny = false;
+    let currentFilterGen = 'all';
+    let currentAnimMode = 'Idle'; // 'Idle' or 'Walk'
+    let currentScale = 2;
+
+    // Tabs
+    document.querySelectorAll('.nav-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById(`tab-${btn.dataset.tab}`).classList.add('active');
+      });
+    });
+
+    // Load Data
+    async function init() {
+      try {
+        const [pRes, mRes, eRes, hRes, fRes, mecRes] = await Promise.all([
+          fetch('/data/pokedex.json').then(r => r.json()),
+          fetch('/data/moves.json').then(r => r.json()),
+          fetch('/data/evolutions.json').then(r => r.json()),
+          fetch('/data/habitats.json').then(r => r.json()),
+          fetch('/data/forms.json').then(r => r.json()),
+          fetch('/data/mechanics.json').then(r => r.json())
+        ]);
+
+        pokedex = pRes;
+        moves = mRes;
+        evolutions = eRes;
+        habitats = hRes;
+        formsData = fRes;
+        mechanics = mecRes;
+
+        // Populate forms into pokedex if not present
+        if (formsData.forms) {
+          formsData.forms.forEach(f => {
+            const baseMon = pokedex.find(p => p.id === f.base);
+            if (baseMon && !pokedex.some(p => p.id === f.id)) {
+              pokedex.push({
+                ...baseMon,
+                id: f.id,
+                num: f.base,
+                name: `${baseMon.name} (${f.form})`,
+                types: f.types,
+                stats: f.stats || baseMon.stats,
+                isForm: true
+              });
+            }
+          });
+        }
+        if (formsData.specials) {
+          formsData.specials.forEach(s => {
+            const baseMon = pokedex.find(p => p.id === s.base);
+            if (baseMon && !pokedex.some(p => p.id === s.id)) {
+              pokedex.push({
+                ...baseMon,
+                id: s.id,
+                num: s.base,
+                name: s.name,
+                types: s.types || baseMon.types,
+                isForm: true
+              });
+            }
+          });
+        }
+
+        renderPokedex();
+        renderMoves();
+        populateCalculators();
+        renderPlates();
+        renderSkills();
+      } catch (err) {
+        console.error('Failed to load data files:', err);
+        document.getElementById('mon-grid').innerHTML = `<div style="color:var(--danger);padding:2rem;">Không thể nạp dữ liệu từ thư mục /data/. Hãy đảm bảo đang mở qua server nội bộ (port 8899).<br>Lỗi: ${err.message}</div>`;
+      }
+    }
+
+    // Render Pokedex
+    function renderPokedex() {
+      const search = document.getElementById('poke-search').value.toLowerCase().trim();
+      const type = document.getElementById('type-select').value;
+      const sort = document.getElementById('sort-select').value;
+
+      let filtered = pokedex.filter(p => {
+        const idNum = p.num || p.id;
+        // Gen filter
+        if (currentFilterGen === 'kanto' && (idNum < 1 || idNum > 151 || p.isForm)) return false;
+        if (currentFilterGen === 'johto' && (idNum < 152 || idNum > 251 || p.isForm)) return false;
+        if (currentFilterGen === 'hoenn' && (idNum < 252 || idNum > 386 || p.isForm)) return false;
+        if (currentFilterGen === 'sinnoh' && (idNum < 387 || idNum > 493 || p.isForm)) return false;
+        if (currentFilterGen === 'unova' && (idNum < 494 || idNum > 649 || p.isForm)) return false;
+        if (currentFilterGen === 'kalos' && (idNum < 650 || idNum > 721 || p.isForm)) return false;
+        if (currentFilterGen === 'alola' && (idNum < 722 || idNum > 809 || p.isForm)) return false;
+        if (currentFilterGen === 'galar' && (idNum < 810 || idNum > 905 || p.isForm)) return false;
+        if (currentFilterGen === 'paldea' && (idNum < 906 || idNum > 1025 || p.isForm)) return false;
+        if (currentFilterGen === 'forms' && !p.isForm) return false;
+        if (currentFilterGen === 'legendary' && !p.legendary && !p.mythical) return false;
+
+        // Type filter
+        if (type && !p.types.includes(type)) return false;
+
+        // Search text
+        if (search) {
+          const matchName = p.name.toLowerCase().includes(search);
+          const matchId = String(p.id).includes(search) || String(p.num).includes(search);
+          const matchType = p.types.some(t => t.toLowerCase().includes(search));
+          if (!matchName && !matchId && !matchType) return false;
+        }
+        return true;
+      });
+
+      // Sorting
+      filtered.sort((a, b) => {
+        if (sort === 'id-asc') return a.id - b.id;
+        if (sort === 'id-desc') return b.id - a.id;
+        if (sort === 'name-asc') return a.name.localeCompare(b.name);
+        if (sort === 'bst-desc') {
+          const bstA = Object.values(a.stats || {}).reduce((s, v) => s + v, 0);
+          const bstB = Object.values(b.stats || {}).reduce((s, v) => s + v, 0);
+          return bstB - bstA;
+        }
+        return a.id - b.id;
+      });
+
+      const grid = document.getElementById('mon-grid');
+      let cardsHtml = filtered.slice(0, 150).map(p => {
+        const bst = Object.values(p.stats || {}).reduce((s, v) => s + v, 0);
+        let rarityHtml = '';
+        if (p.mythical) rarityHtml = '<span class="rarity-badge rarity-mythic">Mythic</span>';
+        else if (p.legendary) rarityHtml = '<span class="rarity-badge rarity-legend">Legend</span>';
+        else if (p.isForm) rarityHtml = '<span class="rarity-badge rarity-form">Form</span>';
+
+        const spriteSrc = showShiny 
+          ? `assets/pokemon/art/shiny/${p.id}.gif` 
+          : `assets/pokemon/art/${p.id}.gif`;
+        const stillFallback = showShiny
+          ? `assets/pokemon/art/shiny/still/${p.id}.png`
+          : `assets/pokemon/art/still/${p.id}.png`;
+        const miniFallback = showShiny
+          ? `assets/pokemon/shiny/${p.id}.png`
+          : `assets/pokemon/${p.id}.png`;
+
+        return `
+          <div class="mon-card" onclick="openDetail(${p.id})">
+            <span class="dex-num">#${p.num || p.id}</span>
+            ${rarityHtml}
+            <div class="sprite-box">
+              <img class="fallback-img" src="${spriteSrc}" alt="${p.name}" onerror="this.onerror=null;this.src='${stillFallback}';this.onerror=()=>{this.src='${miniFallback}'};">
+              <canvas class="poke-canvas" data-id="${p.id}" data-num="${p.num || p.id}" data-form="${p.isForm ? ((p.key || '').split('-').slice(1).join('-') || 'mega') : ''}"></canvas>
+            </div>
+            <div class="mon-name">${p.name}</div>
+            <div class="types">
+              ${p.types.map(t => `<span class="type-badge type-${t}">${t}</span>`).join('')}
+            </div>
+            <div class="bst-row">BST: <b>${bst}</b> | Catch: <b>${p.captureRate || 3}</b></div>
+          </div>
+        `;
+      }).join('');
+
+      if (filtered.length > 150) {
+        cardsHtml += `<div style="grid-column:1/-1;text-align:center;padding:1rem;color:var(--text-muted);font-size:0.85rem;">Hiển thị 150 / ${filtered.length} Pokémon. Dùng ô tìm kiếm để lọc chi tiết.</div>`;
+      }
+      grid.innerHTML = cardsHtml;
+
+      // Attach Canvas Sprite Players to all visible Pokemon
+      grid.querySelectorAll('.poke-canvas').forEach(canvas => {
+        const num = parseInt(canvas.dataset.num, 10);
+        const formKey = canvas.dataset.form || null;
+        const player = CanvasPokemonEngine.attachPlayer(canvas, {
+          dex: num,
+          formKey: formKey,
+          isShiny: showShiny,
+          anim: currentAnimMode,
+          scale: currentScale
+        });
+        player.onFirstDraw = () => {
+          const fallback = canvas.parentElement ? canvas.parentElement.querySelector('.fallback-img') : null;
+          if (fallback) fallback.style.display = 'none';
+        };
+      });
+    }
+
+    // Detail Modal
+    window.openDetail = function(id) {
+      const mon = pokedex.find(p => p.id === id);
+      if (!mon) return;
+
+      document.getElementById('modal-title').textContent = mon.name;
+      document.getElementById('modal-meta').textContent = `#${mon.num || mon.id} · ${mon.genus || 'Pokémon'}`;
+      document.getElementById('modal-types').innerHTML = mon.types.map(t => `<span class="type-badge type-${t}">${t}</span>`).join('');
+      document.getElementById('modal-catchrate').textContent = mon.captureRate || 3;
+      document.getElementById('modal-baseexp').textContent = mon.baseExp || 60;
+
+      // Sprites with animated Canvas player & instant fallback
+      const normImg = document.getElementById('modal-img-normal');
+      if (normImg) {
+        normImg.style.display = 'block';
+        normImg.src = `assets/pokemon/art/${mon.id}.gif`;
+        normImg.onerror = () => { 
+          normImg.src = `assets/pokemon/art/still/${mon.id}.png`; 
+          normImg.onerror = () => { normImg.src = `assets/pokemon/${mon.id}.png`; };
+        };
+      }
+      const cNorm = document.getElementById('modal-canvas-normal');
+      if (cNorm) {
+        const p1 = CanvasPokemonEngine.attachPlayer(cNorm, { dex: mon.num || mon.id, isShiny: false, anim: currentAnimMode, scale: 2.5 });
+        p1.onFirstDraw = () => { if (normImg) normImg.style.display = 'none'; };
+      }
+
+      const shinyImg = document.getElementById('modal-img-shiny');
+      if (shinyImg) {
+        shinyImg.style.display = 'block';
+        shinyImg.src = `assets/pokemon/art/shiny/${mon.id}.gif`;
+        shinyImg.onerror = () => { 
+          shinyImg.src = `assets/pokemon/art/shiny/still/${mon.id}.png`; 
+          shinyImg.onerror = () => { shinyImg.src = `assets/pokemon/shiny/${mon.id}.png`; };
+        };
+      }
+      const cShiny = document.getElementById('modal-canvas-shiny');
+      if (cShiny) {
+        const p2 = CanvasPokemonEngine.attachPlayer(cShiny, { dex: mon.num || mon.id, isShiny: true, anim: currentAnimMode, scale: 2.5 });
+        p2.onFirstDraw = () => { if (shinyImg) shinyImg.style.display = 'none'; };
+      }
+
+      // Stats
+      const statLabels = { hp: 'HP', atk: 'Attack', def: 'Defense', spa: 'Sp. Atk', spd: 'Sp. Def', spe: 'Speed' };
+      const statColors = { hp: '#ff5959', atk: '#f5ac78', def: '#fae078', spa: '#9db7f5', spd: '#a7db8d', spe: '#fa92b2' };
+      const stats = mon.stats || { hp: 50, atk: 50, def: 50, spa: 50, spd: 50, spe: 50 };
+      const bst = Object.values(stats).reduce((s, v) => s + v, 0);
+
+      let statsHtml = Object.entries(statLabels).map(([k, label]) => {
+        const val = stats[k] || 0;
+        const pct = Math.min(100, Math.round((val / 200) * 100));
+        return `
+          <div class="stat-row">
+            <span>${label}</span>
+            <b>${val}</b>
+            <div class="stat-fill-track">
+              <div class="stat-fill" style="width:${pct}%;background:${statColors[k]};"></div>
+            </div>
+          </div>
+        `;
+      }).join('');
+      statsHtml += `<div style="text-align:right;font-size:0.85rem;color:var(--text-muted);margin-top:4px;">Tổng điểm chỉ số (BST): <b style="color:white;">${bst}</b></div>`;
+      document.getElementById('modal-stats').innerHTML = statsHtml;
+
+      // Evolutions
+      const evoList = evolutions[mon.num || mon.id] || [];
+      if (evoList.length > 0) {
+        document.getElementById('modal-evos').innerHTML = evoList.map(ev => {
+          const target = pokedex.find(p => p.id === ev.to);
+          const targetName = target ? target.name : `#${ev.to}`;
+          let req = 'Điều kiện đặc biệt';
+          if (ev.level) req = `Đạt cấp Lv ${ev.level}`;
+          else if (ev.item) req = `Dùng đá/vật phẩm: ${ev.item}`;
+          else if (ev.happiness) req = `Độ thân thiết (Happiness)`;
+          else if (ev.trade) req = `Trao đổi (Trade)`;
+          return `<div>➡️ Tiến hóa thành <b>${targetName}</b> (${req})</div>`;
+        }).join('');
+      } else {
+        document.getElementById('modal-evos').innerHTML = 'Pokémon này không có cấp tiến hóa tiếp theo.';
+      }
+
+      // Learnset
+      const learn = mon.learn || [];
+      document.getElementById('modal-learnset').innerHTML = learn.map(([lvl, mvKey]) => {
+        const m = moves[mvKey] || { name: mvKey, type: 'normal', cat: 'status', power: 0, acc: 100 };
+        return `
+          <tr>
+            <td><b>Lv ${lvl}</b></td>
+            <td><b>${m.name || mvKey}</b></td>
+            <td><span class="type-badge type-${m.type}">${m.type}</span></td>
+            <td><span style="text-transform:capitalize;font-size:0.75rem;">${m.cat}</span></td>
+            <td>${m.power || '--'}</td>
+            <td>${m.acc ? m.acc + '%' : '--'}</td>
+          </tr>
+        `;
+      }).join('') || '<tr><td colspan="6" style="text-align:center;">Không có chiêu thức học theo cấp.</td></tr>';
+
+      // Habitats
+      const foundIn = [];
+      for (const [routeKey, spawns] of Object.entries(habitats)) {
+        if (Array.isArray(spawns)) {
+          const s = spawns.find(item => item[0] === (mon.num || mon.id));
+          if (s) foundIn.push({ route: routeKey, minLv: s[1], maxLv: s[2], rate: s[3] });
+        }
+      }
+      if (foundIn.length > 0) {
+        document.getElementById('modal-habitats').innerHTML = foundIn.slice(0, 10).map(f => 
+          `<div>📍 <b>${f.route}</b> - Lv ${f.minLv}-${f.maxLv} (Tỷ lệ xuất hiện: <b>${f.rate}%</b>)</div>`
+        ).join('') + (foundIn.length > 10 ? `<div style="font-size:0.75rem;margin-top:4px;">...và ${foundIn.length - 10} khu vực khác.</div>` : '');
+      } else {
+        document.getElementById('modal-habitats').innerHTML = 'Pokémon huyền thoại, hiếm hoặc chỉ nhận qua Sự kiện, Ấp trứng hoặc Casino.';
+      }
+
+      document.getElementById('detail-modal').classList.add('active');
+    };
+
+    document.getElementById('modal-close').addEventListener('click', () => {
+      document.getElementById('detail-modal').classList.remove('active');
+    });
+
+    // Filter Listeners
+    document.getElementById('poke-search').addEventListener('input', renderPokedex);
+    document.getElementById('type-select').addEventListener('change', renderPokedex);
+    document.getElementById('sort-select').addEventListener('change', renderPokedex);
+
+    document.querySelectorAll('.chip[data-gen]').forEach(chip => {
+      chip.addEventListener('click', () => {
+        document.querySelectorAll('.chip[data-gen]').forEach(c => c.classList.remove('active'));
+        chip.classList.add('active');
+        currentFilterGen = chip.dataset.gen;
+        renderPokedex();
+      });
+    });
+
+    document.getElementById('anim-toggle-btn').addEventListener('click', function() {
+      currentAnimMode = currentAnimMode === 'Idle' ? 'Walk' : 'Idle';
+      this.textContent = currentAnimMode === 'Idle' ? '🧘 Động tác: Đứng yên (Idle)' : '🏃 Động tác: Đi bộ (Walk)';
+      this.classList.toggle('active', currentAnimMode === 'Walk');
+      renderPokedex();
+    });
+
+    document.getElementById('scale-toggle-btn').addEventListener('click', function() {
+      currentScale = currentScale === 2 ? 3 : currentScale === 3 ? 1 : 2;
+      this.textContent = '🔍 Tỷ lệ: ' + currentScale + 'x';
+      renderPokedex();
+    });
+
+    document.getElementById('shiny-toggle-btn').addEventListener('click', function() {
+      showShiny = !showShiny;
+      this.classList.toggle('active', showShiny);
+      renderPokedex();
+    });
+
+    // Render Moves
+    function renderMoves() {
+      const typeSelect = document.getElementById('move-type-select');
+      const types = [...new Set(Object.values(moves).map(m => m.type))].filter(Boolean).sort();
+      typeSelect.innerHTML = '<option value="">Tất cả Hệ</option>' + types.map(t => `<option value="${t}">${t.toUpperCase()}</option>`).join('');
+
+      function updateTable() {
+        const search = document.getElementById('move-search').value.toLowerCase().trim();
+        const type = typeSelect.value;
+        const cat = document.getElementById('move-cat-select').value;
+
+        const entries = Object.entries(moves).filter(([key, m]) => {
+          if (type && m.type !== type) return false;
+          if (cat && m.cat !== cat) return false;
+          if (search && !key.toLowerCase().includes(search) && !(m.name && m.name.toLowerCase().includes(search))) return false;
+          return true;
+        });
+
+        document.getElementById('moves-tbody').innerHTML = entries.slice(0, 150).map(([key, m]) => `
+          <tr>
+            <td><code>${key}</code></td>
+            <td><b>${m.name || key}</b></td>
+            <td><span class="type-badge type-${m.type}">${m.type}</span></td>
+            <td><span style="text-transform:capitalize;">${m.cat}</span></td>
+            <td><b>${m.power || '--'}</b></td>
+            <td>${m.acc ? m.acc + '%' : '--'}</td>
+          </tr>
+        `).join('');
+      }
+
+      document.getElementById('move-search').addEventListener('input', updateTable);
+      typeSelect.addEventListener('change', updateTable);
+      document.getElementById('move-cat-select').addEventListener('change', updateTable);
+      updateTable();
+    }
+
+    // Populate Calculators
+    function populateCalculators() {
+      const catchSelect = document.getElementById('calc-catch-mon');
+      const atkSelect = document.getElementById('calc-dmg-atk');
+      const defSelect = document.getElementById('calc-dmg-def');
+      const moveSelect = document.getElementById('calc-dmg-move');
+
+      pokedex.forEach(p => {
+        const opt = `<option value="${p.id}">${p.name} (#${p.num || p.id})</option>`;
+        catchSelect.innerHTML += opt;
+        atkSelect.innerHTML += opt;
+        defSelect.innerHTML += opt;
+      });
+
+      Object.entries(moves).forEach(([k, m]) => {
+        if (m.power > 0) {
+          moveSelect.innerHTML += `<option value="${k}">${m.name || k} (${m.type} | Pow: ${m.power})</option>`;
+        }
+      });
+
+      // Default values
+      catchSelect.value = '25'; // Pikachu
+      atkSelect.value = '6';    // Charizard
+      defSelect.value = '3';    // Venusaur
+      moveSelect.value = 'flamethrower';
+
+      catchSelect.addEventListener('change', calculateCatch);
+      document.getElementById('calc-catch-ball').addEventListener('change', calculateCatch);
+      document.getElementById('calc-catch-berry').addEventListener('change', calculateCatch);
+
+      atkSelect.addEventListener('change', calculateDamage);
+      document.getElementById('calc-dmg-atk-lv').addEventListener('input', calculateDamage);
+      defSelect.addEventListener('change', calculateDamage);
+      document.getElementById('calc-dmg-def-lv').addEventListener('input', calculateDamage);
+      moveSelect.addEventListener('change', calculateDamage);
+      document.getElementById('calc-dmg-weather').addEventListener('change', calculateDamage);
+
+      calculateCatch();
+      calculateDamage();
+    }
+
+    function calculateCatch() {
+      const monId = +document.getElementById('calc-catch-mon').value;
+      const ball = document.getElementById('calc-catch-ball').value;
+      const berry = +document.getElementById('calc-catch-berry').value;
+      const mon = pokedex.find(p => p.id === monId);
+      if (!mon) return;
+
+      if (ball === 'master-ball') {
+        document.getElementById('calc-catch-rate-result').textContent = '100.0%';
+        document.getElementById('calc-catch-breakdown').textContent = 'Master Ball đảm bảo bắt thành công 100% trong mọi tình huống.';
+        return;
+      }
+
+      // Formula from app.js:
+      // J = (mon.legendary || mon.mythical ? 3 : mon.captureRate) * CAPTURE_BONUS / 255
+      const CAPTURE_BONUS = 0.6;
+      const CAPTURE_MAX = 0.6;
+      const baseRate = (mon.legendary || mon.mythical) ? 3 : (mon.captureRate || 45);
+      const J = (baseRate * CAPTURE_BONUS) / 255;
+      const P = Math.min(CAPTURE_MAX * berry, J * berry);
+
+      // Shakes check
+      const shakeProb = Math.pow(P, 0.25);
+      const finalCatchChance = Math.pow(shakeProb, 4) * 100;
+
+      document.getElementById('calc-catch-rate-result').textContent = finalCatchChance.toFixed(1) + '%';
+      document.getElementById('calc-catch-breakdown').textContent = 
+        `Xác suất mỗi lần rung cầu: ${(shakeProb * 100).toFixed(1)}% | Cơ số bắt gốc: ${baseRate}/255 | Buff: ${berry}x`;
+    }
+
+    function calculateDamage() {
+      const atkId = +document.getElementById('calc-dmg-atk').value;
+      const defId = +document.getElementById('calc-dmg-def').value;
+      const atkLv = +document.getElementById('calc-dmg-atk-lv').value || 50;
+      const defLv = +document.getElementById('calc-dmg-def-lv').value || 50;
+      const mvKey = document.getElementById('calc-dmg-move').value;
+      const weather = document.getElementById('calc-dmg-weather').value;
+
+      const atkMon = pokedex.find(p => p.id === atkId);
+      const defMon = pokedex.find(p => p.id === defId);
+      const move = moves[mvKey];
+      if (!atkMon || !defMon || !move) return;
+
+      const isPhys = move.cat === 'phys';
+      const atkStat = isPhys ? (atkMon.stats?.atk || 50) : (atkMon.stats?.spa || 50);
+      const defStat = isPhys ? (defMon.stats?.def || 50) : (defMon.stats?.spd || 50);
+
+      // STAB
+      const stab = atkMon.types.includes(move.type) ? 1.5 : 1.0;
+
+      // Weather mult
+      let weatherMult = 1.0;
+      if (weather === 'sun') {
+        if (move.type === 'fire') weatherMult = 1.1;
+        if (move.type === 'water') weatherMult = 0.9;
+      } else if (weather === 'rain') {
+        if (move.type === 'water') weatherMult = 1.1;
+        if (move.type === 'fire') weatherMult = 0.9;
+      }
+
+      // Level Gap
+      const levelGap = Math.pow(1.06, atkLv - defLv);
+
+      // Base damage:
+      const la = ((2 * atkLv / 5 + 2) * move.power * atkStat / defStat / 50 + 2);
+      const minDmg = Math.max(1, Math.floor(la * stab * weatherMult * levelGap * 0.85));
+      const maxDmg = Math.max(1, Math.floor(la * stab * weatherMult * levelGap * 1.00));
+      const critDmg = Math.max(1, Math.floor(maxDmg * 1.5));
+
+      document.getElementById('calc-dmg-result').textContent = `${minDmg} - ${maxDmg} HP`;
+      document.getElementById('calc-dmg-breakdown').textContent = 
+        `STAB: ${stab}x | Thời tiết: ${weatherMult}x | Level Gap: ${levelGap.toFixed(2)}x | Bạo kích (Crit): ${critDmg} HP`;
+    }
+
+    function renderPlates() {
+      const plates = [
+        ["fire","Plaque Flamme","Lửa"],
+        ["water","Plaque Hydro","Nước"],
+        ["grass","Plaque Herbe","Cỏ"],
+        ["electric","Plaque Volt","Điện"],
+        ["ice","Plaque Glace","Băng"],
+        ["fighting","Plaque Poing","Giác đấu"],
+        ["poison","Plaque Toxique","Độc"],
+        ["ground","Plaque Terre","Đất"],
+        ["flying","Plaque Ciel","Bay"],
+        ["psychic","Plaque Esprit","Tâm linh"],
+        ["bug","Plaque Insecte","Côn trùng"],
+        ["rock","Plaque Roc","Đá"],
+        ["ghost","Plaque Fantôme","Ma"],
+        ["dragon","Plaque Draco","Rồng"],
+        ["dark","Plaque Ombre","Bóng tối"],
+        ["steel","Plaque Fer","Thép"]
+      ];
+      document.getElementById('plates-container').innerHTML = plates.map(([t, fr, vn]) => `
+        <span class="chip active">
+          <span class="type-badge type-${t}">${t}</span>
+          <b>${fr}</b> (${vn})
+        </span>
+      `).join('');
+    }
+
+    function renderSkills() {
+      const skills = [
+        { key: "dynamax_cannon", name: "Canon Dynamax (Dynamax Cannon)", type: "dragon", cat: "spec", power: 100, desc: "Tuyệt kỹ tiêu diệt mục tiêu Dynamax của Eternatus." },
+        { key: "eternabeam", name: "Laser Infinimax (Eternabeam)", type: "dragon", cat: "spec", power: 160, desc: "Chiêu thức hủy diệt mạnh nhất của Eternatus." },
+        { key: "dragon_ascent", name: "Draco-Ascension (Dragon Ascent)", type: "flying", cat: "phys", power: 120, desc: "Chiêu thức thức tỉnh Mega Rayquaza từ thượng tầng khí quyển." },
+        { key: "origin_pulse", name: "Onde Originelle (Origin Pulse)", type: "water", cat: "spec", power: 110, desc: "Sóng xung kích khởi nguyên biển sâu của Primal Kyogre." },
+        { key: "precipice_blades", name: "Lames Pangéennes (Precipice Blades)", type: "ground", cat: "phys", power: 120, desc: "Lưỡi gươm kiến tạo địa tầng của Primal Groudon." },
+        { key: "psystrike", name: "Frappe Psy (Psystrike)", type: "psychic", cat: "spec", power: 100, desc: "Đòn sóng tâm linh công kích thẳng vào thể lực của Mewtwo." },
+        { key: "dark_void", name: "Trou Noir (Dark Void)", type: "dark", cat: "status", power: 0, desc: "Cơn ác mộng kéo mọi kẻ địch vào giấc ngủ vĩnh hằng của Darkrai." },
+        { key: "judgment", name: "Jugement (Judgment)", type: "normal", cat: "spec", power: 100, desc: "Chiêu thức phán xét chuyển đổi theo 16 phiến đá nguyên tố của Đấng Sáng Tạo Arceus." },
+        { key: "roar_of_time", name: "Hurle-Temps (Roar of Time)", type: "dragon", cat: "spec", power: 150, desc: "Tiếng gầm bẻ cong thời gian không gian của Dialga." },
+        { key: "spacial_rend", name: "Spatio-Rift (Spacial Rend)", type: "dragon", cat: "spec", power: 100, desc: "Nhát chém rách toạc cấu trúc không gian của Palkia." },
+        { key: "shadow_force", name: "Revenant (Shadow Force)", type: "ghost", cat: "phys", power: 120, desc: "Ẩn mình vào bóng tối và tấn công bất chấp mọi phòng ngự của Giratina." },
+        { key: "draco_meteor", name: "Draco-Météore (Draco Meteor)", type: "dragon", cat: "spec", power: 130, desc: "Mưa thiên thạch rồng dội thẳng từ bầu trời." },
+        { key: "leaf_storm", name: "Tempête Verte (Leaf Storm)", type: "grass", cat: "spec", power: 130, desc: "Bão lá bão táp quét sạch diện rộng." },
+        { key: "blizzard", name: "Blizzard (Bão Tuyết)", type: "ice", cat: "spec", power: 110, desc: "Cơn bão băng giá lạnh cực độ." },
+        { key: "earthquake", name: "Séisme (Earthquake)", type: "ground", cat: "phys", power: 100, desc: "Đại địa chấn rung chuyển toàn mặt đất." },
+        { key: "fire_blast", name: "Déflagration (Fire Blast)", type: "fire", cat: "spec", power: 110, desc: "Ngọn lửa nổ tung hình chữ Đại thiêu rụi mục tiêu." },
+        { key: "hydro_pump", name: "Hydrocanon (Hydro Pump)", type: "water", cat: "spec", power: 110, desc: "Pháo nước cực mạnh bắn phá tầm xa." },
+        { key: "thunder_bolt", name: "Tonnerre (Thunderbolt)", type: "electric", cat: "spec", power: 90, desc: "Tia sét thần sấm giáng thẳng vào kẻ thù." },
+        { key: "shadow_ball", name: "Ball'Ombre (Shadow Ball)", type: "ghost", cat: "spec", power: 80, desc: "Quả cầu bóng tối làm suy giảm kháng cự đối thủ." },
+        { key: "psycho_boost", name: "Psycho-Boost", type: "psychic", cat: "spec", power: 140, desc: "Đòn tâm linh tối thượng của Deoxys ngoài không gian." }
+      ];
+
+      const grid = document.getElementById('skills-grid');
+      if (!grid) return;
+      grid.innerHTML = skills.map(s => `
+        <div class="mon-card" style="align-items:flex-start;text-align:left;">
+          <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:0.5rem;width:100%;">
+            <img src="assets/skills/${s.key}.png" alt="${s.name}" style="width:48px;height:48px;object-fit:contain;background:var(--bg-main);border-radius:8px;padding:4px;border:1px solid var(--border-color);" onerror="this.style.display='none'">
+            <div>
+              <div style="font-weight:700;font-size:0.95rem;">${s.name}</div>
+              <div style="margin-top:2px;">
+                <span class="type-badge type-${s.type}">${s.type}</span>
+                <span style="font-size:0.75rem;color:var(--text-muted);margin-left:4px;">Power: <b>${s.power || '--'}</b></span>
+              </div>
+            </div>
+          </div>
+          <p style="font-size:0.8rem;color:var(--text-muted);line-height:1.4;">${s.desc}</p>
+        </div>
+      `).join('');
+    }
+
+    init();
+  </script>
+</body>
+</html>

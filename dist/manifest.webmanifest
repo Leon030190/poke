@@ -1,0 +1,14 @@
+{
+  "name": "Poke'Catch Offline",
+  "short_name": "Poke'Catch",
+  "description": "A private offline Pokémon adventure game.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#12141c",
+  "theme_color": "#12141c",
+  "icons": [
+    {"src": "pwa-icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable"}
+  ]
+}

@@ -1,0 +1,146 @@
+{
+  "constants": {
+    "SAVE_KEY": "gachamon-save-v1",
+    "START_MONEY": 3000,
+    "TEAM_SIZE": 6,
+    "SHINY_RATE": 0.000244140625,
+    "SHINY_STAT_BONUS": 0.1,
+    "MAX_LEVEL": 100,
+    "CRIT_CHANCE": 0.041666666666666664,
+    "CRIT_MULT": 1.5,
+    "LEVEL_GAP_EXPONENT": 1.06,
+    "CAPTURE_BONUS": 0.6,
+    "CAPTURE_MAX": 0.6,
+    "LEGENDARY_CAPTURE_RATE": 3,
+    "NATURE_STAT_BONUS": 0.1,
+    "DRAIN_RATES": {
+      "absorb": 0.25,
+      "mega-drain": 0.25,
+      "giga-drain": 0.25,
+      "leech-life": 0.25,
+      "drain-punch": 0.25,
+      "draining-kiss": 0.5
+    }
+  },
+  "formulas": {
+    "damage": {
+      "formula": "max(1, floor(baseDamage * STAB * typeEff * levelGapMultiplier * critMultiplier * randomVariance))",
+      "details": {
+        "baseDamage": "(2 * attackerLevel / 5 + 2) * movePower * (isPhys ? Atk : SpA) / (isPhys ? Def : SpD) / 50 + 2",
+        "STAB": "attackerTypes.includes(moveType) ? 1.5 : 1.0",
+        "weatherMultiplier": "rain/sun/sand/snow damage boost (1.1x) or penalty (0.9x)",
+        "levelGapMultiplier": "1.06 ** (attackerLevel - defenderLevel)",
+        "critMultiplier": "isCrit ? 1.5 : 1.0",
+        "randomVariance": "0.85 to 1.00 (linear uniform distribution)"
+      }
+    },
+    "catchRate": {
+      "formula": "P = min(CAPTURE_MAX * buff, (rate / 255) * CAPTURE_BONUS * buff)",
+      "shakes": {
+        "shakeProbability": "P ** 0.25",
+        "shakesRolled": "for (let i = 0; i < 4 && Math.random() < shakeProb; i++) shakes++",
+        "successCondition": "shakes === 4 (Master Ball or Roaming catch bypasses standard roll)"
+      },
+      "berryBuffs": {
+        "razz-berry": 1.25,
+        "golden-razz-berry": 1.5
+      }
+    },
+    "underground": {
+      "openBadge": "Forêt",
+      "dailyExpeditions": 8,
+      "teamSize": 3,
+      "totalFloors": 300,
+      "enemyLevelFormula": "min(100, round(30 + (floor - 1) * 0.7))",
+      "overLevelStatMultiplier": "floor > 101 ? 1 + (floor - 101) * 0.007 : 1.0",
+      "themeMatchBonus": "+30% all stats if Pokémon type matches floor theme",
+      "guardianFloorInterval": 10,
+      "guardianStatMultiplier": 2,
+      "lootTiers": [
+        {
+          "floors": [
+            1,
+            24
+          ],
+          "money": 150,
+          "shards": 1
+        },
+        {
+          "floors": [
+            25,
+            49
+          ],
+          "money": 300,
+          "shards": 1
+        },
+        {
+          "floors": [
+            50,
+            74
+          ],
+          "money": 450,
+          "shards": 1
+        },
+        {
+          "floors": [
+            75,
+            99
+          ],
+          "money": 600,
+          "shards": 1
+        },
+        {
+          "floors": [
+            100,
+            149
+          ],
+          "money": 800,
+          "shards": 2
+        },
+        {
+          "floors": [
+            150,
+            300
+          ],
+          "money": 1000,
+          "shards": 2
+        }
+      ]
+    },
+    "worldBoss": {
+      "hpBars": 4,
+      "minHp": 500000,
+      "runsPerDay": 3,
+      "durationSeconds": 60,
+      "catchRate": 0.01,
+      "teamSize": 6
+    },
+    "raid": {
+      "allies": 2,
+      "bots": 6,
+      "bossHpMultiplier": 3.3,
+      "bossPowerMultiplier": 0.7,
+      "weatherBoost": 1.2,
+      "catchRate": 0.01,
+      "pityPulls": 200
+    },
+    "dayNightEvolutions": {
+      "day": [
+        196,
+        113,
+        448,
+        315,
+        413,
+        41301,
+        41302
+      ],
+      "night": [
+        197,
+        461,
+        472,
+        358,
+        414
+      ]
+    }
+  }
+}

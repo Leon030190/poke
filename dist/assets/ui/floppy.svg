@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 12" width="24" height="24" shape-rendering="crispEdges">
+  <!-- Save button (top bar): a 12 px floppy disk, drawn x2 -->
+  <path fill="#1b1b22" d="M0 0h11v1h1v11H0z"/>
+  <path fill="#3d6fd8" d="M1 1h9v1h1v9H1z"/>
+  <path fill="#6f97ea" d="M1 1h1v10H1z"/>
+  <path fill="#c8ccd6" d="M3 1h5v4H3z"/>
+  <path fill="#1b1b22" d="M6 2h1v2H6z"/>
+  <path fill="#f4f5f8" d="M2 6h8v5H2z"/>
+  <path fill="#b8bdc9" d="M3 7h6v1H3zM3 9h6v1H3z"/>
+</svg>

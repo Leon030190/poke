@@ -1,0 +1,722 @@
+{
+  "kanto:Olga": [
+    {
+      "sprite": "lass",
+      "name": "Fillette Zoé",
+      "team": [
+        117,
+        99
+      ]
+    },
+    {
+      "sprite": "acetrainer",
+      "name": "Topdresseur Hugo",
+      "team": [
+        87,
+        119
+      ]
+    },
+    {
+      "sprite": "youngster",
+      "name": "Gamin Jin",
+      "team": [
+        91,
+        80,
+        120
+      ]
+    },
+    {
+      "sprite": "gentleman",
+      "name": "Gentleman Kev",
+      "team": [
+        98,
+        62,
+        121
+      ]
+    }
+  ],
+  "kanto:Aldo": [
+    {
+      "sprite": "sailor",
+      "name": "Marin Hugo",
+      "team": [
+        68,
+        67
+      ]
+    },
+    {
+      "sprite": "supernerd",
+      "name": "Super Nerd Paul",
+      "team": [
+        49,
+        42
+      ]
+    },
+    {
+      "sprite": "hiker",
+      "name": "Montagnard Sacha",
+      "team": [
+        76,
+        51,
+        75
+      ]
+    },
+    {
+      "sprite": "pokemaniac",
+      "name": "Pokémaniac Théo",
+      "team": [
+        95,
+        68,
+        42
+      ]
+    }
+  ],
+  "kanto:Agatha": [
+    {
+      "sprite": "gentleman",
+      "name": "Gentleman Yvon",
+      "team": [
+        110,
+        94
+      ]
+    },
+    {
+      "sprite": "pokemaniac",
+      "name": "Pokémaniac Basile",
+      "team": [
+        77,
+        59
+      ]
+    },
+    {
+      "sprite": "burglar",
+      "name": "Cambrioleur Théo",
+      "team": [
+        78,
+        89,
+        93
+      ]
+    },
+    {
+      "sprite": "twins",
+      "name": "Jumelles Rose & Nina",
+      "team": [
+        38,
+        105,
+        94
+      ]
+    }
+  ],
+  "kanto:Peter": [
+    {
+      "sprite": "beauty",
+      "name": "Canon Iris",
+      "team": [
+        130,
+        111
+      ]
+    },
+    {
+      "sprite": "picnicker",
+      "name": "Pique-nique Maëlle",
+      "team": [
+        119,
+        128
+      ]
+    },
+    {
+      "sprite": "burglar",
+      "name": "Cambrioleur Noé",
+      "team": [
+        34,
+        33,
+        31
+      ]
+    },
+    {
+      "sprite": "psychic-f",
+      "name": "Kinésiste Iris",
+      "team": [
+        80,
+        103,
+        102
+      ]
+    }
+  ],
+  "kanto:Blue": [
+    {
+      "sprite": "pokemaniac",
+      "name": "Pokémaniac Tom",
+      "team": [
+        76,
+        67
+      ]
+    },
+    {
+      "sprite": "supernerd",
+      "name": "Super Nerd Sacha",
+      "team": [
+        42,
+        49
+      ]
+    },
+    {
+      "sprite": "pokemaniac",
+      "name": "Pokémaniac Paul",
+      "team": [
+        130,
+        132,
+        68
+      ]
+    },
+    {
+      "sprite": "acetrainer-f",
+      "name": "Topdresseuse Ambre",
+      "team": [
+        22,
+        34,
+        75
+      ]
+    }
+  ],
+  "johto:Clément": [
+    {
+      "sprite": "gentleman",
+      "name": "Gentleman Paul",
+      "team": [
+        178,
+        195
+      ]
+    },
+    {
+      "sprite": "sage",
+      "name": "Sage Marc",
+      "team": [
+        71,
+        70
+      ]
+    },
+    {
+      "sprite": "gentleman",
+      "name": "Gentleman Paul",
+      "team": [
+        166,
+        18,
+        38
+      ]
+    },
+    {
+      "sprite": "acetrainer-f",
+      "name": "Topdresseuse Ambre",
+      "team": [
+        234,
+        58,
+        62
+      ]
+    }
+  ],
+  "johto:Koga": [
+    {
+      "sprite": "acetrainer-f",
+      "name": "Topdresseuse Ambre",
+      "team": [
+        73,
+        162
+      ]
+    },
+    {
+      "sprite": "camper",
+      "name": "Campeur Jin",
+      "team": [
+        15,
+        154
+      ]
+    },
+    {
+      "sprite": "youngster",
+      "name": "Gamin Paul",
+      "team": [
+        12,
+        18,
+        55
+      ]
+    },
+    {
+      "sprite": "beauty",
+      "name": "Canon Léa",
+      "team": [
+        103,
+        180,
+        45
+      ]
+    }
+  ],
+  "johto:Aldo": [
+    {
+      "sprite": "beauty",
+      "name": "Canon Lina",
+      "team": [
+        20,
+        169
+      ]
+    },
+    {
+      "sprite": "camper",
+      "name": "Campeur Rémi",
+      "team": [
+        119,
+        76
+      ]
+    },
+    {
+      "sprite": "twins",
+      "name": "Jumelles Nina & Inès",
+      "team": [
+        181,
+        195,
+        57
+      ]
+    },
+    {
+      "sprite": "pokefan",
+      "name": "Pokéfan Basile",
+      "team": [
+        27,
+        68,
+        130
+      ]
+    }
+  ],
+  "johto:Marion": [
+    {
+      "sprite": "youngster",
+      "name": "Gamin Sacha",
+      "team": [
+        18,
+        164
+      ]
+    },
+    {
+      "sprite": "supernerd",
+      "name": "Super Nerd Rémi",
+      "team": [
+        110,
+        168
+      ]
+    },
+    {
+      "sprite": "gentleman",
+      "name": "Gentleman Marc",
+      "team": [
+        130,
+        234,
+        15
+      ]
+    },
+    {
+      "sprite": "sailor",
+      "name": "Marin Jin",
+      "team": [
+        55,
+        54,
+        62
+      ]
+    }
+  ],
+  "johto:Peter": [
+    {
+      "sprite": "kimonogirl",
+      "name": "Kimono Nina",
+      "team": [
+        217,
+        124
+      ]
+    },
+    {
+      "sprite": "policeman",
+      "name": "Policier Paul",
+      "team": [
+        169,
+        148
+      ]
+    },
+    {
+      "sprite": "pokemaniac",
+      "name": "Pokémaniac Kev",
+      "team": [
+        149,
+        28,
+        225
+      ]
+    },
+    {
+      "sprite": "hiker",
+      "name": "Montagnard Max",
+      "team": [
+        112,
+        76,
+        75
+      ]
+    }
+  ],
+  "hoenn:Damien": [
+    {
+      "sprite": "twins",
+      "name": "Jumelles Léa & Maëlle",
+      "team": [
+        352,
+        264
+      ]
+    },
+    {
+      "sprite": "swimmer",
+      "name": "Nageur Victor",
+      "team": [
+        279,
+        184
+      ]
+    },
+    {
+      "sprite": "swimmer-f",
+      "name": "Nageuse Inès",
+      "team": [
+        350,
+        349,
+        130
+      ]
+    },
+    {
+      "sprite": "lady",
+      "name": "Mademoiselle Lucie",
+      "team": [
+        73,
+        340,
+        118
+      ]
+    }
+  ],
+  "hoenn:Spectra": [
+    {
+      "sprite": "pokefan-f",
+      "name": "Pokéfan Maëlle",
+      "team": [
+        354,
+        356
+      ]
+    },
+    {
+      "sprite": "pokefan-f",
+      "name": "Pokéfan Zoé",
+      "team": [
+        356,
+        353
+      ]
+    },
+    {
+      "sprite": "acetrainer",
+      "name": "Topdresseur Sacha",
+      "team": [
+        354,
+        355,
+        358
+      ]
+    },
+    {
+      "sprite": "collector",
+      "name": "Collectionneur Sacha",
+      "team": [
+        355,
+        354,
+        356
+      ]
+    }
+  ],
+  "hoenn:Glacia": [
+    {
+      "sprite": "swimmer-f",
+      "name": "Nageuse Zoé",
+      "team": [
+        365,
+        279
+      ]
+    },
+    {
+      "sprite": "schoolkid",
+      "name": "Écolier Hugo",
+      "team": [
+        73,
+        319
+      ]
+    },
+    {
+      "sprite": "lass",
+      "name": "Fillette Jade",
+      "team": [
+        169,
+        42,
+        364
+      ]
+    },
+    {
+      "sprite": "schoolkid",
+      "name": "Écolier Victor",
+      "team": [
+        279,
+        130,
+        321
+      ]
+    }
+  ],
+  "hoenn:Aragon": [
+    {
+      "sprite": "pokemonranger-f",
+      "name": "Pokémon Ranger Iris",
+      "team": [
+        303,
+        169
+      ]
+    },
+    {
+      "sprite": "pokefan",
+      "name": "Pokéfan Marc",
+      "team": [
+        338,
+        336
+      ]
+    },
+    {
+      "sprite": "swimmer",
+      "name": "Nageur Sacha",
+      "team": [
+        271,
+        130,
+        284
+      ]
+    },
+    {
+      "sprite": "sailor",
+      "name": "Marin Kev",
+      "team": [
+        184,
+        272,
+        340
+      ]
+    }
+  ],
+  "hoenn:Pierre Rochard": [
+    {
+      "sprite": "pokefan",
+      "name": "Pokéfan Yvon",
+      "team": [
+        76,
+        42
+      ]
+    },
+    {
+      "sprite": "hiker",
+      "name": "Montagnard Victor",
+      "team": [
+        305,
+        306
+      ]
+    },
+    {
+      "sprite": "picnicker",
+      "name": "Pique-nique Inès",
+      "team": [
+        295,
+        169,
+        302
+      ]
+    },
+    {
+      "sprite": "pokefan",
+      "name": "Pokéfan Victor",
+      "team": [
+        65,
+        295,
+        297
+      ]
+    }
+  ],
+  "sinnoh:Aaron": [
+    {
+      "sprite": "swimmer-f",
+      "name": "Nageuse Nina",
+      "team": [
+        279,
+        184
+      ]
+    },
+    {
+      "sprite": "cyclist-f",
+      "name": "Cycliste Jade",
+      "team": [
+        164,
+        400
+      ]
+    },
+    {
+      "sprite": "twins",
+      "name": "Jumelles Zoé & Nina",
+      "team": [
+        457,
+        115,
+        456
+      ]
+    },
+    {
+      "sprite": "idol",
+      "name": "Idole Nina",
+      "team": [
+        72,
+        73,
+        352
+      ]
+    }
+  ],
+  "sinnoh:Terry": [
+    {
+      "sprite": "picnicker",
+      "name": "Pique-nique Léa",
+      "team": [
+        51,
+        130
+      ]
+    },
+    {
+      "sprite": "pokemaniac",
+      "name": "Pokémaniac Jin",
+      "team": [
+        76,
+        42
+      ]
+    },
+    {
+      "sprite": "idol",
+      "name": "Idole Maëlle",
+      "team": [
+        450,
+        169,
+        61
+      ]
+    },
+    {
+      "sprite": "youngster",
+      "name": "Gamin Tom",
+      "team": [
+        208,
+        75,
+        62
+      ]
+    }
+  ],
+  "sinnoh:Adrien": [
+    {
+      "sprite": "swimmer",
+      "name": "Nageur Noé",
+      "team": [
+        73,
+        279
+      ]
+    },
+    {
+      "sprite": "schoolkid",
+      "name": "Écolier Tom",
+      "team": [
+        76,
+        323
+      ]
+    },
+    {
+      "sprite": "guitarist",
+      "name": "Rockeur Sacha",
+      "team": [
+        405,
+        462,
+        404
+      ]
+    },
+    {
+      "sprite": "pokefan",
+      "name": "Pokéfan Max",
+      "team": [
+        110,
+        464,
+        417
+      ]
+    }
+  ],
+  "sinnoh:Lucio": [
+    {
+      "sprite": "acetrainer",
+      "name": "Topdresseur Kev",
+      "team": [
+        400,
+        169
+      ]
+    },
+    {
+      "sprite": "pokefan",
+      "name": "Pokéfan Marc",
+      "team": [
+        68,
+        200
+      ]
+    },
+    {
+      "sprite": "pokemaniac",
+      "name": "Pokémaniac Sacha",
+      "team": [
+        93,
+        340,
+        94
+      ]
+    },
+    {
+      "sprite": "ruinmaniac",
+      "name": "Fana de Ruines Max",
+      "team": [
+        476,
+        75,
+        76
+      ]
+    }
+  ],
+  "sinnoh:Cynthia": [
+    {
+      "sprite": "idol",
+      "name": "Idole Rose",
+      "team": [
+        460,
+        164
+      ]
+    },
+    {
+      "sprite": "schoolkid",
+      "name": "Écolier Basile",
+      "team": [
+        437,
+        42
+      ]
+    },
+    {
+      "sprite": "skier",
+      "name": "Skieuse Nina",
+      "team": [
+        473,
+        221,
+        215
+      ]
+    },
+    {
+      "sprite": "schoolkid",
+      "name": "Écolier Jin",
+      "team": [
+        419,
+        76,
+        75
+      ]
+    }
+  ]
+}

@@ -1,0 +1,142 @@
+/* ============================================================
+   POKECATCH: BORDERLESS & FRAMELESS TRANSPARENT SPRITE SYSTEM
+   Bỏ tất cả viền, khung đen, bóng mờ, họa tiết nền CSS quanh Pokémon.
+   Pokémon luôn hiển thị đầy đủ màu sắc, không bị đen/silhouette.
+   ============================================================ */
+
+/* 1. Xóa toàn bộ viền, khung viền, nền pattern, background-image trên ô Pokémon */
+.dex-cell,
+.pc-cell,
+.mon-card,
+.sprbox,
+.dc-hero,
+.art.box,
+.sprite-box,
+.mp-grid > div,
+.oc-tile,
+.zone-cell,
+.team-slot,
+.slot.filled,
+.dex-region .dex-cell,
+.dex-region .dex-cell:is(.unknown, .seen):not(:hover),
+.dex-region .dex-cell:is(.unknown, .seen):hover,
+.dex-region.locked .dex-grid,
+.dc-hero .w,
+.dc-hero.sprite {
+  border: none !important;
+  border-color: transparent !important;
+  background: transparent !important;
+  background-image: none !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+.dex-cell:hover,
+.pc-cell:hover,
+.mon-card:hover,
+.slot.filled:hover {
+  border: none !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+  background: rgba(255, 255, 255, 0.05) !important;
+  transform: translateY(-2px) scale(1.03);
+}
+
+/* 2. Loại bỏ hoàn toàn filter đen/silhouette (brightness 0 / grayscale) */
+.dex-cell.unknown img,
+.dex-cell.unknown .sprbox img,
+.unknown .sprbox img,
+.dc-hero.unknown img.art,
+.dex-cell.seen .sprbox img,
+.dex-cell.unknown canvas,
+.unknown .sprbox canvas,
+.dc-hero.unknown canvas,
+.dc-hero.unknown .art,
+.dex-cell.lost img,
+.dex-cell.lost canvas {
+  filter: none !important;
+  -webkit-filter: none !important;
+  opacity: 1 !important;
+}
+
+/* 3. Đảm bảo tên Pokémon trong ô Pokédex luôn hiển thị rõ ràng */
+.dex-cell.unknown .nm,
+.dex-cell .nm {
+  color: var(--text-main, #e8ecf4) !important;
+}
+
+/* 4. Canvas và Image pixel rendering sắc nét, trong suốt không viền */
+img.art,
+.sprbox img,
+.poke-canvas,
+canvas.pokemon-sprite,
+canvas.pokemon-sprite-mini,
+.fallback-img,
+.dc-hero img,
+.dc-hero canvas {
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  outline: none !important;
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+}
+
+/* 5. Khung chứa sprite trong mon-card và Pokédex */
+.mon-card .sprite-box {
+  width: 96px;
+  height: 96px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0.5rem auto;
+  position: relative;
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.mon-card .sprite-box .fallback-img {
+  position: absolute;
+  max-width: 90px;
+  max-height: 90px;
+  image-rendering: pixelated;
+  object-fit: contain;
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.mon-card .sprite-box .poke-canvas {
+  position: relative;
+  z-index: 2;
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.pokemon-sprite,
+.pokemon-sprite-mini,
+.pokemon-sprite-team,
+.pokemon-sprite-canvas,
+.poke-canvas {
+  image-rendering: pixelated !important;
+  image-rendering: crisp-edges !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+}
+
+/* Prevent offline catchup veil from blocking view */
+.cu-veil, .cu-launch {
+  display: none !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+body.launching {
+  opacity: 1 !important;
+  visibility: visible !important;
+}

@@ -1,0 +1,619 @@
+[
+  {
+    "id": 800030,
+    "base": 3,
+    "slug": "venusaur-mega",
+    "name": "Mega Venusaur",
+    "form": "Mega",
+    "variant": "mega",
+    "stone": "venusaur-mega-stone",
+    "stoneName": "Venusaurite",
+    "types": [
+      "grass",
+      "poison"
+    ]
+  },
+  {
+    "id": 800061,
+    "base": 6,
+    "slug": "charizard-megaX",
+    "name": "Mega Charizard X",
+    "form": "Mega X",
+    "variant": "x",
+    "stone": "charizard-mega-stone-x",
+    "stoneName": "Charizardite X",
+    "types": [
+      "fire",
+      "dragon"
+    ]
+  },
+  {
+    "id": 800062,
+    "base": 6,
+    "slug": "charizard-megaY",
+    "name": "Mega Charizard Y",
+    "form": "Mega Y",
+    "variant": "y",
+    "stone": "charizard-mega-stone-y",
+    "stoneName": "Charizardite Y",
+    "types": [
+      "fire",
+      "flying"
+    ]
+  },
+  {
+    "id": 800090,
+    "base": 9,
+    "slug": "blastoise-mega",
+    "name": "Mega Blastoise",
+    "form": "Mega",
+    "variant": "mega",
+    "stone": "blastoise-mega-stone",
+    "stoneName": "Blastoisinite",
+    "types": [
+      "water"
+    ]
+  },
+  {
+    "id": 800180,
+    "base": 18,
+    "slug": "pidgeot-mega",
+    "name": "Mega Pidgeot",
+    "form": "Mega",
+    "variant": "mega",
+    "stone": "pidgeot-mega-stone",
+    "stoneName": "Pidgeotite",
+    "types": [
+      "normal",
+      "flying"
+    ]
+  },
+  {
+    "id": 800261,
+    "base": 26,
+    "slug": "raichu-megaX",
+    "name": "Mega Raichu X",
+    "form": "Mega X",
+    "variant": "x",
+    "stone": "raichu-mega-stone-x",
+    "stoneName": "Raichuite X",
+    "types": [
+      "electric"
+    ]
+  },
+  {
+    "id": 800262,
+    "base": 26,
+    "slug": "raichu-megaY",
+    "name": "Mega Raichu Y",
+    "form": "Mega Y",
+    "variant": "y",
+    "stone": "raichu-mega-stone-y",
+    "stoneName": "Raichuite Y",
+    "types": [
+      "electric"
+    ]
+  },
+  {
+    "id": 800650,
+    "base": 65,
+    "slug": "alakazam-mega",
+    "name": "Mega Alakazam",
+    "form": "Mega",
+    "variant": "mega",
+    "stone": "alakazam-mega-stone",
+    "stoneName": "Alakazite",
+    "types": [
+      "psychic"
+    ]
+  },
+  {
+    "id": 800940,
+    "base": 94,
+    "slug": "gengar-mega",
+    "name": "Mega Gengar",
+    "form": "Mega",
+    "variant": "mega",
+    "stone": "gengar-mega-stone",
+    "stoneName": "Gengarite",
+    "types": [
+      "ghost",
+      "poison"
+    ]
+  },
+  {
+    "id": 801300,
+    "base": 130,
+    "slug": "gyarados-mega",
+    "name": "Mega Gyarados",
+    "form": "Mega",
+    "variant": "mega",
+    "stone": "gyarados-mega-stone",
+    "stoneName": "Gyaradosite",
+    "types": [
+      "water",
+      "dark"
+    ]
+  },
+  {
+    "id": 801490,
+    "base": 149,
+    "slug": "dragonite-mega",
+    "name": "Mega Dragonite",
+    "form": "Mega",
+    "variant": "mega",
+    "stone": "dragonite-mega-stone",
+    "stoneName": "Dragonitite",
+    "types": [
+      "dragon",
+      "flying"
+    ]
+  },
+  {
+    "id": 801502,
+    "base": 150,
+    "slug": "mewtwo-megaY",
+    "name": "Mega Mewtwo Y",
+    "form": "Mega Y",
+    "variant": "y",
+    "stone": "mewtwo-mega-stone-y",
+    "stoneName": "Mewtwonite Y",
+    "types": [
+      "psychic"
+    ]
+  },
+  {
+    "id": 801540,
+    "base": 154,
+    "slug": "meganium-mega",
+    "name": "Mega Meganium",
+    "form": "Mega",
+    "variant": "mega",
+    "stone": "meganium-mega-stone",
+    "stoneName": "Meganiumite",
+    "types": [
+      "grass"
+    ]
+  },
+  {
+    "id": 801600,
+    "base": 160,
+    "slug": "feraligatr-mega",
+    "name": "Mega Feraligatr",
+    "form": "Mega",
+    "variant": "mega",
+    "stone": "feraligatr-mega-stone",
+    "stoneName": "Feraligatrite",
+    "types": [
+      "water"
+    ]
+  },
+  {
+    "id": 801810,
+    "base": 181,
+    "slug": "ampharos-mega",
+    "name": "Mega Ampharos",
+    "form": "Mega",
+    "variant": "mega",
+    "stone": "ampharos-mega-stone",
+    "stoneName": "Ampharosite",
+    "types": [
+      "electric",
+      "dragon"
+    ]
+  },
+  {
+    "id": 802120,
+    "base": 212,
+    "slug": "scizor-mega",
+    "name": "Mega Scizor",
+    "form": "Mega",
+    "variant": "mega",
+    "stone": "scizor-mega-stone",
+    "stoneName": "Scizorite",
+    "types": [
+      "bug",
+      "steel"
+    ]
+  },
+  {
+    "id": 802290,
+    "base": 229,
+    "slug": "houndoom-mega",
+    "name": "Mega Houndoom",
+    "form": "Mega",
+    "variant": "mega",
+    "stone": "houndoom-mega-stone",
+    "stoneName": "Houndoominite",
+    "types": [
+      "dark",
+      "fire"
+    ]
+  },
+  {
+    "id": 802480,
+    "base": 248,
+    "slug": "tyranitar-mega",
+    "name": "Mega Tyranitar",
+    "form": "Mega",
+    "variant": "mega",
+    "stone": "tyranitar-mega-stone",
+    "stoneName": "Tyranitarite",
+    "types": [
+      "rock",
+      "dark"
+    ]
+  },
+  {
+    "id": 802540,
+    "base": 254,
+    "slug": "sceptile-mega",
+    "name": "Mega Sceptile",
+    "form": "Mega",
+    "variant": "mega",
+    "stone": "sceptile-mega-stone",
+    "stoneName": "Sceptilite",
+    "types": [
+      "grass",
+      "dragon"
+    ]
+  },
+  {
+    "id": 802570,
+    "base": 257,
+    "slug": "blaziken-mega",
+    "name": "Mega Blaziken",
+    "form": "Mega",
+    "variant": "mega",
+    "stone": "blaziken-mega-stone",
+    "stoneName": "Blazikenite",
+    "types": [
+      "fire",
+      "fighting"
+    ]
+  },
+  {
+    "id": 802600,
+    "base": 260,
+    "slug": "swampert-mega",
+    "name": "Mega Swampert",
+    "form": "Mega",
+    "variant": "mega",
+    "stone": "swampert-mega-stone",
+    "stoneName": "Swampertite",
+    "types": [
+      "water",
+      "ground"
+    ]
+  },
+  {
+    "id": 802820,
+    "base": 282,
+    "slug": "gardevoir-mega",
+    "name": "Mega Gardevoir",
+    "form": "Mega",
+    "variant": "mega",
+    "stone": "gardevoir-mega-stone",
+    "stoneName": "Gardevoirite",
+    "types": [
+      "psychic",
+      "fairy"
+    ]
+  },
+  {
+    "id": 803060,
+    "base": 306,
+    "slug": "aggron-mega",
+    "name": "Mega Aggron",
+    "form": "Mega",
+    "variant": "mega",
+    "stone": "aggron-mega-stone",
+    "stoneName": "Aggronite",
+    "types": [
+      "steel"
+    ]
+  },
+  {
+    "id": 803100,
+    "base": 310,
+    "slug": "manectric-mega",
+    "name": "Mega Manectric",
+    "form": "Mega",
+    "variant": "mega",
+    "stone": "manectric-mega-stone",
+    "stoneName": "Manectite",
+    "types": [
+      "electric"
+    ]
+  },
+  {
+    "id": 803340,
+    "base": 334,
+    "slug": "altaria-mega",
+    "name": "Mega Altaria",
+    "form": "Mega",
+    "variant": "mega",
+    "stone": "altaria-mega-stone",
+    "stoneName": "Altarianite",
+    "types": [
+      "dragon",
+      "fairy"
+    ]
+  },
+  {
+    "id": 803540,
+    "base": 354,
+    "slug": "banette-mega",
+    "name": "Mega Banette",
+    "form": "Mega",
+    "variant": "mega",
+    "stone": "banette-mega-stone",
+    "stoneName": "Banettite",
+    "types": [
+      "ghost"
+    ]
+  },
+  {
+    "id": 803620,
+    "base": 362,
+    "slug": "glalie-mega",
+    "name": "Mega Glalie",
+    "form": "Mega",
+    "variant": "mega",
+    "stone": "glalie-mega-stone",
+    "stoneName": "Glalitite",
+    "types": [
+      "ice"
+    ]
+  },
+  {
+    "id": 803730,
+    "base": 373,
+    "slug": "salamence-mega",
+    "name": "Mega Salamence",
+    "form": "Mega",
+    "variant": "mega",
+    "stone": "salamence-mega-stone",
+    "stoneName": "Salamencite",
+    "types": [
+      "dragon",
+      "flying"
+    ]
+  },
+  {
+    "id": 803760,
+    "base": 376,
+    "slug": "metagross-mega",
+    "name": "Mega Metagross",
+    "form": "Mega",
+    "variant": "mega",
+    "stone": "metagross-mega-stone",
+    "stoneName": "Metagrossite",
+    "types": [
+      "steel",
+      "psychic"
+    ]
+  },
+  {
+    "id": 803800,
+    "base": 380,
+    "slug": "latias-mega",
+    "name": "Mega Latias",
+    "form": "Mega",
+    "variant": "mega",
+    "stone": "latias-mega-stone",
+    "stoneName": "Latiasite",
+    "types": [
+      "dragon",
+      "psychic"
+    ]
+  },
+  {
+    "id": 803810,
+    "base": 381,
+    "slug": "latios-mega",
+    "name": "Mega Latios",
+    "form": "Mega",
+    "variant": "mega",
+    "stone": "latios-mega-stone",
+    "stoneName": "Latiosite",
+    "types": [
+      "dragon",
+      "psychic"
+    ]
+  },
+  {
+    "id": 803840,
+    "base": 384,
+    "slug": "rayquaza-mega",
+    "name": "Mega Rayquaza",
+    "form": "Mega",
+    "variant": "mega",
+    "stone": "rayquaza-mega-stone",
+    "stoneName": "Rayquazite",
+    "types": [
+      "dragon",
+      "flying"
+    ]
+  },
+  {
+    "id": 803980,
+    "base": 398,
+    "slug": "staraptor-mega",
+    "name": "Mega Staraptor",
+    "form": "Mega",
+    "variant": "mega",
+    "stone": "staraptor-mega-stone",
+    "stoneName": "Staraptorite",
+    "types": [
+      "normal",
+      "flying"
+    ]
+  },
+  {
+    "id": 804450,
+    "base": 445,
+    "slug": "garchomp-mega",
+    "name": "Mega Garchomp",
+    "form": "Mega",
+    "variant": "mega",
+    "stone": "garchomp-mega-stone",
+    "stoneName": "Garchompite",
+    "types": [
+      "dragon",
+      "ground"
+    ]
+  },
+  {
+    "id": 804453,
+    "base": 445,
+    "slug": "garchomp-megaZ",
+    "name": "Mega Garchomp Z",
+    "form": "Mega Z",
+    "variant": "z",
+    "stone": "garchomp-mega-stone-z",
+    "stoneName": "Garchompite Z",
+    "types": [
+      "dragon",
+      "ground"
+    ]
+  },
+  {
+    "id": 804480,
+    "base": 448,
+    "slug": "lucario-mega",
+    "name": "Mega Lucario",
+    "form": "Mega",
+    "variant": "mega",
+    "stone": "lucario-mega-stone",
+    "stoneName": "Lucarionite",
+    "types": [
+      "fighting",
+      "steel"
+    ]
+  },
+  {
+    "id": 804483,
+    "base": 448,
+    "slug": "lucario-megaZ",
+    "name": "Mega Lucario Z",
+    "form": "Mega Z",
+    "variant": "z",
+    "stone": "lucario-mega-stone-z",
+    "stoneName": "Lucarionite Z",
+    "types": [
+      "fighting",
+      "steel"
+    ]
+  },
+  {
+    "id": 804750,
+    "base": 475,
+    "slug": "gallade-mega",
+    "name": "Mega Gallade",
+    "form": "Mega",
+    "variant": "mega",
+    "stone": "gallade-mega-stone",
+    "stoneName": "Galladite",
+    "types": [
+      "psychic",
+      "fighting"
+    ]
+  },
+  {
+    "id": 804910,
+    "base": 491,
+    "slug": "darkrai-mega",
+    "name": "Mega Darkrai",
+    "form": "Mega",
+    "variant": "mega",
+    "stone": "darkrai-mega-stone",
+    "stoneName": "Darkraiite",
+    "types": [
+      "dark"
+    ]
+  },
+  {
+    "id": 805000,
+    "base": 500,
+    "slug": "emboar-mega",
+    "name": "Mega Emboar",
+    "form": "Mega",
+    "variant": "mega",
+    "stone": "emboar-mega-stone",
+    "stoneName": "Emboarite",
+    "types": [
+      "fire",
+      "fighting"
+    ]
+  },
+  {
+    "id": 806520,
+    "base": 652,
+    "slug": "chesnaught-mega",
+    "name": "Mega Chesnaught",
+    "form": "Mega",
+    "variant": "mega",
+    "stone": "chesnaught-mega-stone",
+    "stoneName": "Chesnaughtite",
+    "types": [
+      "grass",
+      "fighting"
+    ]
+  },
+  {
+    "id": 806550,
+    "base": 655,
+    "slug": "delphox-mega",
+    "name": "Mega Delphox",
+    "form": "Mega",
+    "variant": "mega",
+    "stone": "delphox-mega-stone",
+    "stoneName": "Delphoxite",
+    "types": [
+      "fire",
+      "psychic"
+    ]
+  },
+  {
+    "id": 806580,
+    "base": 658,
+    "slug": "greninja-mega",
+    "name": "Mega Greninja",
+    "form": "Mega",
+    "variant": "mega",
+    "stone": "greninja-mega-stone",
+    "stoneName": "Greninjite",
+    "types": [
+      "water",
+      "dark"
+    ]
+  },
+  {
+    "id": 807190,
+    "base": 719,
+    "slug": "diancie-diancie-mega",
+    "name": "Mega Diancie",
+    "form": "Mega",
+    "variant": "mega",
+    "stone": "diancie-mega-stone",
+    "stoneName": "Diancite",
+    "types": [
+      "rock",
+      "fairy"
+    ]
+  },
+  {
+    "id": 808073,
+    "base": 807,
+    "slug": "zeraora-zeraora-mega",
+    "name": "Mega Zeraora Z",
+    "form": "Mega Z",
+    "variant": "z",
+    "stone": "zeraora-mega-stone-z",
+    "stoneName": "Zeraorite Z",
+    "types": [
+      "electric"
+    ]
+  }
+]

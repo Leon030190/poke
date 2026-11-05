@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <!-- The page Netlify serves (tools/bundle.mjs --shell, https://pokecatch-online.pages.dev/ filled in). The game itself (code, styles, images) is on
+       the CDN (Cloudflare Pages, tools/bundle.mjs --cdn): this page only loads its boot.js, so a publish never redeploys
+       it (netlify.toml ignore). The address, and the saves kept by the browser for it, stay the same. -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Poke'Catch</title>
+  <link rel="icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAyUlEQVRYw+2WuxHDIBAFVQptqAXCC90KIS04VHitECpUShmkz4mRTxbybw489vBmNt7VdxiGvr6+X5wxBiWaiXEei1QNeSSWxNOoH7HKlystIzbyvOV5gFrEVwN2z/2NR6AS8eqLdyT/j4DJfi6frEKAJdpEWKKVI3GWWyKdAAlzAAAwB1iiolSi8iU4529XLXYvkzjn9f4DcU4AAOf87g6UxHFOYA66f0MZkYlzKqIqlxHM4VCaxVXkMiKHlGh+Lmh+IOnr66uxC/l3fuTHPGsLAAAAAElFTkSuQmCC">
+  <link rel="preconnect" href="https://pokecatch-online.pages.dev/">
+  <link rel="preconnect" href="https://qglircqqrtgdvxawisoz.supabase.co" crossorigin>
+  <style>
+    html, body { margin: 0; background: #12141c; color: #e8ecf4; font-family: system-ui, sans-serif; }
+    html[data-theme="light"], html[data-theme="light"] body { background: #e8ecf4; color: #1b2133; }
+    #boot-fail { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; padding: 24px; text-align: center; }
+    #boot-fail button { font: inherit; padding: 10px 20px; border-radius: 10px; border: 0; background: #ffcb05; color: #12141c; font-weight: 700; cursor: pointer; }
+  </style>
+  <script>
+    // The service worker answers the game's images from the CDN (tools/shell/sw.js); boot.js waits a moment for it on a
+    // first visit, so those images don't come from Netlify
+    window.SW_REG = 'serviceWorker' in navigator ? navigator.serviceWorker.register('/sw.js').catch(function () {}) : Promise.resolve();
+    // The CDN can't be reached (or a file of the game is missing): a message and a button to try again, in the player's language
+    window.BOOT_FAIL = function () {
+      if (document.getElementById('boot-fail')) return;
+      var pref = null, nav = (navigator.language || '').slice(0, 2).toLowerCase();
+      try { pref = localStorage.getItem('pokecatch.lang'); } catch (e) { /* storage blocked */ }
+      var LANGS = ['fr', 'en', 'es', 'de', 'zh-Hans', 'zh-Hant', 'ko', 'ja']; // the game's (js/lang-pick.js LANGS, LANGUAGES.md)
+      if (nav === 'zh') nav = /hant|-(tw|hk|mo)\b/i.test(navigator.language || '') ? 'zh-Hant' : 'zh-Hans';
+      var lang = LANGS.indexOf(pref) >= 0 ? pref : LANGS.indexOf(nav) >= 0 ? nav : 'en';
+      var T = {
+        fr: ['Le jeu n’a pas pu se charger. Vérifie ta connexion puis réessaie.', 'Réessayer'],
+        en: ['The game couldn’t load. Check your connection and try again.', 'Try again'],
+        es: ['No se pudo cargar el juego. Comprueba tu conexión e inténtalo de nuevo.', 'Reintentar'],
+        de: ['Das Spiel konnte nicht geladen werden. Prüf deine Verbindung und versuch es erneut.', 'Erneut versuchen'],
+        'zh-Hans': ['游戏加载失败。请检查网络连接后重试。', '重试'],
+        'zh-Hant': ['遊戲載入失敗。請檢查網路連線後重試。', '重試'],
+        ko: ['게임을 불러오지 못했어요. 인터넷 연결을 확인하고 다시 시도해 주세요.', '다시 시도'],
+        ja: ['ゲームを読み込めませんでした。通信環境を確認して、もう一度お試しください。', '再読み込み'],
+      }[lang];
+      var box = document.createElement('div'), p = document.createElement('p'), b = document.createElement('button');
+      box.id = 'boot-fail'; p.textContent = T[0]; b.textContent = T[1];
+      b.onclick = function () { location.reload(); };
+      box.appendChild(p); box.appendChild(b);
+      (document.body || document.documentElement).appendChild(box);
+    };
+  </script>
+  <script src="https://pokecatch-online.pages.dev/boot.js" onerror="BOOT_FAIL()"></script>
+</head>
+<body>
+</body>
+</html>

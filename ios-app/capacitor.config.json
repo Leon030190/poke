@@ -1,0 +1,15 @@
+{
+  "appId": "com.pokecatch.offline",
+  "appName": "Poke'Catch Offline",
+  "webDir": "www",
+  "bundledWebRuntime": false,
+  "server": {
+    "iosScheme": "capacitor",
+    "hostname": "localhost"
+  },
+  "ios": {
+    "contentInset": "always",
+    "scrollEnabled": true,
+    "backgroundColor": "#111827"
+  }
+}

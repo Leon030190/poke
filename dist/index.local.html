@@ -1,0 +1,2673 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, viewport-fit=cover">
+  <title>Poke'Catch (Offline Local Edition)</title>
+  <meta name="theme-color" content="#12141c">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Poke'Catch">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" type="image/svg+xml" href="pwa-icon.svg">
+  <link rel="icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAyUlEQVRYw+2WuxHDIBAFVQptqAXCC90KIS04VHitECpUShmkz4mRTxbybw489vBmNt7VdxiGvr6+X5wxBiWaiXEei1QNeSSWxNOoH7HKlystIzbyvOV5gFrEVwN2z/2NR6AS8eqLdyT/j4DJfi6frEKAJdpEWKKVI3GWWyKdAAlzAAAwB1iiolSi8iU4529XLXYvkzjn9f4DcU4AAOf87g6UxHFOYA66f0MZkYlzKqIqlxHM4VCaxVXkMiKHlGh+Lmh+IOnr66uxC/l3fuTHPGsLAAAAAElFTkSuQmCC">
+  <style>
+    html, body { margin: 0; background: #12141c; color: #e8ecf4; font-family: system-ui, sans-serif; touch-action: manipulation; overscroll-behavior: none; }
+    html[data-theme="light"], html[data-theme="light"] body { background: #e8ecf4; color: #1b2133; }
+    #boot-fail { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; padding: 24px; text-align: center; }
+    #boot-fail button { font: inherit; padding: 10px 20px; border-radius: 10px; border: 0; background: #ffcb05; color: #12141c; font-weight: 700; cursor: pointer; }
+
+    /* Pokédex region selector: one region at a time, names aligned on top. */
+    .dex-region-tabs {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      display: flex;
+      align-items: stretch;
+      gap: 6px;
+      width: 100%;
+      margin: 0 0 8px;
+      padding: 6px 4px;
+      box-sizing: border-box;
+      overflow-x: auto;
+      overscroll-behavior-x: contain;
+      scrollbar-width: thin;
+      background: color-mix(in srgb, #12141c 92%, transparent);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+    .dex-region-tab {
+      flex: 0 0 auto;
+      min-width: max-content;
+      min-height: 38px;
+      padding: 7px 13px;
+      border: 2px solid var(--line, #343b52);
+      border-radius: 10px;
+      background: var(--panel, #1c2235);
+      color: var(--text, #e8ecf4);
+      font: 700 14px/1.1 inherit;
+      white-space: nowrap;
+      cursor: pointer;
+      touch-action: manipulation;
+    }
+    .dex-region-tab.active {
+      border-color: var(--yellow, #ffcb05);
+      background: var(--yellow, #ffcb05);
+      color: #171923;
+      box-shadow: 0 2px 10px rgba(255, 203, 5, .28);
+    }
+    #dex-regions.dex-tabs-ready > .dex-region[hidden] { display: none !important; }
+    #dex-regions .dex-cell.mega-locked { display: none !important; }
+    #dex-regions.dex-tabs-ready > .dex-region:not([hidden]) { margin-top: 8px !important; }
+    #dex-regions.dex-tabs-ready > .dex-region > .dex-region-head { display: none !important; }
+    #dex-regions .dex-cell { position: relative !important; }
+    #dex-regions .dex-cell:not(.caught) .sprbox { filter: grayscale(1) brightness(.62) !important; opacity: .48 !important; }
+    #dex-regions .dex-cell:not(.caught) .sprbox img,
+    #dex-regions .dex-cell:not(.caught) .sprbox canvas { filter: grayscale(1) brightness(.62) !important; }
+    #dex-regions .dex-cell.caught .sprbox,
+    #dex-regions .dex-cell.caught .sprbox img,
+    #dex-regions .dex-cell.caught .sprbox canvas { filter: none !important; opacity: 1 !important; }
+
+    #screen-team .pc-cell, #screen-team .slot.filled { position: relative !important; }
+    .shiny-head-mark{position:absolute;top:2px;left:50%;z-index:12;translate:-50% 0;min-width:18px;height:18px;padding:0 4px;border:1px solid #fff3a0;border-radius:999px;background:linear-gradient(135deg,#7b43d6,#ffcb05);color:#fff;font:900 12px/16px system-ui;text-align:center;box-shadow:0 2px 6px #000a,0 0 8px #ffd83d99;pointer-events:none}
+    .mon-card.shiny-detail .dc-head h2::after{content:"  ✨ SHINY · +10% chỉ số";color:#ffd83d;font-size:11px;white-space:nowrap}
+    .keep-row .keep-dup-state{display:inline-flex;align-items:center;margin-left:7px;padding:2px 7px;border-radius:999px;background:#4c5367;color:#fff;font:900 10px/1.4 system-ui}
+    .keep-row.on .keep-dup-state{background:#24894f;color:#fff}
+    .keep-row .keep-dup-help{display:block;margin-top:4px;color:var(--muted,#aeb6cc);font:500 10px/1.3 system-ui}
+    .evo-all-safe-modal{position:fixed;inset:0;z-index:10020;display:grid;place-items:center;padding:14px;background:#070a12cc}
+    .evo-all-safe-panel{width:min(680px,96vw);max-height:88vh;overflow:auto;border:2px solid #47516d;border-radius:16px;background:#171c2b;color:#eef2ff;box-shadow:0 18px 60px #000c}
+    .evo-all-safe-head{position:sticky;top:0;z-index:2;display:flex;align-items:center;justify-content:space-between;padding:13px 15px;background:#20283c;border-bottom:1px solid #3d4761}
+    .evo-all-safe-head h3{margin:0;font-size:18px}.evo-all-safe-close{border:0;background:transparent;color:#fff;font-size:22px;cursor:pointer}
+    .evo-all-safe-body{padding:12px 15px}.evo-all-safe-summary{margin:0 0 10px;color:#cbd4ea;font-size:12px}
+    .evo-all-safe-list{display:grid;gap:7px}.evo-all-safe-row{display:grid;grid-template-columns:28px 42px 1fr;gap:8px;align-items:center;padding:7px;border-radius:10px;background:#242c40}
+    .evo-all-safe-row.blocked{opacity:.68}.evo-all-safe-row img{width:40px;height:40px;object-fit:contain;image-rendering:auto}.evo-all-safe-row b,.evo-all-safe-row small{display:block}.evo-all-safe-row small{margin-top:2px;color:#b9c3dc;font-size:11px}
+    .evo-all-safe-actions{position:sticky;bottom:0;display:flex;justify-content:flex-end;gap:8px;padding:11px 15px;background:#20283c;border-top:1px solid #3d4761}.evo-all-safe-actions .btn:disabled{opacity:.45}
+    #screen-team #pc-evo-all,#screen-team #pc-evo-all[hidden]{display:inline-flex!important;visibility:visible!important;align-items:center;gap:5px}
+    #screen-team #pc-evo-all .full{display:inline!important}
+    #screen-team #pc-evo-all .short{display:none!important}
+
+    @media (max-width: 480px) {
+      .dex-region-tabs { gap: 4px; padding: 4px 2px 6px; }
+      .dex-region-tab { min-height: 34px; padding: 6px 10px; font-size: 12px; }
+    }
+
+    /* Evolution tree: show the required Mega Stone above its Mega target. */
+    .evo-chain .evo.mega-evolution {
+      position: relative !important;
+      padding-top: 38px !important;
+      overflow: visible !important;
+    }
+    .evo-chain .evo > img.mega-stone-required {
+      position: absolute !important;
+      top: 4px !important;
+      left: 50% !important;
+      z-index: 8 !important;
+      width: 30px !important;
+      height: 30px !important;
+      margin: 0 !important;
+      translate: -50% 0 !important;
+      object-fit: contain !important;
+      image-rendering: pixelated !important;
+      filter: drop-shadow(0 2px 2px rgba(0, 0, 0, .75)) !important;
+      opacity: 1 !important;
+      pointer-events: none !important;
+    }
+    .evo-chain .evo.unknown > img.mega-stone-required {
+      filter: drop-shadow(0 2px 2px rgba(0, 0, 0, .75)) !important;
+      opacity: 1 !important;
+    }
+    .evo-chain .arrow.mega-stone-moved {
+      min-width: 20px;
+    }
+    .evo-chain .evo.mega-evolution .sprbox {
+      overflow: visible !important;
+    }
+    .evo-chain{display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:flex-start!important;gap:6px!important;width:100%!important;max-width:420px!important;margin-inline:auto!important;overflow:visible!important}
+    .evo-chain>.evo,.evo-chain .evo-branch>.evo{flex:0 0 auto!important;width:108px!important;min-width:108px!important;max-width:108px!important;box-sizing:border-box!important;overflow:visible!important}
+    .evo-chain .evo .sprbox{display:grid!important;place-items:center!important;width:76px!important;height:62px!important;margin:0 auto!important;overflow:hidden!important}
+    .evo-chain .evo .sprbox>img,.evo-chain .evo .sprbox>canvas{display:block;max-width:64px!important;max-height:56px!important;object-fit:contain!important;margin:auto!important}
+    .evo-chain>.arrow,.evo-chain .evo-branch>.arrow{display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;width:28px!important;min-width:28px!important;min-height:24px!important;margin:0 auto!important}
+    .evo-chain .arrow>span{display:inline-block!important;transform:rotate(90deg)!important}
+    .evo-chain .evo-branches,.evo-chain .evo-branches.grid{display:grid!important;grid-template-columns:repeat(auto-fit,minmax(108px,1fr))!important;justify-content:center!important;align-items:start!important;gap:10px!important;width:min(100%,360px)!important;margin:0 auto!important}
+    .evo-chain .evo-branch{display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:flex-start!important;gap:4px!important;min-width:0!important}
+    .evo-chain .evo.mega-evolution{padding-top:25px!important}.evo-chain .evo>img.mega-stone-required{top:3px!important;width:20px!important;height:20px!important}.evo-chain .evo.mega-evolution .sprbox{overflow:hidden!important}
+    @media(max-width:420px){.evo-chain .evo-branches,.evo-chain .evo-branches.grid{gap:6px!important}.evo-chain>.evo,.evo-chain .evo-branch>.evo{width:98px!important;min-width:98px!important;max-width:98px!important}.evo-chain .evo .sprbox{width:68px!important;height:58px!important}.evo-chain .evo .sprbox>img,.evo-chain .evo .sprbox>canvas{max-width:58px!important;max-height:52px!important}}
+    .evo-chain{gap:1px!important;max-width:300px!important}
+    .evo-chain .evo,.evo-chain .evo.unknown,.evo-chain .evo.cur,.evo-chain .evo.own{width:86px!important;min-width:86px!important;max-width:86px!important;min-height:0!important;padding:2px!important;border:0!important;border-radius:0!important;outline:0!important;background:none!important;box-shadow:none!important;filter:none!important}
+    .evo-chain .evo .sprbox{width:56px!important;height:46px!important;margin:0 auto!important}
+    .evo-chain .evo .sprbox>img,.evo-chain .evo .sprbox>canvas{max-width:50px!important;max-height:43px!important}
+    .evo-chain .evo>span{margin-top:1px!important;font-size:11px!important;line-height:1.05!important}.evo-chain .evo>small{font-size:9px!important;line-height:1!important}
+    .evo-chain>.arrow,.evo-chain .evo-branch>.arrow{min-height:15px!important;height:15px!important;margin:0 auto!important;font-size:11px!important;line-height:1!important}
+    .evo-chain .evo-branches,.evo-chain .evo-branches.grid{width:min(100%,230px)!important;grid-template-columns:repeat(auto-fit,minmax(86px,1fr))!important;gap:4px!important}
+    .evo-chain .evo-branch{gap:1px!important}.evo-chain .evo.mega-evolution{padding:19px 2px 2px!important}.evo-chain .evo>img.mega-stone-required{top:1px!important;width:16px!important;height:16px!important}
+    .evo-chain{gap:0!important}
+    .evo-chain .evo,.evo-chain .evo.unknown,.evo-chain .evo.cur,.evo-chain .evo.own{height:auto!important;gap:0!important;justify-content:flex-start!important;line-height:1!important}
+    .evo-chain .evo .sprbox{height:38px!important;margin-bottom:0!important}
+    .evo-chain .evo .sprbox>img,.evo-chain .evo .sprbox>canvas{max-height:36px!important}
+    .evo-chain .evo>span{position:relative!important;margin:-3px 0 0!important;padding:0!important;line-height:11px!important;min-height:0!important}
+    .evo-chain .evo>small{display:block!important;margin:-1px 0 0!important;padding:0!important;line-height:9px!important;min-height:0!important}
+    .evo-chain>.arrow,.evo-chain .evo-branch>.arrow{height:11px!important;min-height:11px!important;margin:-1px auto!important;padding:0!important;line-height:9px!important}
+    .evo-chain .evo-branches,.evo-chain .evo-branches.grid,.evo-chain .evo-branch{gap:0!important}
+    .evo-chain .evo.mega-evolution{padding:16px 2px 0!important}.evo-chain .evo>img.mega-stone-required{width:14px!important;height:14px!important}
+    .evo-chain .evo,.evo-chain .evo.unknown,.evo-chain .evo.cur,.evo-chain .evo.own{width:100px!important;min-width:100px!important;max-width:100px!important}
+    .evo-chain .evo .sprbox{width:74px!important;height:62px!important;margin:0 auto!important}
+    .evo-chain .evo .sprbox>img,.evo-chain .evo .sprbox>canvas{max-width:66px!important;max-height:58px!important}
+    .evo-chain .evo>span{margin:-2px 0 0!important}.evo-chain .evo-branches,.evo-chain .evo-branches.grid{grid-template-columns:repeat(auto-fit,minmax(100px,1fr))!important;width:min(100%,250px)!important}
+    .evo-chain .evo,.evo-chain .evo.unknown,.evo-chain .evo.cur,.evo-chain .evo.own{width:112px!important;min-width:112px!important;max-width:112px!important}
+    .evo-chain .evo .sprbox{width:90px!important;height:72px!important;transform:translateY(-8px)!important;margin:0 auto -8px!important;overflow:visible!important}
+    .evo-chain .evo .sprbox>img,.evo-chain .evo .sprbox>canvas{max-width:82px!important;max-height:70px!important}
+    .evo-chain .evo>span{margin:-6px 0 0!important}
+    .evo-chain .evo>small{margin:-1px 0 0!important}
+    .evo-chain .evo-branches,.evo-chain .evo-branches.grid{grid-template-columns:repeat(auto-fit,minmax(112px,1fr))!important;width:min(100%,280px)!important}
+    /* Keep every evolution sprite near the top edge and use the freed lower space for a larger body. */
+    .evo-chain .evo,.evo-chain .evo.unknown,.evo-chain .evo.cur,.evo-chain .evo.own{padding-top:0!important}
+    .evo-chain .evo .sprbox{width:104px!important;height:88px!important;transform:translateY(-18px)!important;margin:0 auto -20px!important;align-items:start!important;overflow:visible!important}
+    .evo-chain .evo .sprbox>img,.evo-chain .evo .sprbox>canvas{max-width:96px!important;max-height:86px!important;margin:0 auto!important}
+    .evo-chain .evo>span{margin:-2px 0 0!important}
+    .evo-chain .evo.mega-evolution{padding-top:16px!important}
+    /* Unowned evolutions remain visible as dim monochrome silhouettes. */
+    .evo-chain .evo.unknown:not(.own):not(.cur) .sprbox{visibility:visible!important;filter:grayscale(1) brightness(.72)!important;opacity:.34!important}
+    .evo-chain .evo.own .sprbox,.evo-chain .evo.cur .sprbox{filter:none!important;opacity:1!important}
+    .evo-chain .evo.own .sprbox>img,.evo-chain .evo.own .sprbox>canvas,.evo-chain .evo.cur .sprbox>img,.evo-chain .evo.cur .sprbox>canvas{filter:none!important;opacity:1!important;mix-blend-mode:normal!important}
+  </style>
+<script>
+window.addEventListener('DOMContentLoaded', function () {
+  var megaLayoutScheduled = false;
+  function placeMegaStoneIcons() {
+    megaLayoutScheduled = false;
+    document.querySelectorAll('.evo-chain:not([data-mega-layout-ready])').forEach(function (chain) {
+      chain.setAttribute('data-mega-layout-ready', '1');
+      chain.querySelectorAll('.arrow img[src*="-mega-stone"]').forEach(function (stone) {
+      var arrow = stone.closest('.arrow');
+      var megaPokemon = arrow && arrow.nextElementSibling;
+      if (!megaPokemon || !megaPokemon.classList.contains('evo')) return;
+
+      var src = stone.getAttribute('src') || '';
+      var stoneKey = src.replace(/^.*\/|\.[^.]+$/g, '');
+      var stoneName = window.PokeCatch?.ITEM_NAMES?.[stoneKey] || stone.alt || stone.title || 'Mega Stone';
+      stoneName = stoneName.replace(/\s*\(Required\)/i, '');
+
+      stone.classList.add('mega-stone-required');
+      stone.title = stoneName + ' (Required)';
+      stone.alt = stoneName;
+      megaPokemon.classList.add('mega-evolution');
+      megaPokemon.prepend(stone);
+      arrow.classList.add('mega-stone-moved');
+      });
+    });
+    document.querySelectorAll('.evo-chain .evo').forEach(function (pokemon) {
+      var sprite = pokemon.querySelector('.sprbox img[data-id]');
+      var id = +(sprite?.dataset.id || 0);
+      var game = window.PokeCatch?.Game;
+      var caught = !!(id && game?.S?.dex?.[id]);
+      var physicallyOwned = false;
+      if (id && game?.ownedMons) {
+        try { physicallyOwned = game.ownedMons().some(function (mon) { return +mon.id === id; }); } catch (_) {}
+      }
+      var unlocked = pokemon.classList.contains('own') || pokemon.classList.contains('cur') || caught || physicallyOwned;
+      pokemon.classList.toggle('unknown', !unlocked);
+      var ownedBox = pokemon.querySelector('.sprbox');
+      if (unlocked) {
+        pokemon.classList.remove('unknown');
+        pokemon.style.setProperty('filter', 'none', 'important');
+        pokemon.style.setProperty('opacity', '1', 'important');
+        if (ownedBox) {
+          ownedBox.style.setProperty('filter', 'none', 'important');
+          ownedBox.style.setProperty('opacity', '1', 'important');
+          ownedBox.querySelectorAll('img,canvas').forEach(function (art) {
+            art.style.setProperty('filter', 'none', 'important');
+            art.style.setProperty('opacity', '1', 'important');
+            art.style.setProperty('mix-blend-mode', 'normal', 'important');
+          });
+        }
+        return;
+      }
+      if (ownedBox) {
+        ownedBox.style.setProperty('filter', 'grayscale(1) brightness(.72)', 'important');
+        ownedBox.style.setProperty('opacity', '.34', 'important');
+      }
+    });
+  }
+
+  function scheduleMegaLayout() {
+    if (megaLayoutScheduled) return;
+    megaLayoutScheduled = true;
+    requestAnimationFrame(placeMegaStoneIcons);
+  }
+  scheduleMegaLayout();
+  new MutationObserver(function () {
+    scheduleMegaLayout();
+  }).observe(document.body, { childList: true, subtree: true });
+});
+</script>
+  <script>
+    window.SW_REG = Promise.resolve();
+
+    // Regional forms belong to the region where that form was introduced,
+    // not the National Dex range of their base species. Keep Galar's three
+    // birds as-is and place the existing Hisui/Paldea forms correctly.
+    window.__dexRegionEntries = function (region, nativeEntries) {
+      var targets = {
+        5202:'galar',7701:'galar',7801:'galar',7901:'galar',8001:'galar',8301:'galar',
+        14401:'galar',14501:'galar',14601:'galar',
+        10001:'sinnoh',10101:'sinnoh',15701:'sinnoh',21101:'sinnoh',21501:'sinnoh',
+        50301:'sinnoh',54901:'sinnoh',57001:'sinnoh',57101:'sinnoh',62801:'sinnoh',
+        70501:'sinnoh',70601:'sinnoh',71301:'sinnoh',72401:'sinnoh',
+        12801:'paldea',19401:'paldea'
+      };
+      var key = String(region?.key || '').toLowerCase();
+      var list = (nativeEntries || []).filter(function (entry) { return !targets[entry.id]; });
+      var dex = window.PokeCatch?.POKEDEX || [];
+      Object.keys(targets).forEach(function (rawId) {
+        if (targets[rawId] !== key) return;
+        var id = +rawId;
+        var entry = dex.find(function (pokemon) { return +pokemon.id === id; });
+        if (entry && !list.some(function (pokemon) { return +pokemon.id === id; })) list.push(entry);
+      });
+      return list;
+    };
+
+    // Keep the game at a stable 1:1 viewport on touch devices. Safari can
+    // still trigger page zoom from gestures even with the viewport directive,
+    // so cancel those browser-only gestures without blocking normal controls.
+    document.addEventListener('gesturestart', function (event) {
+      event.preventDefault();
+    }, { passive: false });
+    document.addEventListener('gesturechange', function (event) {
+      event.preventDefault();
+    }, { passive: false });
+    document.addEventListener('gestureend', function (event) {
+      event.preventDefault();
+    }, { passive: false });
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function () {
+        navigator.serviceWorker.register('./sw.js', { scope: './' }).catch(function (error) {
+          console.warn('PWA service worker:', error);
+        });
+      });
+    }
+    window.BOOT_FAIL = function () {
+      if (document.getElementById('boot-fail')) return;
+      var box = document.createElement('div'), p = document.createElement('p'), b = document.createElement('button');
+      box.id = 'boot-fail'; p.textContent = 'Game load failed in offline mode.'; b.textContent = 'Retry';
+      b.onclick = function () { location.reload(); };
+      box.appendChild(p); box.appendChild(b);
+      (document.body || document.documentElement).appendChild(box);
+    };
+    window.addEventListener('error', function (event) {
+      if (event && event.target && event.target !== window) return;
+      var log = document.getElementById('runtime-error-log');
+      if (!log) {
+        log = document.createElement('pre');
+        log.id = 'runtime-error-log';
+        log.style.cssText = 'position:fixed;left:8px;right:8px;bottom:8px;z-index:2147483647;max-height:35vh;overflow:auto;padding:8px;background:#450b0b;color:#fff;font:11px/1.35 monospace;white-space:pre-wrap';
+        (document.body || document.documentElement).appendChild(log);
+      }
+      log.textContent = String(event.message || 'Runtime error') + (event.error && event.error.stack ? '\n' + event.error.stack : '');
+      setTimeout(function () {
+        if (!document.querySelector('#app, .title, .side, #tabs')) window.BOOT_FAIL();
+      }, 0);
+    }, true);
+    window.addEventListener('unhandledrejection', function () {
+      setTimeout(function () {
+        if (!document.querySelector('#app, .title, .side, #tabs')) window.BOOT_FAIL();
+      }, 0);
+    });
+    window.addEventListener('load', function () {
+      setTimeout(function () {
+        if (!document.querySelector('#app, .title, .side, #tabs')) window.BOOT_FAIL();
+      }, 5000);
+    });
+  </script>
+  <script>
+    try {
+      window.__dexSelectedRegionKey = localStorage.getItem('pokecatch.dex.selectedRegionKey') || '';
+    } catch (_) {
+      window.__dexSelectedRegionKey = '';
+    }
+  </script>
+  <script>
+    // Keep the local extension API writable long enough to install gameplay
+    // systems (vitamin EVs and exact Mega-boss rewards) on the online tunnel.
+    (function () {
+      var nativeTest = RegExp.prototype.test;
+      RegExp.prototype.test = function (value) {
+        if (this.source === '^(localhost|127\\.0\\.0\\.1)$' && value === location.hostname) return true;
+        return nativeTest.call(this, value);
+      };
+      window.__restoreNativeRegExpTest = function () { RegExp.prototype.test = nativeTest; };
+    })();
+  </script>
+  <script src="./boot.local.js" onerror="BOOT_FAIL()"></script>
+  <style>
+    .game-control-bar {
+      position: fixed;
+      bottom: 16px;
+      right: 16px;
+      z-index: 999999;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    .fab-btn {
+      color: #fff;
+      text-decoration: none;
+      padding: 10px 18px;
+      border-radius: 30px;
+      font-size: 13px;
+      font-weight: 700;
+      border: 0;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.4);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .fab-btn.gold {
+      background: linear-gradient(135deg, #e3a008, #d97706);
+      color: #12141c;
+      box-shadow: 0 4px 16px rgba(227, 160, 8, 0.4);
+    }
+    .fab-btn.blue {
+      background: linear-gradient(135deg, #1f6feb, #238636);
+    }
+    .fab-btn.red {
+      background: linear-gradient(135deg, #ef4444, #b91c1c);
+    }
+    .fab-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.6);
+    }
+  </style>
+  <script>
+    window.addEventListener('DOMContentLoaded', function () {
+      var scheduled = false;
+      function syncKeepDuplicateRows() {
+        scheduled = false;
+        document.querySelectorAll('.mon-card .keep-row').forEach(function (row) {
+          var title = row.querySelector(':scope > .t > b');
+          if (!title) return;
+          var directText = Array.from(title.childNodes).find(function (node) {
+            return node.nodeType === Node.TEXT_NODE && node.textContent.trim();
+          });
+          if (directText && directText.textContent !== 'Giữ Pokémon trùng ') directText.textContent = 'Giữ Pokémon trùng ';
+          var state = title.querySelector('.keep-dup-state');
+          if (!state) {
+            state = document.createElement('span');
+            state.className = 'keep-dup-state';
+            title.appendChild(state);
+          }
+          var enabled = row.classList.contains('on') || row.getAttribute('aria-checked') === 'true';
+          var stateText = enabled ? 'ĐANG BẬT' : 'ĐANG TẮT';
+          if (state.textContent !== stateText) state.textContent = stateText;
+          var help = row.querySelector('.keep-dup-help');
+          if (!help) {
+            help = document.createElement('small');
+            help.className = 'keep-dup-help';
+            row.querySelector(':scope > .t')?.appendChild(help);
+          }
+          var helpText = enabled
+            ? 'Bản thường bắt trùng của dòng tiến hóa này sẽ được giữ trong PC.'
+            : 'Bản dư không cần cho nhánh tiến hóa sẽ đổi thành XP. Pokémon Shiny luôn được giữ.';
+          if (help && help.textContent !== helpText) help.textContent = helpText;
+        });
+      }
+      function scheduleKeepSync() {
+        if (scheduled) return;
+        scheduled = true;
+        requestAnimationFrame(syncKeepDuplicateRows);
+      }
+      document.addEventListener('click', function (event) {
+        var row = event.target.closest('.mon-card .keep-row');
+        if (!row || event.target.closest('.info-tip')) return;
+        setTimeout(function () {
+          scheduleKeepSync();
+          var enabled = document.querySelector('.mon-card .keep-row')?.classList.contains('on');
+          window.PokeCatch?.UI?.toast?.(enabled
+            ? 'Đã bật: Pokémon thường bắt trùng sẽ được giữ trong PC.'
+            : 'Đã tắt: Pokémon dư sẽ chuyển thành XP; Shiny vẫn luôn được giữ.');
+        }, 0);
+      });
+      new MutationObserver(scheduleKeepSync).observe(document.body, { childList: true, subtree: true });
+      scheduleKeepSync();
+    });
+  </script>
+  <script>
+    // Auto-switch to screen if hash or query present
+    window.addEventListener('load', function () {
+      function checkScreen() {
+        var screen = (location.hash || '').replace('#', '') || new URLSearchParams(location.search).get('screen');
+        if (screen) {
+          var btn = document.querySelector('#tabs [data-screen="' + screen + '"]');
+          if (btn) {
+            btn.click();
+          } else {
+            setTimeout(checkScreen, 500);
+          }
+        }
+      }
+      setTimeout(checkScreen, 1500);
+    });
+  </script>
+
+  <script>
+    // Safe Evo All: preview, reserve items, revalidate, and evolve one stage.
+    (function () {
+      function esc(value) {
+        return String(value == null ? '' : value).replace(/[&<>"']/g, function (ch) {
+          return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch];
+        });
+      }
+
+      function monName(Game, id) { return Game.DEX?.[id]?.name || ('No. ' + id); }
+      function itemName(P, key) { return P.ITEM_NAMES?.[key] || key.replace(/-/g, ' '); }
+      function monImage(mon) { return 'assets/pokemon/' + (mon.shiny ? 'shiny/' : '') + mon.id + '.png'; }
+
+      function ownedForEvo(Game) {
+        var mons = typeof Game.sideMons === 'function' ? Game.sideMons() : (Game.S?.mons || []);
+        var seen = new Set();
+        return mons.filter(function (mon) {
+          return mon?.uid && !seen.has(mon.uid) && seen.add(mon.uid);
+        });
+      }
+
+      function inspectAll() {
+        var P = window.PokeCatch, Game = P?.Game;
+        if (!Game) return {ready:[], blocked:[]};
+        var ready = [], blocked = [], available = Object.assign({}, Game.S?.items || {});
+
+        ownedForEvo(Game).forEach(function (mon) {
+          var raw = (P.EVOLUTIONS?.[mon.id] || []).filter(function (rule) { return rule && rule.to; });
+          if (!raw.length) return;
+
+          var normalRaw = raw.filter(function (rule) { return !rule.mega && !P.MEGA?.isMega?.(rule.to); });
+          if (!normalRaw.length) {
+            blocked.push({mon:mon, reason:'Mega Evolution không chạy bằng Evo All'});
+            return;
+          }
+
+          var level = (Game.levelEvolutions?.(mon) || []).filter(function (rule) { return !rule.mega && !P.MEGA?.isMega?.(rule.to); });
+          var items = (Game.itemEvolutions?.(mon) || []).filter(function (rule) { return !rule.mega && !P.MEGA?.isMega?.(rule.to); });
+          var eligible = level.concat(items).filter(function (rule, index, list) {
+            return list.findIndex(function (other) { return other.to === rule.to && other.item === rule.item; }) === index;
+          });
+
+          if (eligible.length > 1) {
+            blocked.push({mon:mon, reason:'Có nhiều nhánh tiến hóa — cần chọn thủ công'});
+            return;
+          }
+          if (!eligible.length) {
+            var levels = normalRaw.filter(function (rule) { return rule.level; });
+            var needed = levels.length ? Math.min.apply(Math, levels.map(function (rule) { return rule.level; })) : null;
+            var reason = needed && mon.level < needed
+              ? 'Cần đạt Lv.' + needed
+              : 'Chưa đủ điều kiện thời gian, đội hình, form hoặc vật phẩm';
+            var itemRule = normalRaw.find(function (rule) { return rule.item; });
+            if (itemRule && !(Game.itemCount?.(itemRule.item) > 0)) reason = 'Thiếu ' + itemName(P, itemRule.item);
+            blocked.push({mon:mon, reason:reason});
+            return;
+          }
+
+          var rule = eligible[0];
+          if (rule.item) {
+            var count = available[rule.item] == null ? (Game.itemCount?.(rule.item) || 0) : available[rule.item];
+            if (count <= 0) {
+              blocked.push({mon:mon, reason:'Thiếu ' + itemName(P, rule.item)});
+              return;
+            }
+            available[rule.item] = count - 1;
+          }
+          ready.push({mon:mon, uid:mon.uid, from:mon.id, to:rule.to, item:rule.item || null});
+        });
+        return {ready:ready, blocked:blocked};
+      }
+
+      function revalidate(entry, reserved) {
+        var P = window.PokeCatch, Game = P?.Game, mon = Game?.getMon?.(entry.uid);
+        if (!mon || mon.id !== entry.from) return {ok:false, reason:'Pokémon đã thay đổi'};
+        var rules = (Game.levelEvolutions?.(mon) || []).concat(Game.itemEvolutions?.(mon) || []).filter(function (rule) {
+          return rule.to === entry.to && (rule.item || null) === entry.item && !rule.mega && !P.MEGA?.isMega?.(rule.to);
+        });
+        if (rules.length !== 1) return {ok:false, reason:'Điều kiện không còn hợp lệ'};
+        if (entry.item) {
+          var needed = (reserved[entry.item] || 0) + 1;
+          if ((Game.itemCount?.(entry.item) || 0) < needed) return {ok:false, reason:'Không đủ ' + itemName(P, entry.item)};
+          if (typeof Game.addItem !== 'function') return {ok:false, reason:'Không thể trừ vật phẩm an toàn'};
+          reserved[entry.item] = needed;
+        }
+        return {ok:true, mon:mon};
+      }
+
+      function syncAfterEvolution() {
+        var P = window.PokeCatch;
+        P.Game?.save?.();
+        P.Screens?.team?.render?.();
+        P.Screens?.adventure?.refreshTeam?.();
+        P.Screens?.adventure?.render?.();
+        P.App?.refresh?.();
+      }
+
+      function showPreview() {
+        document.querySelector('.evo-all-safe-modal')?.remove();
+        var P = window.PokeCatch, Game = P?.Game, scan = inspectAll();
+        var modal = document.createElement('div');
+        modal.className = 'evo-all-safe-modal';
+        var readyRows = scan.ready.map(function (entry, index) {
+          var mon = entry.mon;
+          return '<label class="evo-all-safe-row"><input type="checkbox" data-evo-index="' + index + '" checked>' +
+            '<img src="' + esc(monImage(mon)) + '" alt=""><span><b>' + esc(monName(Game, entry.from)) + ' Lv.' + mon.level + ' → ' + esc(monName(Game, entry.to)) + '</b><small>' +
+            (entry.item ? 'Dùng 1 ' + esc(itemName(P, entry.item)) : 'Đủ điều kiện level') + (mon.shiny ? ' · ✨ Shiny' : '') + '</small></span></label>';
+        }).join('');
+        var blockedRows = scan.blocked.map(function (entry) {
+          return '<div class="evo-all-safe-row blocked"><span>—</span><img src="' + esc(monImage(entry.mon)) + '" alt=""><span><b>' + esc(monName(Game, entry.mon.id)) + ' Lv.' + entry.mon.level + '</b><small>' + esc(entry.reason) + '</small></span></div>';
+        }).join('');
+        modal.innerHTML = '<section class="evo-all-safe-panel" role="dialog" aria-modal="true" aria-label="Evo All">' +
+          '<header class="evo-all-safe-head"><h3>Evo All · Kiểm tra trước</h3><button class="evo-all-safe-close" aria-label="Đóng">×</button></header>' +
+          '<div class="evo-all-safe-body"><p class="evo-all-safe-summary"><b>' + scan.ready.length + '</b> Pokémon sẵn sàng · <b>' + scan.blocked.length + '</b> Pokémon chưa đủ điều kiện. Mỗi Pokémon chỉ tiến hóa một cấp.</p>' +
+          '<div class="evo-all-safe-list">' + (readyRows || '<p>Không có Pokémon nào đủ điều kiện tiến hóa.</p>') + blockedRows + '</div></div>' +
+          '<footer class="evo-all-safe-actions"><button class="btn evo-all-cancel">Hủy</button><button class="btn gold evo-all-confirm"' + (scan.ready.length ? '' : ' disabled') + '>Tiến hóa đã chọn</button></footer></section>';
+        document.body.appendChild(modal);
+
+        var close = function () { modal.remove(); };
+        modal.querySelector('.evo-all-safe-close').onclick = close;
+        modal.querySelector('.evo-all-cancel').onclick = close;
+        modal.addEventListener('click', function (event) { if (event.target === modal) close(); });
+        modal.querySelector('.evo-all-confirm').onclick = function () {
+          var selected = Array.from(modal.querySelectorAll('[data-evo-index]:checked')).map(function (box) { return scan.ready[+box.dataset.evoIndex]; });
+          if (!selected.length) { P.UI?.toast?.('Chưa chọn Pokémon nào.'); return; }
+          var reserved = {}, valid = [], failed = [];
+          selected.forEach(function (entry) {
+            var check = revalidate(entry, reserved);
+            if (check.ok) valid.push(entry); else failed.push(monName(Game, entry.from) + ': ' + check.reason);
+          });
+          var evolved = 0;
+          valid.forEach(function (entry) {
+            var before = Game.getMon(entry.uid);
+            if (!before || before.id !== entry.from) return;
+            var result = Game.evolveMon(entry.uid, entry.to);
+            if (!result) { failed.push(monName(Game, entry.from) + ': tiến hóa thất bại'); return; }
+            if (entry.item) Game.addItem?.(entry.item, -1);
+            evolved++;
+          });
+          syncAfterEvolution();
+          close();
+          P.Sfx?.upgrade?.(2);
+          P.UI?.toast?.('✓ Đã tiến hóa ' + evolved + ' Pokémon' + (failed.length ? ' · ' + failed.length + ' không thể thực hiện' : ''));
+          if (failed.length) console.warn('Evo All skipped:', failed);
+        };
+      }
+
+      document.addEventListener('click', function (event) {
+        var button = event.target.closest('#pc-evo-all');
+        if (!button) return;
+        event.preventDefault();
+        event.stopPropagation();
+        event.stopImmediatePropagation();
+        showPreview();
+      }, true);
+
+      // The original renderer hides its button whenever its old level-only
+      // counter reaches zero. Keep Evo All visible: our preview explains why
+      // every Pokémon is ready or blocked, including item evolutions.
+      function keepEvoAllVisible() {
+        var button = document.getElementById('pc-evo-all');
+        if (!button) return;
+        button.hidden = false;
+        button.removeAttribute('hidden');
+        button.title = 'Kiểm tra và tiến hóa an toàn tất cả Pokémon đủ điều kiện';
+        var full = button.querySelector('.full');
+        if (full) full.textContent = 'Evo All';
+      }
+      window.addEventListener('load', function () {
+        keepEvoAllVisible();
+        setInterval(keepEvoAllVisible, 500);
+      });
+    })();
+  </script>
+
+  <script>
+    // Pokédex region tabs. The original UI renders every region as a vertical
+    // accordion; keep only the chosen region mounted visually and expose all
+    // region names in one horizontally scrollable row above the list.
+    window.addEventListener('DOMContentLoaded', function () {
+      var storageKey = 'pokecatch.dex.selectedRegion';
+      var scheduled = false;
+      var regionalFormTargets = {
+        '5202':'galar','7701':'galar','7801':'galar','7901':'galar','8001':'galar','8301':'galar',
+        '14401':'galar','14501':'galar','14601':'galar',
+        '10001':'sinnoh','10101':'sinnoh','15701':'sinnoh','21101':'sinnoh','21501':'sinnoh',
+        '50301':'sinnoh','54901':'sinnoh','57001':'sinnoh','57101':'sinnoh','62801':'sinnoh',
+        '70501':'sinnoh','70601':'sinnoh','71301':'sinnoh','72401':'sinnoh',
+        '12801':'paldea','19401':'paldea'
+      };
+      var regionalFormSources = {
+        '5202':'kanto','7701':'kanto','7801':'kanto','7901':'kanto','8001':'kanto','8301':'kanto',
+        '14401':'kanto','14501':'kanto','14601':'kanto','10001':'kanto','10101':'kanto','12801':'kanto',
+        '15701':'johto','19401':'johto','21101':'johto','21501':'johto',
+        '50301':'unys','54901':'unys','57001':'unys','57101':'unys','62801':'unys',
+        '70501':'kalos','70601':'kalos','71301':'kalos','72401':'kalos'
+      };
+      var regionalFormTemplates = new Map();
+
+      function syncDexRegionTabs() {
+        scheduled = false;
+        var root = document.getElementById('dex-regions');
+        if (!root) return;
+        var regions = Array.from(root.children).filter(function (node) {
+          return node.classList && node.classList.contains('dex-region');
+        });
+        if (!regions.length) return;
+
+        var names = regions.map(function (region, index) {
+          var title = region.querySelector('.dex-region-head h3');
+          return title && title.textContent.trim() || ('Region ' + (index + 1));
+        });
+        var signature = names.join('|');
+        var nav = root.previousElementSibling;
+        if (!nav || !nav.classList.contains('dex-region-tabs')) {
+          nav = document.createElement('nav');
+          nav.className = 'dex-region-tabs';
+          nav.setAttribute('aria-label', 'Pokédex regions');
+          root.parentNode.insertBefore(nav, root);
+        }
+
+        var selected = '';
+        try { selected = localStorage.getItem(storageKey) || ''; } catch (_) {}
+        var requestedRegion = new URLSearchParams(location.search).get('dexRegion');
+        if (requestedRegion) {
+          var requestedIndex = regions.findIndex(function (region) {
+            return String(region.dataset.region || '').toLowerCase() === requestedRegion.toLowerCase();
+          });
+          if (requestedIndex >= 0) selected = names[requestedIndex];
+        }
+        if (!names.includes(selected)) selected = names[0];
+
+        function removeExactDuplicateCards(region) {
+          if (!region || !/^(kanto|hoenn)$/i.test(region.dataset.region || '')) return;
+          var seenIds = new Set();
+          var seenRendered = new Set();
+          region.querySelectorAll('.dex-cell').forEach(function (cell) {
+            var id = cell.dataset.id || '';
+            if (/^kanto$/i.test(region.dataset.region || '') && cell.classList.contains('dex-form')) {
+              var mega = window.PokeCatch?.MEGA?.isMega?.(+id);
+              if (!mega) {
+                // Kanto's tab contains only its original species; Alola,
+                // Galar, Hisui and other regional variants belong elsewhere.
+                cell.remove();
+                return;
+              }
+              // Mega forms exist but enter the Pokédex only after the matching
+              // stone has actually been used on the original Pokémon.
+              cell.classList.toggle('mega-locked', !window.PokeCatch?.Game?.S?.dex?.[id]);
+            }
+            var name = cell.querySelector('.nm')?.textContent.trim() || '';
+            var number = cell.querySelector('.num')?.textContent.trim() || '';
+            var image = cell.querySelector('.sprbox img')?.getAttribute('src') || '';
+            var renderedKey = name && number ? [name, number, image].join('|') : '';
+            if ((id && seenIds.has(id)) || (renderedKey && seenRendered.has(renderedKey))) {
+              cell.remove();
+              return;
+            }
+            if (id) seenIds.add(id);
+            if (renderedKey) seenRendered.add(renderedKey);
+          });
+        }
+
+        function captureRegionalForms(region) {
+          var sourceKey = String(region?.dataset?.region || '').toLowerCase();
+          region?.querySelectorAll('.dex-cell').forEach(function (cell) {
+            var id = cell.dataset.id || '';
+            var targetKey = regionalFormTargets[id];
+            if (!targetKey || targetKey === sourceKey) return;
+            cell.querySelectorAll('canvas').forEach(function (canvas) {
+              try { canvas._pokePlayer?.destroy?.(); } catch (_) {}
+              canvas.remove();
+            });
+            cell.classList.remove('canvas-ready', 'dex-animation-watched', 'dex-animation-pending', 'mega-locked');
+            cell.querySelector('.sprbox img')?.style.removeProperty('display');
+            if (!regionalFormTemplates.has(id)) regionalFormTemplates.set(id, cell);
+            cell.remove();
+          });
+        }
+
+        function ensureRegionalForms(targetKey) {
+          // Entries are built directly in their destination region below.
+          // Avoid mounting several source Pokédex grids just to move one card.
+        }
+
+        function installRegionalForms(region) {
+          var key = String(region?.dataset?.region || '').toLowerCase();
+          var grid = region?.querySelector('.dex-grid, .dex-list, [data-dex-grid]');
+          if (!key || !grid) return;
+          Object.keys(regionalFormTargets).forEach(function (id) {
+            if (regionalFormTargets[id] !== key || region.querySelector('.dex-cell[data-id="' + id + '"]')) return;
+            var cell = regionalFormTemplates.get(id);
+            if (!cell) {
+              var pokemon = window.PokeCatch?.Game?.DEX?.[+id] || window.PokeCatch?.POKEDEX?.find(function (entry) { return +entry.id === +id; });
+              var sprBox = window.PokeCatch?.UI?.sprBox;
+              if (!pokemon || typeof sprBox !== 'function') return;
+              cell = document.createElement('div');
+              cell.className = 'dex-cell dex-form';
+              cell.dataset.id = id;
+              var dexNo = window.PokeCatch?.UI?.dexNo?.(+id) || id;
+              cell.innerHTML = '<span class="cnt"></span><span class="new">NEW</span>' +
+                sprBox(+id, false, 2, 96).replace('<img ', '<img loading="lazy" ') +
+                '<div class="num">No. ' + dexNo + '</div><div class="nm"></div>';
+              var caught = !!window.PokeCatch?.Game?.S?.dex?.[id];
+              var seen = caught || !!window.PokeCatch?.Game?.S?.seen?.[id];
+              cell.classList.toggle('unknown', !seen);
+              cell.classList.toggle('caught', caught);
+              cell.querySelector('.nm').textContent = seen ? pokemon.name : '???';
+              cell.onclick = function () { window.PokeCatch?.UI?.showDexCard?.(+id, { full: true }); };
+              regionalFormTemplates.set(id, cell);
+            }
+            cell.classList.remove('canvas-ready', 'dex-animation-watched', 'dex-animation-pending', 'mega-locked');
+            cell.querySelectorAll('canvas').forEach(function (canvas) { canvas.remove(); });
+            cell.querySelector('.sprbox img')?.style.removeProperty('display');
+            grid.appendChild(cell);
+          });
+        }
+
+        function stopAndParkRegion(region) {
+          if (!region) return;
+          // Stop every canvas player from the region being left. Merely using
+          // display:none kept decoded sheets and animation objects alive.
+          region.querySelectorAll('canvas').forEach(function (canvas) {
+            try { canvas._pokePlayer?.destroy?.(); } catch (_) {}
+            canvas.parentElement?.querySelector('img')?.style.removeProperty('display');
+            canvas.remove();
+          });
+          region.querySelectorAll('.dex-cell').forEach(function (cell) {
+            cell.classList.remove('canvas-ready', 'dex-animation-watched');
+          });
+
+          // Detach the Pokémon cards from the inactive region. Keep them in a
+          // fragment so returning to the tab is fast and lossless.
+          var grid = region.querySelector('.dex-grid, .dex-list, [data-dex-grid]');
+          if (!grid) return;
+          var cells = Array.from(grid.children).filter(function (node) {
+            return node.classList?.contains('dex-cell');
+          });
+          if (!cells.length) return;
+          var parked = region.__dexPark || document.createDocumentFragment();
+          cells.forEach(function (cell) { parked.appendChild(cell); });
+          region.__dexPark = parked;
+          region.dataset.dexParked = 'true';
+        }
+
+        function restoreRegion(region) {
+          if (!region) return;
+          var grid = region.querySelector('.dex-grid, .dex-list, [data-dex-grid]');
+          if (grid && region.__dexPark?.childNodes?.length) grid.appendChild(region.__dexPark);
+          region.dataset.dexParked = 'false';
+        }
+
+        function selectRegion(name, shouldFocus) {
+          selected = names.includes(name) ? name : names[0];
+          try { localStorage.setItem(storageKey, selected); } catch (_) {}
+          var selectedRegion = regions[names.indexOf(selected)];
+          var selectedKey = String(selectedRegion?.dataset?.region || '').toLowerCase();
+          if (['galar','sinnoh','paldea'].includes(selectedKey)) ensureRegionalForms(selectedKey);
+          regions.forEach(function (region, index) {
+            var active = names[index] === selected;
+            captureRegionalForms(region);
+            removeExactDuplicateCards(region);
+            if (active) {
+              restoreRegion(region);
+              window.__dexSelectedRegionKey = (region.dataset.region || '').toLowerCase();
+              try { localStorage.setItem('pokecatch.dex.selectedRegionKey', window.__dexSelectedRegionKey); } catch (_) {}
+              if (typeof region.__loadDex === 'function') region.__loadDex();
+              captureRegionalForms(region);
+              removeExactDuplicateCards(region);
+              installRegionalForms(region);
+            } else {
+              stopAndParkRegion(region);
+            }
+            region.hidden = !active;
+            region.classList.toggle('folded', false);
+            region.setAttribute('aria-hidden', active ? 'false' : 'true');
+            if (!active) removeExactDuplicateCards(region);
+          });
+          Array.from(nav.children).forEach(function (button) {
+            var active = button.dataset.regionName === selected;
+            button.classList.toggle('active', active);
+            button.setAttribute('aria-selected', active ? 'true' : 'false');
+            button.tabIndex = active ? 0 : -1;
+            if (active && shouldFocus) {
+              button.focus({ preventScroll: true });
+              button.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+            }
+          });
+          root.classList.add('dex-tabs-ready');
+          // Names are filled by the original Pokédex renderer just after the
+          // cards are built, so make one second exact-content pass as well.
+          requestAnimationFrame(function () {
+            regions.forEach(removeExactDuplicateCards);
+          });
+        }
+
+        if (nav.dataset.signature !== signature) {
+          nav.dataset.signature = signature;
+          nav.replaceChildren();
+          var genMap = {
+            'kanto': 'Gen 1 · Kanto',
+            'johto': 'Gen 2 · Johto',
+            'hoenn': 'Gen 3 · Hoenn',
+            'sinnoh': 'Gen 4 · Sinnoh',
+            'unova': 'Gen 5 · Unova',
+            'unys': 'Gen 5 · Unova',
+            'kalos': 'Gen 6 · Kalos',
+            'alola': 'Gen 7 · Alola',
+            'galar': 'Gen 8 · Galar',
+            'paldea': 'Gen 9 · Paldea'
+          };
+          names.forEach(function (name, index) {
+            var regKey = (regions[index].dataset.region || '').toLowerCase();
+            var label = genMap[regKey] || name;
+            var button = document.createElement('button');
+            button.type = 'button';
+            button.className = 'dex-region-tab';
+            button.dataset.regionName = name;
+            button.textContent = label;
+            button.setAttribute('role', 'tab');
+            button.setAttribute('aria-controls', 'dex-region-tabpanel-' + index);
+            regions[index].id = 'dex-region-tabpanel-' + index;
+            button.onclick = function () {
+              selectRegion(name, true);
+            };
+            nav.appendChild(button);
+          });
+        }
+        selectRegion(selected, false);
+      }
+
+      function scheduleSync() {
+        if (scheduled) return;
+        scheduled = true;
+        // Apply visibility before the sprite observer handles newly-rendered
+        // cells, so hidden regions never start unnecessary animations.
+        syncDexRegionTabs();
+      }
+
+      new MutationObserver(scheduleSync).observe(document.body, {
+        childList: true,
+        subtree: true
+      });
+      scheduleSync();
+    });
+  </script>
+
+  <link rel="stylesheet" href="css/borderless_sprites.css?v=mobile-bottom-2">
+  <script src="js/canvas_sprite_engine.js?v=pokedex-native-ball-v47"></script>
+</head>
+<body>
+
+  <div class="game-control-bar">
+    <button class="fab-btn red" id="new-game-btn" type="button">
+      🎮 <span class="fab-wide">NEW GAME</span><span class="fab-short">NEW</span>
+    </button>
+    <a href="./data_explorer.html" target="_blank" class="fab-btn blue">
+      📊 <span class="fab-wide">Tra cứu Database (1,212 Pokémon)</span><span class="fab-short">DEX DB</span>
+    </a>
+  </div>
+
+  <script>
+    document.getElementById('new-game-btn').addEventListener('click', function () {
+      var ok = confirm('Bắt đầu New Game? Dữ liệu lượt chơi hiện tại trên thiết bị này sẽ bị xóa.');
+      if (!ok) return;
+      localStorage.removeItem('gachamon-save-v1');
+      location.href = location.pathname + '?newgame=' + Date.now();
+    });
+  </script>
+
+
+  <style id="iphone-portrait-layout">
+    /* Base utility & starter scene layerings */
+    .fab-short { display: none; }
+
+    .lab-fx, .lk-fx, .rc-fx, .hatch-fx {
+      z-index: 1000000 !important;
+    }
+    body:has(.lab-fx) .side,
+    body:has(.lk-fx) .side,
+    body:has(.hatch-fx) .side,
+    body.titled .side {
+      display: none !important;
+    }
+    body:has(.lab-fx) .game-control-bar,
+    body:has(.lk-fx) .game-control-bar,
+    body:has(.hatch-fx) .game-control-bar {
+      display: none !important;
+    }
+
+    /* Floating control bar (New Game, Dex DB) only visible on Title Screen */
+    body:not(.titled) .game-control-bar {
+      display: none !important;
+    }
+
+    /* Clean UI: Hide Activities & Social navigation tabs completely */
+    #tabs .nav-grp[data-grp="activities"],
+    #tabs .nav-grp[data-grp="social"],
+    .side-nav .nav-grp[data-grp="activities"],
+    .side-nav .nav-grp[data-grp="social"],
+    [data-grp="activities"],
+    [data-grp="social"] {
+      display: none !important;
+    }
+
+    /* Clean UI: Hide Discord, Google, Community & Language options */
+    .side-disc,
+    .ti-discord,
+    .ti-google,
+    .op-discord,
+    .op-google,
+    .op-account,
+    [data-p="account"],
+    [data-p="community"],
+    .op-community,
+    #community,
+    [data-p="lang"],
+    .op-lang,
+    .op-langrow,
+    [data-lang],
+    button[data-p="discord"],
+    button[data-p="google"],
+    [data-act="login"],
+    [data-act="login-google"],
+    .ot-login {
+      display: none !important;
+    }
+
+    @media (max-width: 480px) and (orientation: portrait) {
+      :root {
+        --iphone-safe-top: env(safe-area-inset-top, 0px);
+        --iphone-safe-bottom: env(safe-area-inset-bottom, 0px);
+      }
+
+      /* 1. Exactly 1 Vertical Screen - ZERO Up/Down Page Scrolling - PERFECT CENTER ALIGNMENT */
+      html, body {
+        width: 100vw !important;
+        max-width: 100vw !important;
+        height: 100dvh !important;
+        max-height: 100dvh !important;
+        overflow: hidden !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        touch-action: manipulation;
+        -webkit-text-size-adjust: 100%;
+        overscroll-behavior: none !important;
+      }
+
+      #app {
+        width: 100vw !important;
+        max-width: 100vw !important;
+        height: 100dvh !important;
+        max-height: 100dvh !important;
+        margin: 0 auto !important;
+        padding: 0 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        overflow: hidden !important;
+        position: fixed !important;
+        inset: 0 !important;
+        box-sizing: border-box !important;
+      }
+
+      /* 2. Compact Topbar - 100% Centered */
+      .topbar {
+        position: relative !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        flex: 0 0 50px !important;
+        height: 50px !important;
+        min-height: 50px !important;
+        max-height: 50px !important;
+        width: 100vw !important;
+        max-width: 100vw !important;
+        margin: 0 !important;
+        padding-top: var(--iphone-safe-top) !important;
+        padding-left: 8px !important;
+        padding-right: 8px !important;
+        box-sizing: border-box !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        z-index: 1002 !important;
+      }
+
+      /* 3. Main Viewport strictly bounded & centered */
+      main {
+        flex: 1 1 auto !important;
+        width: 100% !important;
+        max-width: 100vw !important;
+        height: calc(100dvh - 50px - var(--iphone-safe-top) - 52px - var(--iphone-safe-bottom)) !important;
+        max-height: calc(100dvh - 50px - var(--iphone-safe-top) - 52px - var(--iphone-safe-bottom)) !important;
+        margin: 0 auto !important;
+        padding: 0 !important;
+        overflow: hidden !important;
+        position: relative !important;
+        box-sizing: border-box !important;
+      }
+
+      /* 4. Screens Architecture */
+      .screen {
+        width: 100% !important;
+        max-width: 100vw !important;
+        height: 100% !important;
+        max-height: 100% !important;
+        margin: 0 auto !important;
+        box-sizing: border-box !important;
+      }
+
+      /* Non-adventure, non-team screens scroll internally */
+      .screen:not(#screen-adventure):not(#screen-team) {
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+        padding: 8px !important;
+        padding-bottom: 24px !important;
+      }
+
+      /* 5. Adventure Screen - 1-Screen Vertical Dashboard */
+      #screen-adventure.active {
+        display: flex !important;
+        flex-direction: column !important;
+        height: 100% !important;
+        max-height: 100% !important;
+        padding: 4px 8px !important;
+        gap: 4px !important;
+        box-sizing: border-box !important;
+        overflow: hidden !important;
+      }
+
+      .adv-main {
+        flex: 0 0 auto !important;
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 3px !important;
+        width: 100% !important;
+        min-width: 0 !important;
+      }
+
+      /* Route Selector Header */
+      .adv-top, .scene-top {
+        flex: 0 0 24px !important;
+        height: 24px !important;
+        min-height: 24px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        margin: 0 !important;
+        padding: 0 4px !important;
+      }
+
+      /* 6. Battle Arena - Authentic Vertical Mobile Frame */
+      #arena, .arena {
+        width: 100% !important;
+        height: 260px !important;
+        min-height: 260px !important;
+        max-height: 260px !important;
+        aspect-ratio: auto !important;
+        margin: 0 !important;
+        border-radius: 12px !important;
+        position: relative !important;
+        overflow: hidden !important;
+        background-size: cover !important;
+        background-position: center 72% !important;
+        background-repeat: no-repeat !important;
+        border: 2px solid rgba(255, 255, 255, 0.12) !important;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4) !important;
+      }
+
+      /* Team rail docked cleanly on left inside arena */
+      #team-rail, .team-rail {
+        position: absolute !important;
+        left: 4px !important;
+        top: 32px !important;
+        bottom: 34px !important;
+        width: 36px !important;
+        max-width: 36px !important;
+        height: auto !important;
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 3px !important;
+        overflow-y: auto !important;
+        z-index: 10 !important;
+      }
+      #team-rail::-webkit-scrollbar { display: none; }
+
+      .team-rail .tr-row {
+        width: 34px !important;
+        height: 34px !important;
+        min-height: 34px !important;
+        padding: 0 !important;
+        border-radius: 6px !important;
+      }
+      .team-rail .tr-row img {
+        width: 26px !important;
+        height: 26px !important;
+      }
+      .team-rail .tr-lv { display: none !important; }
+
+      /* Sleek Battle Log inside bottom of arena */
+      #battle-log, .arena .battle-log {
+        position: absolute !important;
+        left: 6px !important;
+        right: 6px !important;
+        bottom: 5px !important;
+        height: 24px !important;
+        min-height: 24px !important;
+        line-height: 24px !important;
+        font-size: 11px !important;
+        padding: 0 8px !important;
+        border-radius: 6px !important;
+        text-align: center !important;
+        z-index: 15 !important;
+        background: rgba(18, 20, 28, 0.9) !important;
+        color: #fff !important;
+        border: 1px solid rgba(255, 255, 255, 0.16) !important;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.6) !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        white-space: nowrap !important;
+      }
+
+      /* Enemy HUD compact positioning - never covers enemy sprite */
+      .enemy-hud {
+        position: absolute !important;
+        right: 6px !important;
+        top: 6px !important;
+        min-width: 140px !important;
+        max-width: 175px !important;
+        padding: 4px 8px !important;
+        font-size: 10px !important;
+        border-radius: 8px !important;
+        z-index: 12 !important;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.5) !important;
+      }
+      .enemy-hud .row { margin-bottom: 2px !important; }
+      .enemy-hud .row b { font-size: 12px !important; }
+      .enemy-hud .types { margin-top: 2px !important; }
+      .enemy-hud .types span { font-size: 8px !important; padding: 1px 4px !important; }
+
+      /* Arena Speed Controls - compact pill docked above battle log on right */
+      .adv-controls, .arena .adv-controls {
+        position: absolute !important;
+        top: auto !important;
+        bottom: 34px !important;
+        right: 6px !important;
+        height: auto !important;
+        max-height: 28px !important;
+        z-index: 16 !important;
+        padding: 2px 4px !important;
+        border-radius: 6px !important;
+        display: flex !important;
+        align-items: center !important;
+      }
+      #speed-btns, .arena .adv-controls .seg {
+        margin: 0 !important;
+        height: auto !important;
+      }
+      #speed-btns button, .arena .adv-controls .seg button {
+        padding: 2px 5px !important;
+        font-size: 9px !important;
+        min-width: 22px !important;
+        height: 18px !important;
+        line-height: 18px !important;
+      }
+
+      .newsbar { display: none !important; }
+
+      /* 7. Chapter Badge Banner */
+      .adv-side {
+        flex: 0 0 32px !important;
+        width: 100% !important;
+        margin: 0 !important;
+      }
+      .adv-side #chapter-btn,
+      .side-chap, #side-chapter {
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        height: 32px !important;
+        min-height: 32px !important;
+        max-height: 32px !important;
+        padding: 2px 10px !important;
+        margin: 0 !important;
+        font-size: 10px !important;
+        border-radius: 8px !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+      }
+      .side-chap .ac-bdg, #side-chapter .ac-bdg, .side-chap img {
+        width: 20px !important;
+        height: 20px !important;
+      }
+
+      /* 8. Compact "Found Here" Panel */
+      .zone-panel {
+        flex: 1 1 auto !important;
+        min-height: 0 !important;
+        max-height: calc(100% - 330px) !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        overflow: hidden !important;
+        display: flex !important;
+        flex-direction: column !important;
+      }
+      .zone-box {
+        flex: 1 1 auto !important;
+        height: 100% !important;
+        padding: 6px 8px !important;
+        margin: 0 !important;
+        border-radius: 10px !important;
+        display: flex !important;
+        flex-direction: column !important;
+        overflow: hidden !important;
+        box-sizing: border-box !important;
+      }
+      .zone-head {
+        flex: 0 0 18px !important;
+        margin-bottom: 3px !important;
+        font-size: 11px !important;
+        font-weight: 700 !important;
+      }
+      .zone-box .zone-grid {
+        flex: 1 1 auto !important;
+        display: grid !important;
+        grid-template-columns: repeat(auto-fill, minmax(42px, 1fr)) !important;
+        gap: 4px !important;
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+        padding: 2px 0 !important;
+        margin: 0 !important;
+      }
+      .zone-box .zone-cell {
+        height: 42px !important;
+        min-height: 42px !important;
+        max-height: 42px !important;
+        padding: 0 !important;
+        border-radius: 6px !important;
+      }
+      .zone-box .zone-cell .sprbox,
+      .zone-box .zone-cell img,
+      .zone-box .zone-cell canvas {
+        width: 32px !important;
+        height: 32px !important;
+        max-width: 32px !important;
+        max-height: 32px !important;
+      }
+      .zone-box .zone-pct {
+        font-size: 8px !important;
+        padding: 0 2px !important;
+      }
+
+      /* 9. Title Screen Gamepad Controls */
+      body.titled .game-control-bar {
+        display: flex !important;
+        position: fixed !important;
+        top: auto !important;
+        bottom: calc(16px + var(--iphone-safe-bottom)) !important;
+        left: 16px !important;
+        right: 16px !important;
+        justify-content: center !important;
+        z-index: 99999 !important;
+      }
+      body.titled .game-control-bar .fab-btn {
+        width: auto !important;
+        min-width: 80px !important;
+        height: 36px !important;
+        border-radius: 20px !important;
+        padding: 0 12px !important;
+      }
+      body.titled .fab-short { display: inline !important; }
+
+      /* 10. Bottom Feature Navigation Bar - strictly pinned to viewport bottom */
+      .side {
+        position: fixed !important;
+        top: auto !important;
+        bottom: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        width: 100vw !important;
+        max-width: 100vw !important;
+        height: calc(52px + var(--iphone-safe-bottom)) !important;
+        padding: 2px 4px calc(2px + var(--iphone-safe-bottom)) !important;
+        background: #12141c !important;
+        border-top: 1px solid rgba(255,255,255,0.08) !important;
+        z-index: 1001 !important;
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: stretch !important;
+        overflow-x: auto !important;
+        overflow-y: hidden !important;
+        scrollbar-width: none;
+        box-sizing: border-box !important;
+      }
+      .side::-webkit-scrollbar { display: none; }
+      .side-chap, #side-chapter { display: none !important; }
+      .side-nav, #tabs { display: contents !important; }
+      .side .side-foot { display: contents !important; }
+
+      .side-nav > button, .side-nav .nav-grp-h {
+        flex: 1 0 44px !important;
+        width: auto !important;
+        min-width: 44px !important;
+        min-height: 46px !important;
+        padding: 2px 1px !important;
+        flex-direction: column !important;
+        justify-content: center !important;
+        gap: 1px !important;
+        font-size: 8px !important;
+        line-height: 1 !important;
+      }
+      .side-nav .l, .side-nav button > span:not(.ic):not(.new) {
+        display: block !important;
+        max-width: 44px !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        white-space: nowrap !important;
+        font-size: 8px !important;
+      }
+      .side-nav .ic, .side-nav .ic img {
+        width: 20px !important;
+        min-width: 20px !important;
+        height: 20px !important;
+      }
+      .side .side-foot > * {
+        flex: 0 0 44px !important;
+        width: 44px !important;
+        min-width: 44px !important;
+        min-height: 46px !important;
+        margin: 0 !important;
+        padding: 2px 1px !important;
+        overflow: hidden !important;
+        font-size: 8px !important;
+      }
+
+      /* 11. Modal dialogs */
+      .modal, .modal-card, .dialog {
+        width: calc(100vw - 20px) !important;
+        max-width: calc(100vw - 20px) !important;
+        max-height: calc(100dvh - var(--iphone-safe-top) - var(--iphone-safe-bottom) - 24px) !important;
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      /* 12. Team & PC Screen - compact cards and sprites */
+      #team-slots {
+        display: grid !important;
+        grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+        gap: 4px !important;
+        padding: 4px 2px !important;
+      }
+      #team-slots .slot {
+        min-height: 112px !important;
+        height: 112px !important;
+        padding: 4px 3px !important;
+        box-sizing: border-box !important;
+        position: relative !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: flex-start !important;
+        overflow: hidden !important;
+      }
+      #team-slots .slot .slot-types {
+        position: absolute !important;
+        top: 4px !important;
+        left: 4px !important;
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 2px !important;
+        z-index: 5 !important;
+      }
+      #team-slots .slot .slot-types .type {
+        font-size: 8px !important;
+        padding: 1px 4px !important;
+        border-radius: 4px !important;
+        line-height: 1.1 !important;
+      }
+      #team-slots .slot .w {
+        zoom: 1 !important;
+        transform: none !important;
+        width: 100% !important;
+        height: 58px !important;
+        min-height: 58px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        margin-top: 11px !important;
+        margin-bottom: 1px !important;
+      }
+      #team-slots .slot .sprbox {
+        width: 100% !important;
+        height: 58px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        overflow: visible !important;
+      }
+      #team-slots .slot canvas.pokemon-sprite-team {
+        width: auto !important;
+        height: auto !important;
+        max-width: 58px !important;
+        max-height: 58px !important;
+        margin: auto !important;
+        image-rendering: pixelated !important;
+      }
+      #team-slots .slot .name {
+        font-size: 10px !important;
+        font-weight: 700 !important;
+        margin-top: 2px !important;
+        text-align: center !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        width: 100% !important;
+      }
+      #team-slots .slot .lv {
+        font-size: 9px !important;
+        margin-top: 1px !important;
+        color: #94a3b8 !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        width: 100% !important;
+        text-align: center !important;
+      }
+
+      /* Team / PC Screen - Dedicated split scroll layout */
+      #screen-team.active {
+        display: flex !important;
+        flex-direction: column !important;
+        height: 100% !important;
+        max-height: 100% !important;
+        padding: 4px 6px !important;
+        margin: 0 auto !important;
+        overflow: hidden !important;
+        box-sizing: border-box !important;
+      }
+      #screen-team .team-panel {
+        flex: 0 0 auto !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+        margin-bottom: 2px !important;
+        padding: 4px !important;
+      }
+      #screen-team .map-head {
+        padding: 2px 4px !important;
+        margin-bottom: 2px !important;
+      }
+      #screen-team .team-slots {
+        display: grid !important;
+        grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+        gap: 4px !important;
+        padding: 3px 2px !important;
+        box-sizing: border-box !important;
+      }
+      #screen-team .pc-sticky {
+        flex: 0 0 auto !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+        position: static !important;
+        margin: 2px 0 !important;
+      }
+      #screen-team .pc-grid {
+        flex: 1 1 auto !important;
+        min-height: 0 !important;
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+        box-sizing: border-box !important;
+        width: 100% !important;
+        padding: 6px 4px 24px !important;
+      }
+
+      /* PC Grid - compact four-column collection */
+      :is(#pc-grid, #pen-grid, #evt-pc) {
+        grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+        gap: 5px !important;
+        padding: 5px !important;
+      }
+      :is(#pc-grid, #pen-grid, #evt-pc) .pc-cell {
+        min-height: 82px !important;
+        height: 82px !important;
+        aspect-ratio: auto !important;
+        padding: 3px 2px 16px !important;
+        box-sizing: border-box !important;
+        position: relative !important;
+        overflow: hidden !important;
+      }
+      :is(#pc-grid, #pen-grid, #evt-pc) .pc-cell .sprbox {
+        width: 100% !important;
+        height: 55px !important;
+        min-height: 55px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        overflow: visible !important;
+        margin-top: 0 !important;
+      }
+      :is(#pc-grid, #pen-grid, #evt-pc) .pc-cell canvas.pokemon-sprite-pc {
+        width: auto !important;
+        height: auto !important;
+        max-width: 55px !important;
+        max-height: 55px !important;
+        margin: auto !important;
+        image-rendering: pixelated !important;
+        pointer-events: none !important;
+      }
+      :is(#pc-grid, #pen-grid, #evt-pc) .pc-cell .lvl {
+        font-size: 9px !important;
+        bottom: 3px !important;
+      }
+
+      /* Ensure canvas does not block touch/drag/pointer events */
+      canvas.pokemon-sprite-team,
+      canvas.pokemon-sprite-pc,
+      canvas.pokemon-sprite-mini {
+        pointer-events: none !important;
+        user-select: none !important;
+        -webkit-user-select: none !important;
+      }
+      .pc-cell.holding,
+      .slot.filled.holding {
+        transform: scale(0.94) !important;
+        transition: transform 0.15s ease !important;
+        filter: brightness(1.2) !important;
+      }
+
+      /* Pokédex grid cells & modal */
+      .dex-cell .sprbox img,
+      .dex-cell .sprbox canvas {
+        max-width: 54px !important;
+        max-height: 54px !important;
+        width: auto !important;
+        height: auto !important;
+        object-fit: contain !important;
+      }
+
+      .dc-hero img.art,
+      .dc-hero canvas.pokemon-sprite {
+        max-width: 100px !important;
+        max-height: 100px !important;
+        width: auto !important;
+        height: auto !important;
+        object-fit: contain !important;
+      }
+    }
+
+    /* Gen 5-9 canvases use a high-density backing buffer; do not force the
+       browser's pixelated scaler on those sprites. */
+    canvas.later-gen-smooth {
+      image-rendering: auto !important;
+    }
+
+    /* Keep all six calculated battle stats visible in Team/PC details. */
+    .mon-card details.dc-sec.team-stats-panel {
+      display: block !important;
+    }
+    .mon-card details.dc-sec.team-stats-panel > .stats-slot {
+      display: block !important;
+    }
+  </style>
+
+  <script>
+    // Local-only save handler & English language enforcer
+    (function () {
+      try {
+        localStorage.setItem('poke-lang', 'en');
+      } catch (e) {}
+
+      function initHandlers() {
+        if (window.PokeCatch?.I18n) {
+          window.PokeCatch.I18n.lang = 'en';
+        }
+
+        var missingGalarForms = [
+          {id:5202,base:52,name:'Galarian Meowth',slug:'meowth-galar',types:['steel'],stats:{hp:50,atk:65,def:55,spa:40,spd:40,spe:40}},
+          {id:7701,base:77,name:'Galarian Ponyta',slug:'ponyta-galar',types:['psychic'],stats:{hp:50,atk:85,def:55,spa:65,spd:65,spe:90}},
+          {id:7801,base:78,name:'Galarian Rapidash',slug:'rapidash-galar',types:['psychic','fairy'],stats:{hp:65,atk:100,def:70,spa:80,spd:80,spe:105}},
+          {id:7901,base:79,name:'Galarian Slowpoke',slug:'slowpoke-galar',types:['psychic'],stats:{hp:90,atk:65,def:65,spa:40,spd:40,spe:15}},
+          {id:8001,base:80,name:'Galarian Slowbro',slug:'slowbro-galar',types:['poison','psychic'],stats:{hp:95,atk:100,def:95,spa:100,spd:70,spe:30}},
+          {id:8301,base:83,name:"Galarian Farfetch'd",slug:'farfetchd-galar',types:['fighting'],stats:{hp:52,atk:95,def:55,spa:58,spd:62,spe:55}}
+        ];
+        var gameDex = window.PokeCatch?.Game?.DEX;
+        var pokedex = window.PokeCatch?.POKEDEX;
+        var formList = window.PokeCatch?.FORMS?.LIST;
+        if (gameDex && Array.isArray(pokedex) && Array.isArray(formList)) {
+          missingGalarForms.forEach(function (form) {
+            if (!gameDex[form.id] && gameDex[form.base]) {
+              var entry = Object.assign({}, gameDex[form.base], {
+                id: form.id, num: form.base, name: form.name, key: form.slug,
+                form: 'Galar', isForm: true, types: form.types, stats: form.stats
+              });
+              gameDex[form.id] = entry;
+              pokedex.push(entry);
+            }
+            if (!formList.some(function (item) { return +item.id === form.id; })) {
+              formList.push({id:form.id,base:form.base,slug:form.slug,form:'Galar',types:form.types,stats:form.stats,single:true});
+            }
+          });
+        }
+
+        if (window.PokeCatch?.FORMS?.LIST) {
+          var dex = window.PokeCatch.Game?.DEX || {};
+          window.PokeCatch.FORMS.LIST = window.PokeCatch.FORMS.LIST.filter(function (f) {
+            return !/mega|méga/i.test(String(f.form || f.slug || '')) || !!dex[f.id];
+          });
+        }
+
+        if (window.PokeCatch?.MEGA?.LIST) {
+          for (var i = 0; i < window.PokeCatch.MEGA.LIST.length; i++) {
+            var md = window.PokeCatch.MEGA.LIST[i];
+            if (window.PokeCatch.ITEM_NAMES && md.stone && md.stoneName) {
+              window.PokeCatch.ITEM_NAMES[md.stone] = md.stoneName;
+            }
+            var mon = window.PokeCatch.Game?.DEX?.[md.id] || window.PokeCatch.POKEDEX?.find(function (p) { return p.id === md.id; });
+            if (mon) {
+              if (md.types) mon.types = md.types;
+              mon.name = md.name;
+              mon.form = md.form;
+            }
+          }
+        }
+
+        var saveBtn = document.getElementById('save-btn');
+        if (saveBtn && !saveBtn.__localBound) {
+          saveBtn.__localBound = true;
+          saveBtn.addEventListener('click', function (e) {
+            e.stopImmediatePropagation();
+            e.preventDefault();
+            try {
+              if (window.PokeCatch?.Game?.save) {
+                window.PokeCatch.Game.save();
+              } else {
+                var S = window.PokeCatch?.Game?.S;
+                if (S) localStorage.setItem('gachamon-save-v1', JSON.stringify(S));
+              }
+              window.PokeCatch?.Sfx?.buy?.();
+              if (window.PokeCatch?.UI?.toast) {
+                window.PokeCatch.UI.toast('Game saved to phone! ✓');
+              }
+            } catch (err) {
+              console.error('Local save error:', err);
+            }
+          }, true); // Capture phase overrides app Cloud listener
+        }
+      }
+
+      window.addEventListener('load', function () {
+        initHandlers();
+        setInterval(initHandlers, 1000);
+      });
+    })();
+  </script>
+
+  <script>
+    // Team & PC Touch-Hold (Bấm giữ) to move to Team / Return to PC
+    (function () {
+      let holdTimer = null;
+      let didLongPress = false;
+      let startX = 0, startY = 0;
+      let targetCell = null;
+
+      function clearHold() {
+        if (holdTimer) {
+          clearTimeout(holdTimer);
+          holdTimer = null;
+        }
+        if (targetCell) {
+          targetCell.classList.remove('holding');
+          targetCell = null;
+        }
+      }
+
+      function syncActiveTeam(Game) {
+        if (!Game?.S?.team) return;
+        var sets = Game.S.teamSets;
+        if (sets?.list && Number.isInteger(sets.on) && sets.on >= 0) {
+          sets.list[sets.on] = Game.S.team.slice();
+        }
+        Game.save();
+        window.PokeCatch?.Screens?.team?.render?.();
+        var refreshAdventureTeam = function () {
+          window.PokeCatch?.Screens?.adventure?.refreshTeam?.();
+          window.PokeCatch?.Screens?.adventure?.render?.();
+        };
+        refreshAdventureTeam();
+        window.PokeCatch?.App?.refresh?.();
+        requestAnimationFrame(refreshAdventureTeam);
+        setTimeout(refreshAdventureTeam, 120);
+      }
+
+      document.addEventListener('click', function (e) {
+        var adventureLink = e.target.closest('[data-screen="adventure"], [data-go="adventure"], a[href="#adventure"]');
+        if (!adventureLink) return;
+        setTimeout(function () {
+          window.PokeCatch?.Screens?.adventure?.refreshTeam?.();
+          window.PokeCatch?.Screens?.adventure?.render?.();
+        }, 0);
+      }, true);
+
+      document.addEventListener('pointerdown', function (e) {
+        const pcCell = e.target.closest('#pc-grid .pc-cell:not(.ug-out)');
+        const teamSlot = e.target.closest('#team-slots .slot.filled');
+
+        if (!pcCell && !teamSlot) return;
+
+        targetCell = pcCell || teamSlot;
+        startX = e.clientX;
+        startY = e.clientY;
+        const currentPointerId = e.pointerId;
+        didLongPress = false;
+
+        targetCell.classList.add('holding');
+
+        clearTimeout(holdTimer);
+        holdTimer = setTimeout(function () {
+          didLongPress = true;
+          if (targetCell) targetCell.classList.remove('holding');
+
+          const uid = targetCell ? targetCell.dataset.uid : null;
+          if (!uid || !window.PokeCatch?.Game) return;
+
+          const Game = window.PokeCatch.Game;
+          const S = Game.S;
+          if (!S || !S.team) return;
+
+          // Dispatch pointercancel to release engine drag Ct
+          try {
+            document.dispatchEvent(new PointerEvent('pointercancel', { bubbles: true, cancelable: true, pointerId: currentPointerId }));
+          } catch (err) {}
+
+          const mon = Game.getMon(uid);
+          const monName = mon ? (window.PokeCatch.CONFIG?.DEX?.[mon.id]?.name || mon.name || 'Pokémon') : 'Pokémon';
+
+          if (pcCell) {
+            // Bấm giữ trong PC -> Đưa vào đội hình
+            if (S.team.includes(uid)) {
+              window.PokeCatch.UI?.toast?.(monName + ' is already in your team!');
+              return;
+            }
+            if (S.team.length < 6) {
+              S.team.push(uid);
+              syncActiveTeam(Game);
+              window.PokeCatch.Sfx?.buy?.();
+              try { navigator.vibrate?.([20, 40]); } catch (err) {}
+              window.PokeCatch.UI?.toast?.('✓ ' + monName + ' added to Team!');
+            } else {
+              window.PokeCatch.UI?.toast?.('Team is full (6/6)! Hold a member to remove.');
+            }
+          } else if (teamSlot) {
+            // Bấm giữ trong Đội -> Cất về PC
+            const idx = S.team.indexOf(uid);
+            if (idx >= 0) {
+              if (S.team.length <= 1) {
+                window.PokeCatch.UI?.toast?.('Must keep at least 1 Pokémon in team!');
+                return;
+              }
+              S.team.splice(idx, 1);
+              syncActiveTeam(Game);
+              window.PokeCatch.Sfx?.buy?.();
+              try { navigator.vibrate?.([20, 40]); } catch (err) {}
+              window.PokeCatch.UI?.toast?.('✓ ' + monName + ' returned to PC!');
+            }
+          }
+        }, 320);
+      }, true);
+
+      document.addEventListener('pointermove', function (e) {
+        if (holdTimer && Math.hypot(e.clientX - startX, e.clientY - startY) > 10) {
+          clearHold();
+        }
+      }, true);
+
+      document.addEventListener('pointerup', function (e) {
+        if (didLongPress) {
+          try {
+            window.PokeCatch.Screens?.team?.render();
+          } catch (err) {}
+        }
+        clearHold();
+      }, true);
+
+      document.addEventListener('pointercancel', clearHold, true);
+
+      document.addEventListener('click', function (e) {
+        if (didLongPress) {
+          e.preventDefault();
+          e.stopPropagation();
+          e.stopImmediatePropagation();
+          setTimeout(() => { didLongPress = false; }, 50);
+        }
+      }, true);
+
+      // Enhance MonDetail modal with direct Team / PC action button
+      const modalObserver = new MutationObserver(function () {
+        const modal = document.querySelector('.dexcard.mon-card');
+        if (!modal) return;
+
+        // The game calculates HP/Attack/Defense/Sp.Atk/Sp.Def/Speed using the
+        // species' base stats, this Pokémon's level and its nature. Keep the
+        // complete panel expanded immediately, matching the supplied sample.
+        const statsSlot = modal.querySelector('.stats-slot');
+        const statsPanel = statsSlot && statsSlot.closest('details.dc-sec');
+        if (statsPanel) {
+          statsPanel.open = true;
+          statsPanel.classList.add('team-stats-panel');
+        }
+
+        if (modal.querySelector('.mon-team-action-btn')) return;
+
+        const dcSum = modal.querySelector('.dc-sum');
+        if (!dcSum) return;
+
+        const S = window.PokeCatch?.Game?.S;
+        const monName = modal.querySelector('h2')?.innerText?.trim() || 'Pokémon';
+        const inTeam = S?.team?.some(function (u) {
+          const m = window.PokeCatch.Game.getMon(u);
+          return m && m.name === monName;
+        });
+
+        const btn = document.createElement('button');
+        btn.className = 'btn small gold mon-team-action-btn';
+        btn.style.marginRight = '8px';
+        btn.style.fontSize = '11px';
+        btn.style.fontWeight = '700';
+        btn.style.padding = '3px 8px';
+        btn.style.borderRadius = '14px';
+
+        if (inTeam) {
+          btn.textContent = 'Cất vào PC';
+          btn.onclick = function (e) {
+            e.stopPropagation();
+            const u = S.team.find(function (id) {
+              const m = window.PokeCatch.Game.getMon(id);
+              return m && m.name === monName;
+            });
+            if (u && S.team.length > 1) {
+              S.team.splice(S.team.indexOf(u), 1);
+              syncActiveTeam(window.PokeCatch.Game);
+              window.PokeCatch.Sfx?.buy?.();
+              window.PokeCatch.UI?.toast?.('✓ ' + monName + ' returned to PC!');
+              modal.querySelector('.dc-x')?.click();
+            } else {
+              window.PokeCatch.UI?.toast?.('Must keep at least 1 Pokémon in team!');
+            }
+          };
+        } else {
+          btn.textContent = '+ Vào Đội';
+          btn.onclick = function (e) {
+            e.stopPropagation();
+            const allMons = window.PokeCatch.Game.ownedMons ? window.PokeCatch.Game.ownedMons() : (S.mons || []);
+            const m = allMons.find(function (x) {
+              return x.name === monName && !S.team.includes(x.uid);
+            });
+            if (m && S.team.length < 6) {
+              S.team.push(m.uid);
+              syncActiveTeam(window.PokeCatch.Game);
+              window.PokeCatch.Sfx?.buy?.();
+              window.PokeCatch.UI?.toast?.('✓ ' + monName + ' added to Team!');
+              modal.querySelector('.dc-x')?.click();
+            } else if (S.team.length >= 6) {
+              window.PokeCatch.UI?.toast?.('Team is full (6/6)! Hold a member to remove.');
+            }
+          };
+        }
+
+        dcSum.prepend(btn);
+      });
+
+      modalObserver.observe(document.body, { childList: true, subtree: true });
+    })();
+  </script>
+
+  <script>
+    // In-game Canvas Sprite enhancement for .dc-hero & borderless display
+    window.addEventListener('load', function () {
+      if (typeof CanvasPokemonEngine === 'undefined') return;
+
+      // Every Kanto Pokémon has a verified Walk sheet. Some Idle rows use a
+      // tight square/front frame that looks like a face portrait, so Pokédex
+      // always uses the full-body Walk animation for Gen 1 (#001-#151).
+      function pokedexAnimFor(id) {
+        return id >= 1 && id <= 151 ? 'Walk' : 'Idle';
+      }
+
+      function syncPokedexShinyMode() {
+        var button = document.getElementById('dex-shiny');
+        var screen = document.getElementById('screen-pokedex');
+        var shiny = !!button?.classList.contains('on');
+        screen?.classList.toggle('shiny-mode', shiny);
+        document.querySelectorAll('#dex-regions canvas').forEach(function (canvas) {
+          canvas._pokePlayer?.setShiny(shiny);
+        });
+      }
+
+      document.addEventListener('click', function (event) {
+        if (!event.target.closest('#dex-shiny')) return;
+        setTimeout(syncPokedexShinyMode, 0);
+      });
+
+      // DexCard hero shiny sync
+      document.addEventListener('click', function (e) {
+        var dcShinyBtn = e.target.closest('.dc-shiny');
+        if (dcShinyBtn) {
+          setTimeout(function () {
+            var hero = document.querySelector('.dc-hero');
+            var canvas = hero && hero.querySelector('canvas');
+            if (canvas && canvas._pokePlayer) {
+              var isShiny = dcShinyBtn.classList.contains('on');
+              canvas._pokePlayer.setShiny(isShiny);
+            }
+          }, 0);
+        }
+      });
+
+
+      function attachDexCell(cell) {
+        if (cell.classList.contains('canvas-ready') || cell.closest('.dex-region[hidden]')) return;
+        var sprbox = cell.querySelector('.sprbox');
+        var img = sprbox && sprbox.querySelector('img');
+        if (!img) return;
+        var id = parseInt(cell.dataset.id, 10);
+        if (!id) {
+          var match = (img.getAttribute('src') || '').match(/(\d+)\.(gif|png)/);
+          if (match) id = parseInt(match[1], 10);
+        }
+        if (!id) return;
+
+        cell.classList.add('canvas-ready');
+        var canvas = document.createElement('canvas');
+        canvas.className = 'pokemon-sprite-mini';
+        canvas.style.display = 'none';
+        canvas.style.margin = 'auto';
+        CanvasPokemonEngine.attachPlayer(canvas, {
+          dex: id,
+          isShiny: !!document.getElementById('screen-pokedex')?.classList.contains('shiny-mode'),
+          anim: pokedexAnimFor(id),
+          scale: 1.2,
+          onFirstDraw: function () {
+            canvas.style.display = 'block';
+            img.style.display = 'none';
+          }
+        });
+        sprbox.appendChild(canvas);
+      }
+
+
+      function monForElement(element) {
+        var uid = element?.closest?.('[data-uid]')?.dataset?.uid;
+        if (!uid) return null;
+        try { return window.PokeCatch?.Game?.getMon?.(uid) || null; } catch (_) { return null; }
+      }
+
+      function isShinyElement(element, img) {
+        var mon = monForElement(element);
+        if (mon) return !!mon.shiny;
+        var src = img?.getAttribute?.('src') || '';
+        return /(?:^|\/)shiny(?:\/|$)/i.test(src) ||
+          !!element?.querySelector?.('.shiny-ico,.shiny-mk,.mon-sh') ||
+          !!element?.classList?.contains('shiny');
+      }
+
+      function syncShinyMark(element, img) {
+        var shiny = isShinyElement(element, img);
+        var mark = element.querySelector(':scope > .shiny-head-mark');
+        if (shiny && !mark) {
+          mark = document.createElement('span');
+          mark.className = 'shiny-head-mark';
+          mark.textContent = '✨';
+          mark.title = 'Shiny Pokémon · +10% chỉ số';
+          element.appendChild(mark);
+        } else if (!shiny) mark?.remove();
+        return shiny;
+      }
+
+      // Load animated sheets only as cells approach the viewport. This keeps
+      // every visible Pokémon moving without recreating the old all-regions
+      // load spike when Pokédex opens.
+      var dexAttachQueue = [], dexAttachScheduled = false;
+      function flushDexAttachQueue() {
+        dexAttachScheduled = false;
+        var made = 0;
+        while (dexAttachQueue.length && made < 3) {
+          var cell = dexAttachQueue.shift();
+          cell.classList.remove('dex-animation-pending');
+          if (!cell.__dexNear || !cell.isConnected || cell.closest('.dex-region[hidden]')) continue;
+          attachDexCell(cell); made++;
+        }
+        if (dexAttachQueue.length) {
+          dexAttachScheduled = true;
+          requestAnimationFrame(flushDexAttachQueue);
+        }
+      }
+      function queueDexCell(cell) {
+        if (cell.classList.contains('canvas-ready') || cell.classList.contains('dex-animation-pending')) return;
+        cell.classList.add('dex-animation-pending');
+        dexAttachQueue.push(cell);
+        if (!dexAttachScheduled) { dexAttachScheduled = true; requestAnimationFrame(flushDexAttachQueue); }
+      }
+      function releaseDexCell(cell) {
+        var canvas = cell.querySelector('canvas.pokemon-sprite-mini');
+        if (!canvas) return;
+        try { canvas._pokePlayer?.destroy?.(); } catch (_) {}
+        canvas.remove();
+        cell.querySelector('.sprbox img')?.style.removeProperty('display');
+        cell.classList.remove('canvas-ready');
+      }
+      var dexCellObserver = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          entry.target.__dexNear = entry.isIntersecting;
+          if (entry.isIntersecting) queueDexCell(entry.target);
+          else releaseDexCell(entry.target);
+        });
+      }, { rootMargin: '180px 0px' });
+
+      // PC may contain hundreds of Pokémon. Creating one canvas player per
+      // entry during Team/PC opening blocks the UI, so initialise only cards
+      // that are close to the visible scroll area.
+      function attachPcCell(cell) {
+        if (cell.classList.contains('canvas-ready')) return;
+        var sprbox = cell.querySelector('.sprbox');
+        var img = sprbox && sprbox.querySelector('img');
+        if (!img) return;
+        var id = parseInt(img.dataset.id, 10);
+        if (!id) {
+          var match = (img.getAttribute('src') || '').match(/(\d+)\.(gif|png)/);
+          if (match) id = parseInt(match[1], 10);
+        }
+        if (!id) return;
+        cell.classList.add('canvas-ready');
+        var canvas = document.createElement('canvas');
+        canvas.className = 'pokemon-sprite-pc';
+        canvas.style.display = 'none';
+        canvas.style.margin = 'auto';
+        CanvasPokemonEngine.attachPlayer(canvas, {
+          dex: id,
+          isShiny: syncShinyMark(cell, img),
+          anim: 'Idle',
+          scale: 1.7,
+          onFirstDraw: function () {
+            canvas.style.display = 'block';
+            img.style.display = 'none';
+          }
+        });
+        sprbox.appendChild(canvas);
+      }
+
+      var pcCellObserver = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (!entry.isIntersecting) return;
+          pcCellObserver.unobserve(entry.target);
+          attachPcCell(entry.target);
+        });
+      }, { root: document.getElementById('pc-grid'), rootMargin: '180px 0px' });
+
+      // Observe DOM changes to replace static hero images with interactive canvas
+      var heroObserver = new MutationObserver(function (mutations) {
+        // 1. DexCard hero modal
+        // Team/PC detail modals already use the lightweight animated art from
+        // the game bundle. Replacing that hero while its evolution tree is
+        // mounting can cause repeated modal mutations and freeze the screen.
+        var heroes = document.querySelectorAll('.dexcard:not(.mon-card) .dc-hero:not(.canvas-ready)');
+        heroes.forEach(function (hero) {
+          hero.classList.add('canvas-ready');
+          var img = hero.querySelector('img.art');
+          if (!img) return;
+
+          var src = img.getAttribute('src') || '';
+          var m = src.match(/(\d+)\.(gif|png)/);
+          if (!m) return;
+          var id = parseInt(m[1], 10);
+          var isShiny = src.includes('shiny');
+
+          var canvas = document.createElement('canvas');
+          canvas.className = 'pokemon-sprite';
+          canvas.style.display = 'none'; // Keep img visible until canvas paints!
+          canvas.style.margin = 'auto';
+
+          // Attach CanvasPlayer
+          var player = CanvasPokemonEngine.attachPlayer(canvas, {
+            dex: id,
+            isShiny: isShiny,
+            anim: pokedexAnimFor(id),
+            scale: 2.5,
+            onFirstDraw: function () {
+              canvas.style.display = 'block';
+              img.style.display = 'none';
+            }
+          });
+
+          hero.appendChild(canvas);
+        });
+
+        // 2. Animate only the selected region, lazily around the viewport.
+        var dexCells = document.querySelectorAll(
+          '#dex-regions.dex-tabs-ready > .dex-region:not([hidden]) .dex-cell:not(.dex-animation-watched)'
+        );
+        dexCells.forEach(function (cell) {
+          cell.classList.add('dex-animation-watched');
+          dexCellObserver.observe(cell);
+        });
+
+        // 3. Team slots (.slot.filled)
+        var teamSlots = document.querySelectorAll('#team-slots .slot.filled:not(.canvas-ready), #screen-team .slot.filled:not(.canvas-ready)');
+        teamSlots.forEach(function (slot) {
+          slot.classList.add('canvas-ready');
+          var sprbox = slot.querySelector('.sprbox');
+          if (!sprbox) return;
+          var img = sprbox.querySelector('img');
+          if (!img) return;
+
+          var id = parseInt(img.dataset.id, 10);
+          if (!id) {
+            var m = (img.getAttribute('src') || '').match(/(\d+)\.(gif|png)/);
+            if (m) id = parseInt(m[1], 10);
+          }
+          if (!id) return;
+          var slotShiny = syncShinyMark(slot, img);
+
+          // Mega sprite sheets now supported via CanvasPokemonEngine MEGA_SPRITE_MAP
+
+          var canvas = document.createElement('canvas');
+          canvas.className = 'pokemon-sprite-team';
+          canvas.style.display = 'none';
+          canvas.style.margin = 'auto';
+
+          var player = CanvasPokemonEngine.attachPlayer(canvas, {
+            dex: id,
+            isShiny: slotShiny,
+            anim: 'Idle',
+            scale: 2.0,
+            onFirstDraw: function () {
+              canvas.style.display = 'block';
+              img.style.display = 'none';
+            }
+          });
+
+          sprbox.appendChild(canvas);
+        });
+
+        // 4. PC Grid cells: watch cheaply, create canvas only near viewport.
+        var pcCells = document.querySelectorAll('#pc-grid .pc-cell:not(.canvas-watched), #screen-team .pc-cell:not(.canvas-watched)');
+        pcCells.forEach(function (cell) {
+          syncShinyMark(cell, cell.querySelector('.sprbox img'));
+          cell.classList.add('canvas-watched');
+          pcCellObserver.observe(cell);
+        });
+        document.querySelectorAll('#screen-team .pc-cell, #screen-team .slot.filled').forEach(function (cell) {
+          syncShinyMark(cell, cell.querySelector('.sprbox img'));
+        });
+
+        // 5. Live battle sprites. Use the east-facing row so combatants show
+        // a readable full-body silhouette instead of the front-facing square
+        // frame that can look like a cropped portrait.
+        var battlers = document.querySelectorAll(
+          '#ally-slots .ally:not(.canvas-ready), #enemy-slots .enemy:not(.canvas-ready), ' +
+          '.arena .ally:not(.canvas-ready), .arena .enemy:not(.canvas-ready)'
+        );
+        battlers.forEach(function (battler) {
+          var img = battler.querySelector('.wrap > img, img');
+          if (!img) return;
+          var src = img.getAttribute('src') || img.dataset.src || '';
+          var m = src.match(/pokemon\/(?:shiny\/)?(\d+)\.(?:gif|png)/);
+          if (!m) return;
+
+          var id = parseInt(m[1], 10);
+          if (!id) return;
+          battler.classList.add('canvas-ready');
+
+          var canvas = document.createElement('canvas');
+          canvas.className = 'pokemon-sprite-battle';
+          canvas.style.display = 'none';
+          canvas.style.margin = 'auto';
+
+          CanvasPokemonEngine.attachPlayer(canvas, {
+            dex: id,
+            isShiny: src.includes('shiny'),
+            anim: 'Idle',
+            direction: 2,
+            scale: 2.5,
+            onFirstDraw: function () {
+              canvas.style.display = 'block';
+              img.style.display = 'none';
+            }
+          });
+
+          (img.parentElement || battler).appendChild(canvas);
+        });
+      });
+
+      
+        // 6. Evolution chain animated sprites (including all Megas!)
+        var evoCards = document.querySelectorAll('.evo-chain .evo:not(.canvas-ready)');
+        evoCards.forEach(function (evo) {
+          var sprbox = evo.querySelector('.sprbox');
+          if (!sprbox) return;
+          var img = sprbox.querySelector('img');
+          if (!img) return;
+
+          var id = parseInt(img.dataset.id, 10);
+          if (!id) {
+            var m = (img.getAttribute('src') || '').match(/(\d+)\.(gif|png)/);
+            if (m) id = parseInt(m[1], 10);
+          }
+          if (!id) return;
+          var detailCard = evo.closest('.mon-card');
+          var heroImg = detailCard?.querySelector('.dc-hero img.art');
+          var detailShiny = !!heroImg && /(?:^|\/)shiny(?:\/|$)/i.test(heroImg.getAttribute('src') || '');
+          if (detailShiny) detailCard.classList.add('shiny-detail');
+          if (window.PokeCatch?.MEGA?.isMega?.(id)) {
+            evo.classList.toggle('unknown', !window.PokeCatch?.Game?.S?.dex?.[id]);
+          }
+          evo.classList.add('canvas-ready');
+
+          var canvas = document.createElement('canvas');
+          canvas.className = 'pokemon-sprite-mini';
+          canvas.style.display = 'none';
+          canvas.style.margin = 'auto';
+
+          CanvasPokemonEngine.attachPlayer(canvas, {
+            dex: id,
+            isShiny: detailShiny || isShinyElement(evo, img),
+            anim: 'Idle',
+            scale: 3.35,
+            onFirstDraw: function () {
+              canvas.style.display = 'block';
+              img.style.display = 'none';
+            }
+          });
+
+          sprbox.appendChild(canvas);
+        });
+
+      heroObserver.observe(document.body, {
+        childList: true,
+        subtree: true,
+        attributes: true,
+        attributeFilter: ['src', 'data-src', 'hidden']
+      });
+
+      // Play the actual Attack/Hurt sheets when the battle renderer marks a
+      // target as hit. The previous canvas layer stayed on Idle for every
+      // skill, which made attacks look delayed and jerky.
+      var battleAnimTimers = new WeakMap();
+      function playBattleAnim(element, animation, duration) {
+        var player = element?.querySelector('canvas.pokemon-sprite-battle')?._pokePlayer;
+        if (!player) return;
+        clearTimeout(battleAnimTimers.get(element));
+        player.setAnim(animation);
+        battleAnimTimers.set(element, setTimeout(function () {
+          player.setAnim('Idle');
+        }, duration));
+      }
+      new MutationObserver(function (mutations) {
+        mutations.forEach(function (mutation) {
+          var target = mutation.target;
+          if (!target.classList?.contains('hit') || /(^|\s)hit(\s|$)/.test(mutation.oldValue || '')) return;
+          var battler = target.matches?.('.ally,.enemy') ? target : target.closest?.('.ally,.enemy');
+          if (!battler) return;
+          playBattleAnim(battler, 'Hurt', 260);
+          var arena = battler.closest('.arena, #screen-adventure') || document;
+          var attacker = arena.querySelector(battler.classList.contains('enemy') ? '.ally' : '.enemy');
+          playBattleAnim(attacker, 'Attack', 460);
+        });
+      }).observe(document.body, {
+        subtree: true,
+        attributes: true,
+        attributeOldValue: true,
+        attributeFilter: ['class']
+      });
+    });
+  </script>
+
+  <style id="admin-panel-style">
+    #admin-tools-btn{position:fixed;left:12px;bottom:12px;z-index:999998;border:1px solid #61709a;border-radius:999px;padding:7px 11px;background:#20283d;color:#fff;font:700 11px/1 system-ui;box-shadow:0 3px 12px #0008}body.titled #admin-tools-btn{display:none}#admin-tools-panel[hidden]{display:none}#admin-tools-panel{position:fixed;inset:0;z-index:2147483000;display:grid;place-items:center;padding:16px;background:#080b12bb}.admin-box{width:min(420px,100%);max-height:85vh;overflow:auto;box-sizing:border-box;padding:16px;border:2px solid #56658d;border-radius:16px;background:#171d2d;color:#eef2ff;box-shadow:0 18px 55px #000c}.admin-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}.admin-head h2{margin:0;font-size:18px}.admin-close{border:0;background:#303a56;color:#fff;border-radius:8px;width:32px;height:32px;font-size:18px}.admin-block{display:grid;grid-template-columns:1fr auto;gap:8px;margin-top:12px;padding-top:12px;border-top:1px solid #35405f}.admin-block label{grid-column:1/-1;font-weight:800;font-size:13px}.admin-block input,.admin-block select{min-width:0;padding:9px;border:1px solid #4c587c;border-radius:9px;background:#0e1422;color:#fff;font:600 13px system-ui}.admin-block button{padding:9px 12px;border:0;border-radius:9px;background:#ffcb05;color:#171923;font-weight:900}.admin-item-row{grid-column:1/-1;display:grid;grid-template-columns:minmax(0,1fr) 84px;gap:8px}#admin-status{min-height:18px;margin:12px 0 0;color:#91e6a8;font-size:12px}
+    #admin-tools-btn{position:static!important;left:auto!important;bottom:auto!important;flex:0 0 auto;padding:6px 9px;font-size:10px;white-space:nowrap}@media(max-width:480px){#admin-tools-btn{padding:5px 7px;font-size:9px}}
+  </style>
+  <button id="admin-tools-btn" type="button">ADMIN</button>
+  <div id="admin-tools-panel" hidden><div class="admin-box" role="dialog" aria-modal="true" aria-labelledby="admin-tools-title">
+    <div class="admin-head"><h2 id="admin-tools-title">Game Admin</h2><button class="admin-close" type="button" aria-label="Close">×</button></div>
+    <div class="admin-block"><label for="admin-money">Add money</label><input id="admin-money" type="number" min="1" step="100" value="10000"><button id="admin-add-money" type="button">Add ₽</button></div>
+    <div class="admin-block"><label>Add item</label><div class="admin-item-row"><select id="admin-item"></select><input id="admin-item-qty" type="number" min="1" max="9999" value="1"></div><button id="admin-add-item" type="button">Add item</button></div>
+    <p id="admin-status" aria-live="polite"></p>
+  </div></div>
+  <script>
+    window.addEventListener('load',function(){
+      var open=document.getElementById('admin-tools-btn'),panel=document.getElementById('admin-tools-panel'),close=panel.querySelector('.admin-close'),select=document.getElementById('admin-item'),status=document.getElementById('admin-status');
+      var sleepButton=document.getElementById('sleep-btn'),topActions=sleepButton?.parentElement||document.querySelector('.topbar .tb-acts');
+      if(topActions)topActions.insertBefore(open,sleepButton||null);
+      function game(){return window.PokeCatch?.Game}
+      function fillItems(){var names=window.PokeCatch?.ITEM_NAMES||{},current=select.value;select.replaceChildren(...Object.keys(names).sort(function(a,b){return String(names[a]).localeCompare(String(names[b]))}).map(function(key){var option=document.createElement('option');option.value=key;option.textContent=String(names[key])+' · '+key;return option}));if(current&&names[current])select.value=current}
+      open.onclick=function(){fillItems();panel.hidden=false;status.textContent=''};close.onclick=function(){panel.hidden=true};panel.onclick=function(event){if(event.target===panel)panel.hidden=true};
+      document.getElementById('admin-add-money').onclick=function(){var amount=Math.max(1,Math.floor(+document.getElementById('admin-money').value||0)),G=game();if(!G)return;if(typeof G.moneyIn==='function')G.moneyIn(amount);else G.S.money=Math.max(0,(+G.S.money||0)+amount);G.save();window.PokeCatch.App?.refresh?.();status.textContent='Added '+amount.toLocaleString()+' ₽'};
+      document.getElementById('admin-add-item').onclick=function(){var key=select.value,qty=Math.max(1,Math.min(9999,Math.floor(+document.getElementById('admin-item-qty').value||1))),G=game();if(!G||!key)return;G.addItem(key,qty);G.save();window.PokeCatch.App?.refresh?.();status.textContent='Added '+qty+' × '+(window.PokeCatch.ITEM_NAMES[key]||key)};
+    });
+  </script>
+
+  <style id="duplicate-cleaner-style">
+    #clean-duplicate-pokemon{margin-left:auto;padding:6px 10px;border:1px solid #d7a746;border-radius:999px;background:#322817;color:#ffd974;font:800 11px/1 system-ui}
+  </style>
+  <script>
+    (function () {
+      function installDuplicateCleaner() {
+        var screen = document.querySelector('#screen-team.active');
+        if (!screen || screen.querySelector('#clean-duplicate-pokemon')) return;
+        var anchor = screen.querySelector('.pc-filters,.pc-sticky,.map-head,h2');
+        if (!anchor) return;
+        var button = document.createElement('button');
+        button.id = 'clean-duplicate-pokemon'; button.type = 'button';
+        button.textContent = 'Dọn Pokémon trùng';
+        button.title = 'Giữ tối đa 2 Pokémon thường cùng loài; không xóa shiny';
+        button.onclick = function () {
+          var P = window.PokeCatch, Game = P?.Game, S = Game?.S;
+          if (!S?.mons) return;
+          var groups = new Map();
+          S.mons.filter(function (mon) { return mon && !mon.shiny; }).forEach(function (mon) {
+            var list = groups.get(+mon.id) || []; list.push(mon); groups.set(+mon.id, list);
+          });
+          var extras = [];
+          groups.forEach(function (list) {
+            if (list.length <= 2) return;
+            list.sort(function (a, b) {
+              function priority(mon) { return (S.buddy?.uid === mon.uid ? 1000000 : 0) + (S.team.includes(mon.uid) ? 500000 : 0) + (+mon.level || 0) * 100 + (+mon.caughtAt || 0) / 1e13; }
+              return priority(b) - priority(a);
+            });
+            extras.push.apply(extras, list.slice(2));
+          });
+          if (!extras.length) { P.UI?.toast?.('Không có Pokémon thường bị trùng quá 2 con.'); return; }
+          if (!confirm('Dọn ' + extras.length + ' Pokémon trùng? Game sẽ giữ Buddy, Pokémon trong Team và 2 con cấp cao nhất. Shiny không bị xóa.')) return;
+          var removed = 0;
+          extras.forEach(function (mon) {
+            var teamIndex = S.team.indexOf(mon.uid);
+            if (teamIndex >= 0 && S.team.length > 1) S.team.splice(teamIndex, 1);
+            if (Game.releaseMon(mon.uid)) removed++;
+          });
+          if (S.teamSets?.list && Number.isInteger(S.teamSets.on) && S.teamSets.on >= 0) S.teamSets.list[S.teamSets.on] = S.team.slice();
+          Game.save(); P.Screens?.team?.render?.(); P.Screens?.adventure?.render?.(); P.App?.refresh?.();
+          P.UI?.toast?.('Đã dọn ' + removed + ' Pokémon trùng; mỗi loài thường giữ tối đa 2 con.');
+        };
+        if (anchor.matches('.pc-filters,.map-head')) anchor.appendChild(button); else anchor.parentElement?.insertBefore(button, anchor.nextSibling);
+      }
+      new MutationObserver(installDuplicateCleaner).observe(document.body,{childList:true,subtree:true});
+      setInterval(installDuplicateCleaner,1000);
+    })();
+  </script>
+  <style id="master-ball-replay-style">
+    .shop-card[data-item="master-ball"],.sh-card[data-id="master-ball"]{--c:#b56cff}
+    #map-root .mp-row.done[data-ch]{cursor:pointer}
+    #map-root .mp-row.done[data-ch]::after{content:'↩';display:grid;place-items:center;width:22px;height:22px;margin-left:auto;border-radius:50%;background:#65d48a;color:#102018;font-weight:900}
+  </style>
+  <script>
+    (function () {
+      var storageKey = 'pokecatch.masterBalls.v1';
+      var installed = false;
+      var replaying = false;
+      function installMasterBall() {
+        var P = window.PokeCatch, Game = P?.Game, Config = P?.CONFIG;
+        if (!Game?.S || !Config?.SHOP || installed) return false;
+        installed = true;
+        P.ITEM_NAMES['master-ball'] = 'Master Ball';
+        var saved = 0;
+        try { saved = Math.max(0, Math.floor(+localStorage.getItem(storageKey) || 0)); } catch (_) {}
+        var current = Math.max(0, Game.itemCount('master-ball') || 0);
+        if (saved > current) Game.addItem('master-ball', saved - current);
+        var lastThrows = +Game.S.stats?.throws || 0, lastCaught = +Game.S.stats?.caught || 0, lastCount = -1;
+        var nativeRandom = Math.random;
+        Math.random = function () {
+          if ((Game.itemCount('master-ball') || 0) > 0) {
+            var stack = new Error().stack || '';
+            if (/\bJn\b/.test(stack)) return 0;
+          }
+          return nativeRandom();
+        };
+
+        function injectShopCard() {
+          var grid = document.querySelector('#screen-shop.active .sh-grid');
+          if (!grid || grid.querySelector('[data-id="master-ball"]')) return;
+          var count = Math.max(0, Game.itemCount('master-ball') || 0);
+          var card = document.createElement('div');
+          card.className = 'sh-item master-ball-shop';
+          card.dataset.id = 'master-ball';
+          card.innerHTML = '<div class="sh-top"><div class="sh-ic"><img src="assets/items/master-ball.png" alt=""></div><div class="sh-name"><h4>Master Ball</h4><small>Bắt Pokémon 100%. Tự động dùng cho lần bắt kế tiếp.</small></div></div><div class="sh-bottom"><span class="sh-owned">Đang có: <b>' + count + '</b></span><button class="btn primary buy">500,000 ₽</button></div>';
+          card.querySelector('button').onclick = function () {
+            if ((Game.S.money || 0) < 500000) { P.UI?.toast?.('Không đủ 500,000 ₽'); return; }
+            Game.S.money -= 500000;
+            Game.addItem('master-ball', 1);
+            Game.save();
+            try { localStorage.setItem(storageKey, String(Game.itemCount('master-ball') || 0)); } catch (_) {}
+            P.Sfx?.buy?.();
+            P.UI?.toast?.('Đã mua Master Ball! Lần bắt kế tiếp chắc chắn thành công.');
+            P.App?.refreshHeader?.();
+            card.remove(); injectShopCard();
+          };
+          grid.prepend(card);
+        }
+        new MutationObserver(injectShopCard).observe(document.body, {childList:true,subtree:true});
+        injectShopCard();
+        setInterval(function () {
+          var count = Math.max(0, Game.itemCount('master-ball') || 0);
+          var throwsNow = +Game.S.stats?.throws || 0, caughtNow = +Game.S.stats?.caught || 0;
+          var used = Math.min(Math.max(0, throwsNow - lastThrows), Math.max(0, caughtNow - lastCaught));
+          if (used > 0 && count > 0) {
+            Game.addItem('master-ball', -Math.min(used, count));
+            count = Math.max(0, Game.itemCount('master-ball') || 0);
+            Game.save();
+            P.UI?.toast?.('Master Ball đã bắt Pokémon thành công!');
+          }
+          lastThrows = throwsNow; lastCaught = caughtNow;
+          if (count !== lastCount) {
+            lastCount = count;
+            try { localStorage.setItem(storageKey, String(count)); } catch (_) {}
+          }
+        }, 100);
+        Game.save(); P.App?.refresh?.(); injectShopCard(); return true;
+      }
+      var installTimer = setInterval(function () { if (installMasterBall()) clearInterval(installTimer); }, 250);
+      document.addEventListener('click', function (event) {
+        if (replaying || event.target.closest('[data-loop]')) return;
+        var row = event.target.closest('#map-root .mp-row.done[data-ch]');
+        if (!row) return;
+        var chapter = row.dataset.ch;
+        replaying = true;
+        setTimeout(function () {
+          var go = document.querySelector('#map-root .mp-go[data-go="' + CSS.escape(chapter) + '"]');
+          if (go && !go.disabled) go.click();
+          replaying = false;
+        }, 80);
+      });
+    })();
+  </script>
+
+  <style id="vitamin-mega-boss-style">
+    .vitamin-panel{margin:8px 0;padding:9px;border:1px solid #445071;border-radius:10px;background:#111827}
+    .vitamin-panel h4{display:flex;justify-content:space-between;margin:0 0 7px;font-size:13px}.vitamin-panel h4 small{color:#94a3b8}
+    .vitamin-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}
+    .vitamin-use{position:relative;display:grid;grid-template-columns:24px 1fr;align-items:center;gap:4px;min-width:0;padding:5px;border:1px solid #465477;border-radius:8px;background:#222b42;color:#fff;text-align:left;font:700 10px/1.05 system-ui}
+    .vitamin-use img{width:24px;height:24px;image-rendering:auto}.vitamin-use small{display:block;margin-top:3px;color:#9fb0d4;font-size:9px}.vitamin-use:disabled{opacity:.38}.vitamin-use.boost{animation:vitBoost .55s ease}
+    @keyframes vitBoost{35%{filter:brightness(2);transform:scale(1.08);box-shadow:0 0 18px #72f1a8}100%{filter:none;transform:none}}
+    .statbars>span.vit-flash,.statbars>b.vit-flash,.statbars>div.vit-flash{animation:statFlash .75s ease}
+    @keyframes statFlash{35%{color:#6dff9c;filter:drop-shadow(0 0 5px #37e978);transform:scale(1.08)}100%{color:inherit;filter:none;transform:none}}
+    .vitamin-shop{--c:#6ddc91}.vitamin-shop .sh-ic img{image-rendering:auto}
+  </style>
+  <script>
+    (function () {
+      const VITAMINS = {
+        'hp-up':   { stat:'hp',  label:'HP Up',   statLabel:'HP',       price:10000 },
+        protein:  { stat:'atk', label:'Protein', statLabel:'Attack',   price:10000 },
+        iron:     { stat:'def', label:'Iron',    statLabel:'Defense',  price:10000 },
+        calcium:  { stat:'spa', label:'Calcium', statLabel:'Sp. Atk',  price:10000 },
+        zinc:     { stat:'spd', label:'Zinc',    statLabel:'Sp. Def',  price:10000 },
+        carbos:   { stat:'spe', label:'Carbos',  statLabel:'Speed',    price:10000 }
+      };
+      const STAT_ORDER = ['hp','atk','def','spa','spd','spe'];
+      let selectedUid = null;
+
+      document.addEventListener('pointerdown', function (event) {
+        const holder = event.target.closest('#pc-grid [data-uid],#team-slots [data-uid],#screen-team [data-uid]');
+        if (holder?.dataset.uid) selectedUid = holder.dataset.uid;
+      }, true);
+
+      function totalEv(mon) {
+        return STAT_ORDER.reduce((sum, key) => sum + Math.max(0, +(mon.vitamins?.[key] || 0)), 0);
+      }
+
+      function patchStats(P) {
+        const G = P.Game;
+        if (!G || G.__vitaminStatsInstalled) return false;
+        const nativeStats = G.statsOf.bind(G);
+        const nativeMaxHp = G.maxHp.bind(G);
+        G.statsOf = function (mon) {
+          const result = nativeStats(mon);
+          const level = Math.max(1, G.lvl(mon));
+          for (const key of STAT_ORDER) {
+            const ev = Math.min(252, Math.max(0, +(mon?.vitamins?.[key] || 0)));
+            result[key] += Math.floor((ev / 4) * level / 100);
+          }
+          return result;
+        };
+        G.maxHp = function (mon) {
+          const level = Math.max(1, G.lvl(mon));
+          const ev = Math.min(252, Math.max(0, +(mon?.vitamins?.hp || 0)));
+          return nativeMaxHp(mon) + Math.floor((ev / 4) * level / 100);
+        };
+        G.curHp = function (mon) { return mon.hp == null ? G.maxHp(mon) : Math.min(mon.hp, G.maxHp(mon)); };
+        Object.defineProperty(G, '__vitaminStatsInstalled', { value:true });
+        window.__restoreNativeRegExpTest?.();
+        return true;
+      }
+
+      function refreshStatNumbers(modal, mon, changedStat) {
+        const G = window.PokeCatch.Game, stats = G.statsOf(mon), maxHp = G.maxHp(mon), curHp = G.curHp(mon);
+        const bars = modal.querySelector('.stats-slot .statbars');
+        if (!bars) return;
+        const values = bars.querySelectorAll(':scope > b');
+        STAT_ORDER.forEach(function (key, index) {
+          if (!values[index]) return;
+          values[index].textContent = key === 'hp' ? curHp + '/' + maxHp : stats[key];
+          if (key === changedStat) {
+            values[index].classList.remove('vit-flash'); void values[index].offsetWidth; values[index].classList.add('vit-flash');
+          }
+        });
+        const total = STAT_ORDER.reduce((sum,key) => sum + (key === 'hp' ? maxHp : stats[key]), 0);
+        const totalNode = modal.querySelector('.team-stats-panel .dc-tot');
+        if (totalNode) totalNode.innerHTML = 'Total <b>' + total + '</b>';
+        const hpNow = modal.querySelector('.hp-now'); if (hpNow) hpNow.textContent = curHp + '/' + maxHp;
+      }
+
+      function installVitaminPanel(modal) {
+        if (modal.querySelector('.vitamin-panel')) return;
+        const P = window.PokeCatch, G = P?.Game;
+        let mon = selectedUid && G?.getMon(selectedUid);
+        if (!mon) {
+          const name = modal.querySelector('h2')?.textContent?.trim();
+          mon = G?.allMons?.().find(m => G.DEX[m.id]?.name === name);
+        }
+        if (!mon) return;
+        const panel = document.createElement('div'); panel.className = 'vitamin-panel';
+        const update = function () {
+          const used = totalEv(mon);
+          panel.innerHTML = '<h4>VITAMINS <small>EV ' + used + '/510</small></h4><div class="vitamin-grid"></div>';
+          const grid = panel.querySelector('.vitamin-grid');
+          Object.entries(VITAMINS).forEach(function ([id, info]) {
+            const amount = G.itemCount(id) || 0, statEv = +(mon.vitamins?.[info.stat] || 0);
+            const button = document.createElement('button'); button.type='button'; button.className='vitamin-use';
+            button.disabled = amount <= 0 || statEv >= 252 || used >= 510;
+            button.innerHTML='<img src="assets/items/'+id+'.png" alt=""><span>'+info.label+'<small>'+info.statLabel+' · ×'+amount+' · EV '+statEv+'/252</small></span>';
+            button.onclick=function(){
+              const room=Math.min(10,252-statEv,510-totalEv(mon));
+              if(room<=0||G.itemCount(id)<=0)return;
+              const oldMax=G.maxHp(mon),oldHp=G.curHp(mon);
+              mon.vitamins ||= {}; mon.vitamins[info.stat]=(+(mon.vitamins[info.stat]||0))+room;
+              if(info.stat==='hp'){const newMax=G.maxHp(mon);mon.hp=Math.max(1,Math.round(oldHp/Math.max(1,oldMax)*newMax));}
+              G.addItem(id,-1); G.save(); P.Sfx?.upgrade?.(1); P.UI?.toast?.(info.label+' tăng '+info.statLabel+' của '+G.DEX[mon.id].name+'!');
+              button.classList.add('boost'); refreshStatNumbers(modal,mon,info.stat); update();
+            };
+            grid.appendChild(button);
+          });
+        };
+        update();
+        const statsPanel=modal.querySelector('.team-stats-panel,.stats-slot')?.closest('.dc-sec');
+        (statsPanel||modal.querySelector('.fam-sec')||modal.querySelector('.item-actions'))?.insertAdjacentElement('afterend',panel);
+      }
+
+      function injectVitaminShop() {
+        const P=window.PokeCatch,G=P?.Game,grid=document.querySelector('#screen-shop.active .sh-grid');
+        if(!G||!grid)return;
+        Object.entries(VITAMINS).forEach(function([id,info]){
+          if(grid.querySelector('[data-id="'+id+'"]'))return;
+          const card=document.createElement('div');card.className='sh-item vitamin-shop';card.dataset.id=id;
+          card.innerHTML='<div class="sh-top"><div class="sh-ic"><img src="assets/items/'+id+'.png" alt=""></div><div class="sh-name"><h4>'+info.label+'</h4><small>Tăng EV '+info.statLabel+' cho một Pokémon.</small></div></div><div class="sh-bottom"><span class="sh-owned">Đang có: <b>'+(G.itemCount(id)||0)+'</b></span><button class="btn primary buy">'+info.price.toLocaleString()+' ₽</button></div>';
+          card.querySelector('button').onclick=function(){if((G.S.money||0)<info.price){P.UI?.toast?.('Không đủ tiền!');return;}G.S.money-=info.price;G.addItem(id,1);G.save();P.Sfx?.buy?.();P.App?.refreshHeader?.();P.UI?.toast?.('Đã mua '+info.label);card.remove();injectVitaminShop();};
+          grid.appendChild(card);
+        });
+      }
+
+      // Mega stones are never accepted from generic/random Gen 1-4 drops.
+      // Only a win whose last visible enemy is the exact Mega form authorizes
+      // the corresponding stone reward.
+      let megaById={}, stoneCounts={}, authorizedStone=null, lastEnemyId=0, lastWins=0;
+      function installMegaBossSteps(P,list){
+        if(!P?.STORY?.CHAPTERS||P.STORY.__megaBossStepsInstalled)return;
+        const regionKeys=['unova','kalos','alola','galar','paldea'];
+        const chapters=regionKeys.flatMap(function(key){
+          const ids=P.STORY.chaptersOf?.(key)||[];
+          return ids.length?[ids[ids.length-1]]:[];
+        });
+        if(!chapters.length)return;
+        list.forEach(function(mega,index){
+          const chapter=P.STORY.CHAPTERS[chapters[index%chapters.length]];
+          if(!chapter?.steps||chapter.steps.some(step=>step.once==='mega-boss-'+mega.id))return;
+          chapter.steps.push({
+            kind:'static',name:'Mega Boss · '+mega.name,bg:'cave',id:mega.id,
+            level:Math.min(100,82+Math.floor(index/5)*3),power:2.15,boss:true,
+            rate:0,catch:false,noCatch:true,once:'mega-boss-'+mega.id,
+            text:mega.name+' xuất hiện! Đánh bại đúng Mega Boss này để nhận '+mega.stoneName+'.'
+          });
+        });
+        Object.defineProperty(P.STORY,'__megaBossStepsInstalled',{value:true});
+      }
+      fetch('/data/mega_stones.json').then(r=>r.json()).then(list=>{
+        megaById=Object.fromEntries(list.map(m=>[m.id,m]));
+        const P=window.PokeCatch,G=P?.Game;if(G)for(const m of list)stoneCounts[m.stone]=G.itemCount(m.stone)||0;
+        installMegaBossSteps(P,list);
+      }).catch(()=>{});
+      function monitorMegaBossDrops(){
+        const P=window.PokeCatch,G=P?.Game;if(!G?.S)return;
+        document.querySelectorAll('.enemy canvas,.enemy img,#enemy-slots canvas,#enemy-slots img').forEach(el=>{
+          const id=+(el._pokePlayer?.rawDex||el.dataset.id||(el.getAttribute('src')||'').match(/(\d+)\.(?:png|gif)/)?.[1]||0);
+          if(megaById[id])lastEnemyId=id;
+        });
+        const wins=+G.S.stats?.wins||0;
+        if(wins>lastWins&&megaById[lastEnemyId]){
+          const mega=megaById[lastEnemyId];authorizedStone=mega.stone;G.addItem(mega.stone,1);G.save();stoneCounts[mega.stone]=G.itemCount(mega.stone)||0;
+          P.UI?.toast?.('Boss '+mega.name+' đã rớt '+mega.stoneName+'!');
+        }
+        lastWins=wins;
+        for(const mega of Object.values(megaById)){
+          const now=G.itemCount(mega.stone)||0,prev=stoneCounts[mega.stone]??now;
+          if(now>prev&&authorizedStone!==mega.stone){G.addItem(mega.stone,-(now-prev));G.save();stoneCounts[mega.stone]=prev;}
+          else stoneCounts[mega.stone]=now;
+        }
+        authorizedStone=null;
+      }
+
+      const boot=setInterval(function(){
+        const P=window.PokeCatch;
+        if(!P?.Game?.S)return;
+        patchStats(P);
+        for(const [id,info] of Object.entries(VITAMINS)) P.ITEM_NAMES[id]=info.label;
+        clearInterval(boot);
+      },25);
+      new MutationObserver(function(){const modal=document.querySelector('.dexcard.mon-card');if(modal)installVitaminPanel(modal);injectVitaminShop();}).observe(document.body,{childList:true,subtree:true});
+      setInterval(function(){injectVitaminShop();monitorMegaBossDrops();},250);
+    })();
+  </script>
+
+</body>
+</html>

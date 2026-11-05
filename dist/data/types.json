@@ -1,0 +1,74 @@
+{
+  "normal": {
+    "fr": "Normal",
+    "color": "#A8A77A"
+  },
+  "fire": {
+    "fr": "Feu",
+    "color": "#EE8130"
+  },
+  "water": {
+    "fr": "Eau",
+    "color": "#6390F0"
+  },
+  "grass": {
+    "fr": "Plante",
+    "color": "#7AC74C"
+  },
+  "electric": {
+    "fr": "Électrik",
+    "color": "#F7D02C"
+  },
+  "ice": {
+    "fr": "Glace",
+    "color": "#96D9D6"
+  },
+  "fighting": {
+    "fr": "Combat",
+    "color": "#C22E28"
+  },
+  "poison": {
+    "fr": "Poison",
+    "color": "#A33EA1"
+  },
+  "ground": {
+    "fr": "Sol",
+    "color": "#E2BF65"
+  },
+  "flying": {
+    "fr": "Vol",
+    "color": "#A98FF3"
+  },
+  "psychic": {
+    "fr": "Psy",
+    "color": "#F95587"
+  },
+  "bug": {
+    "fr": "Insecte",
+    "color": "#A6B91A"
+  },
+  "rock": {
+    "fr": "Roche",
+    "color": "#B6A136"
+  },
+  "ghost": {
+    "fr": "Spectre",
+    "color": "#735797"
+  },
+  "dragon": {
+    "fr": "Dragon",
+    "color": "#6F35FC"
+  },
+  "dark": {
+    "fr": "Ténèbres",
+    "color": "#705746"
+  },
+  "steel": {
+    "fr": "Acier",
+    "color": "#B7B7CE"
+  },
+  "fairy": {
+    "fr": "Fée",
+    "color": "#D685AD"
+  }
+}
