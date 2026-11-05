@@ -83,8 +83,9 @@
     .evo-all-safe-list{display:grid;gap:7px}.evo-all-safe-row{display:grid;grid-template-columns:28px 42px 1fr;gap:8px;align-items:center;padding:7px;border-radius:10px;background:#242c40}
     .evo-all-safe-row.blocked{opacity:.68}.evo-all-safe-row img{width:40px;height:40px;object-fit:contain;image-rendering:auto}.evo-all-safe-row b,.evo-all-safe-row small{display:block}.evo-all-safe-row small{margin-top:2px;color:#b9c3dc;font-size:11px}
     .evo-all-safe-actions{position:sticky;bottom:0;display:flex;justify-content:flex-end;gap:8px;padding:11px 15px;background:#20283c;border-top:1px solid #3d4761}.evo-all-safe-actions .btn:disabled{opacity:.45}
-    #screen-team #pc-evo-all,#screen-team #pc-evo-all[hidden]{display:inline-flex!important;visibility:visible!important;align-items:center;gap:5px}
-    #screen-team #pc-evo-all .full{display:inline!important}
+    #screen-team #pc-evo-all,#screen-team #pc-evo-all[hidden]{display:inline-flex!important;visibility:visible!important;align-items:center;gap:5px;background:#334155!important;border-color:#64748b!important;color:#fff!important;text-shadow:0 1px 1px #0008!important}
+    #screen-team #pc-evo-all:hover,#screen-team #pc-evo-all:focus-visible{background:#475569!important;color:#fff!important}
+    #screen-team #pc-evo-all .full{display:inline!important;color:inherit!important}
     #screen-team #pc-evo-all .short{display:none!important}
     #screen-team #pc-exp-all{display:inline-flex!important;visibility:visible!important;align-items:center;gap:5px}
     .exp-use-modal{position:fixed;inset:0;z-index:10025;display:grid;place-items:center;padding:14px;background:#070a12d9}
@@ -1156,6 +1157,9 @@ window.addEventListener('DOMContentLoaded', function () {
         --iphone-safe-top: env(safe-area-inset-top, 0px);
         --iphone-safe-bottom: env(safe-area-inset-bottom, 0px);
       }
+      @supports (-webkit-touch-callout: none) {
+        :root { --iphone-safe-top: max(env(safe-area-inset-top, 0px), 20px); }
+      }
 
       /* 1. Exactly 1 Vertical Screen - ZERO Up/Down Page Scrolling - PERFECT CENTER ALIGNMENT */
       html, body {
@@ -1193,10 +1197,10 @@ window.addEventListener('DOMContentLoaded', function () {
         top: 0 !important;
         left: 0 !important;
         right: 0 !important;
-        flex: 0 0 50px !important;
-        height: 50px !important;
-        min-height: 50px !important;
-        max-height: 50px !important;
+        flex: 0 0 calc(50px + var(--iphone-safe-top)) !important;
+        height: calc(50px + var(--iphone-safe-top)) !important;
+        min-height: calc(50px + var(--iphone-safe-top)) !important;
+        max-height: calc(50px + var(--iphone-safe-top)) !important;
         width: 100vw !important;
         max-width: 100vw !important;
         margin: 0 !important;
