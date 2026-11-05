@@ -1861,10 +1861,10 @@ window.addEventListener('DOMContentLoaded', function () {
           try {
             window.PokeCatch?.Game?.save?.(); var state = currentState();
             if (!validSaveState(state)) throw new Error('Save hiện tại chưa sẵn sàng');
-            var payload = {app:'PokeCatch Offline',format:1,exportedAt:new Date().toISOString(),state:state};
+            var playerName=String(state.trainer?.name||'Trainer'), payload = {app:'PokeCatch Offline',format:1,exportedAt:new Date().toISOString(),playerName:playerName,state:state};
             var blob = new Blob([JSON.stringify(payload,null,2)],{type:'application/json'}), url = URL.createObjectURL(blob), link = document.createElement('a');
-            var stamp = new Date().toISOString().replace(/[:.]/g,'-'); link.href=url; link.download='PokeCatch-Save-'+stamp+'.json'; document.body.appendChild(link); link.click(); link.remove(); setTimeout(function(){URL.revokeObjectURL(url)},1000);
-            status.textContent = 'Đã tải file JSON ✓'; window.PokeCatch?.Sfx?.buy?.();
+            var safeName=playerName.normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9_-]+/gi,'-').replace(/^-+|-+$/g,'')||'Trainer', stamp = new Date().toISOString().replace(/[:.]/g,'-'); link.href=url; link.download='PokeCatch-Save-'+safeName+'-'+stamp+'.json'; document.body.appendChild(link); link.click(); link.remove(); setTimeout(function(){URL.revokeObjectURL(url)},1000);
+            status.textContent = 'Đã tải save của '+playerName+' ✓'; window.PokeCatch?.Sfx?.buy?.();
           } catch (err) { status.textContent = 'Không thể export: ' + err.message; status.classList.add('error'); }
         };
         panel.querySelector('[data-save-action="import"]').onclick = function () { file.value=''; file.click(); };
@@ -1875,7 +1875,7 @@ window.addEventListener('DOMContentLoaded', function () {
             if(!validSaveState(state))throw new Error('Không đúng định dạng save PokeCatch');
             state.updatedAt=Date.now(); state.lastTick=Date.now();
             var key=saveKey(), old=localStorage.getItem(key); if(old)localStorage.setItem('pokecatch-save-before-import',old);
-            localStorage.setItem(key,JSON.stringify(state)); localStorage.removeItem('pokecatch-tab'); status.textContent='Load thành công, đang mở lại game…'; window.PokeCatch?.Sfx?.buy?.(); setTimeout(function(){location.reload()},450);
+            localStorage.setItem(key,JSON.stringify(state)); localStorage.removeItem('pokecatch-tab'); status.textContent='Đã load save của '+String(state.trainer?.name||parsed?.playerName||'Trainer')+', đang mở lại game…'; window.PokeCatch?.Sfx?.buy?.(); setTimeout(function(){location.reload()},450);
           } catch(err) { status.textContent='Load thất bại: '+err.message; status.classList.add('error'); }
         };
         return panel;
