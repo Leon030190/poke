@@ -1108,6 +1108,165 @@ window.addEventListener('DOMContentLoaded', function () {
 
   <link rel="stylesheet" href="css/borderless_sprites.css?v=mobile-bottom-2">
   <script src="js/canvas_sprite_engine.js?v=bulk-actions-freeze-fix-v52"></script>
+
+  <!-- PROGRESS_AND_UNCAUGHT_MON_FIXES_START -->
+  <style id="progress-and-uncaught-mon-fixes">
+    /* 1. Progress Detail Drawer (.pg-info) & Scrim: Always above topbar (z-index 1002) */
+    .pg-scrim,
+    .pg-narrow .pg-scrim {
+      z-index: 2004 !important;
+      background: rgba(8, 11, 18, 0.75) !important;
+      backdrop-filter: blur(4px) !important;
+      -webkit-backdrop-filter: blur(4px) !important;
+    }
+
+    .pg-info,
+    .pg-narrow .pg-info {
+      z-index: 2005 !important;
+      position: fixed !important;
+      inset: 0 0 0 auto !important;
+      width: min(440px, 100%) !important;
+      box-sizing: border-box !important;
+      padding-top: max(calc(54px + var(--iphone-safe-top, 0px)), 54px) !important;
+    }
+
+    /* 2. Progress Close Button (.pg-det-x): Always visible, prominent, and clickable */
+    .pg-info > h4,
+    .pg-narrow .pg-info > h4 {
+      display: flex !important;
+      align-items: center !important;
+      justify-content: flex-end !important;
+      position: absolute !important;
+      top: max(calc(10px + var(--iphone-safe-top, 0px)), 10px) !important;
+      right: 14px !important;
+      height: 38px !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      z-index: 2010 !important;
+      pointer-events: none !important;
+    }
+
+    .pg-det-x,
+    .pg-narrow .pg-det-x {
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      width: 38px !important;
+      height: 38px !important;
+      min-width: 38px !important;
+      min-height: 38px !important;
+      border-radius: 50% !important;
+      background: #1b2238 !important;
+      border: 2px solid #ffcb05 !important;
+      color: #ffcb05 !important;
+      font-size: 18px !important;
+      font-weight: 900 !important;
+      line-height: 1 !important;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.85), 0 0 12px rgba(255, 203, 5, 0.45) !important;
+      cursor: pointer !important;
+      pointer-events: auto !important;
+      position: relative !important;
+      transition: transform 0.15s ease, background 0.15s ease !important;
+    }
+
+    .pg-det-x:hover,
+    .pg-narrow .pg-det-x:hover {
+      transform: scale(1.1) !important;
+      background: #2a3556 !important;
+      border-color: #ffd83b !important;
+    }
+
+    .pg-det-x:active,
+    .pg-narrow .pg-det-x:active {
+      transform: scale(0.92) !important;
+    }
+
+    .pg-det-x::before,
+    .pg-narrow .pg-det-x::before {
+      content: "✕" !important;
+      font-size: 16px !important;
+      font-weight: 900 !important;
+      color: #ffcb05 !important;
+      display: block !important;
+      mask: none !important;
+      -webkit-mask: none !important;
+      background: transparent !important;
+    }
+
+    /* 3. Adventures (À trouver ici / zone-cells): All uncaught Pokémon displayed as dimmed grayscale (ảnh mờ trắng đen) */
+    .zone-cell.unknown,
+    .zone-cell.unknown .sprbox,
+    .zone-cell.unknown img,
+    .zone-cell.unknown canvas,
+    .zone-cell.seen:not(.caught),
+    .zone-cell.seen:not(.caught) .sprbox,
+    .zone-cell.seen:not(.caught) img,
+    .zone-cell.seen:not(.caught) canvas,
+    .zone-cell:not(.caught),
+    .zone-cell:not(.caught) .sprbox,
+    .zone-cell:not(.caught) img,
+    .zone-cell:not(.caught) canvas,
+    .zone-box .zone-cell:not(.caught),
+    .zone-box .zone-cell:not(.caught) .sprbox,
+    .zone-box .zone-cell:not(.caught) img,
+    .zone-box .zone-cell:not(.caught) canvas {
+      filter: grayscale(1) brightness(.72) !important;
+      opacity: .52 !important;
+    }
+
+    .zone-cell.caught,
+    .zone-cell.caught .sprbox,
+    .zone-cell.caught img,
+    .zone-cell.caught canvas,
+    .zone-box .zone-cell.caught,
+    .zone-box .zone-cell.caught .sprbox,
+    .zone-box .zone-cell.caught img,
+    .zone-box .zone-cell.caught canvas {
+      filter: none !important;
+      opacity: 1 !important;
+    }
+
+    /* 4. Progress (Pokémon trouvables / mp-grid): All uncaught Pokémon displayed as dimmed grayscale (ảnh mờ trắng đen) */
+    .mp-grid .unk,
+    .mp-grid .unk .sprbox,
+    .mp-grid .unk img,
+    .mp-grid .unk canvas,
+    .mp-grid .seen:not(.got),
+    .mp-grid .seen:not(.got) .sprbox,
+    .mp-grid .seen:not(.got) img,
+    .mp-grid .seen:not(.got) canvas,
+    .mp-grid > div:not(.got),
+    .mp-grid > div:not(.got) .sprbox,
+    .mp-grid > div:not(.got) img,
+    .mp-grid > div:not(.got) canvas {
+      filter: grayscale(1) brightness(.72) !important;
+      opacity: .52 !important;
+    }
+
+    .mp-grid .got,
+    .mp-grid .got .sprbox,
+    .mp-grid .got img,
+    .mp-grid .got canvas {
+      filter: none !important;
+      opacity: 1 !important;
+    }
+  </style>
+
+  <script id="progress-close-fix-script">
+    (function () {
+      // Escape key to close drawer by simulating click on close button
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') {
+          var closeBtn = document.querySelector('.pg-det-x, .dc-x.pg-det-x');
+          if (closeBtn && closeBtn.offsetParent !== null) {
+            closeBtn.click();
+          }
+        }
+      });
+    })();
+  </script>
+  <!-- PROGRESS_AND_UNCAUGHT_MON_FIXES_END -->
+
 </head>
 <body>
 
@@ -2599,12 +2758,73 @@ window.addEventListener('DOMContentLoaded', function () {
   </script>
 
   <style id="admin-panel-style">
-    #admin-tools-btn{position:fixed;left:12px;bottom:12px;z-index:999998;border:1px solid #61709a;border-radius:999px;padding:7px 11px;background:#20283d;color:#fff;font:700 11px/1 system-ui;box-shadow:0 3px 12px #0008}body.titled #admin-tools-btn{display:none}#admin-tools-panel[hidden]{display:none}#admin-tools-panel{position:fixed;inset:0;z-index:2147483000;display:grid;place-items:center;padding:16px;background:#080b12bb}.admin-box{width:min(420px,100%);max-height:85vh;overflow:auto;box-sizing:border-box;padding:16px;border:2px solid #56658d;border-radius:16px;background:#171d2d;color:#eef2ff;box-shadow:0 18px 55px #000c}.admin-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}.admin-head h2{margin:0;font-size:18px}.admin-close{border:0;background:#303a56;color:#fff;border-radius:8px;width:32px;height:32px;font-size:18px}.admin-block{display:grid;grid-template-columns:1fr auto;gap:8px;margin-top:12px;padding-top:12px;border-top:1px solid #35405f}.admin-block label{grid-column:1/-1;font-weight:800;font-size:13px}.admin-block input,.admin-block select{min-width:0;padding:9px;border:1px solid #4c587c;border-radius:9px;background:#0e1422;color:#fff;font:600 13px system-ui}.admin-block button{padding:9px 12px;border:0;border-radius:9px;background:#ffcb05;color:#171923;font-weight:900}.admin-item-row{grid-column:1/-1;display:grid;grid-template-columns:minmax(0,1fr) 84px;gap:8px}#admin-status{min-height:18px;margin:12px 0 0;color:#91e6a8;font-size:12px}
-    #admin-tools-btn{position:static!important;left:auto!important;bottom:auto!important;flex:0 0 auto;padding:6px 9px;font-size:10px;white-space:nowrap}.admin-env-grid{grid-column:1/-1;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.admin-env-grid button{background:#34405f;color:#fff}.admin-env-grid button.on{background:#ffcb05;color:#171923}@media(max-width:480px){#admin-tools-btn{padding:5px 7px;font-size:9px}}
+    #admin-tools-btn{position:fixed;left:12px;bottom:12px;z-index:999998;border:1px solid #61709a;border-radius:999px;padding:7px 11px;background:#20283d;color:#fff;font:700 11px/1 system-ui;box-shadow:0 3px 12px #0008;cursor:pointer}
+    body.titled #admin-tools-btn{display:none}
+    #admin-tools-panel[hidden]{display:none}
+    #admin-tools-panel{position:fixed;inset:0;z-index:2147483000;display:grid;place-items:center;padding:16px;background:#080b12dd;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+    .admin-box{width:min(440px,100%);max-height:88vh;overflow-y:auto;box-sizing:border-box;padding:18px;border:2px solid #ffcb05;border-radius:16px;background:#151b2b;color:#eef2ff;box-shadow:0 18px 55px #000000, 0 0 20px rgba(255,203,5,0.2)}
+    .admin-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px;border-bottom:1px solid #2d3752;padding-bottom:10px}
+    .admin-head h2{margin:0;font-size:18px;font-weight:900;color:#ffcb05;letter-spacing:0.5px}
+    .admin-close{border:0;background:#25304c;color:#fff;border-radius:8px;width:32px;height:32px;font-size:18px;cursor:pointer;display:grid;place-items:center}
+    .admin-close:hover{background:#3b4970}
+    .admin-block{display:grid;grid-template-columns:1fr auto;gap:8px;margin-top:12px;padding-top:12px;border-top:1px solid #28334e}
+    .admin-block label{grid-column:1/-1;font-weight:800;font-size:13px;color:#cbd5e1}
+    .admin-block input,.admin-block select{min-width:0;padding:8px 10px;border:1px solid #475569;border-radius:8px;background:#090d16;color:#fff;font:600 13px system-ui}
+    .admin-block button{padding:8px 12px;border:0;border-radius:8px;background:#ffcb05;color:#12141c;font-weight:800;cursor:pointer;transition:transform 0.1s}
+    .admin-block button:hover{filter:brightness(1.1)}
+    .admin-block button:active{transform:scale(0.97)}
+    .admin-item-row{grid-column:1/-1;display:grid;grid-template-columns:minmax(0,1fr) 84px;gap:8px}
+    #admin-status{min-height:18px;margin:12px 0 0;color:#6ee7b7;font-size:12px;font-weight:700;text-align:center;background:#0d1f18;border:1px solid #10b98144;border-radius:6px;padding:6px;display:none}
+    #admin-status:not(:empty){display:block}
+    #admin-tools-btn{position:static!important;left:auto!important;bottom:auto!important;flex:0 0 auto;padding:5px 10px;font-size:11px;font-weight:800;white-space:nowrap;background:linear-gradient(135deg, #2b3652, #181f33);color:#ffcb05;border:1px solid rgba(255,203,5,0.6);border-radius:999px;box-shadow:0 2px 8px rgba(0,0,0,0.4)}
+    #admin-tools-btn:hover{border-color:#ffd83b;background:#37456b}
+    .admin-env-grid{grid-column:1/-1;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+    .admin-env-grid button{background:#28334e;color:#fff}
+    .admin-env-grid button.on{background:#ffcb05;color:#12141c;font-weight:900}
+    @media(max-width:480px){#admin-tools-btn{padding:4px 8px;font-size:10px}}
   </style>
   <button id="admin-tools-btn" type="button">ADMIN</button>
   <div id="admin-tools-panel" hidden><div class="admin-box" role="dialog" aria-modal="true" aria-labelledby="admin-tools-title">
-    <div class="admin-head"><h2 id="admin-tools-title">Game Admin</h2><button class="admin-close" type="button" aria-label="Close">×</button></div>
+    <div class="admin-head">
+      <h2 id="admin-tools-title">⚙️ Game Admin</h2>
+      <button class="admin-close" type="button" aria-label="Close">×</button>
+    </div>
+
+    <!-- KHU VỰC VÙNG THÁM HIỂM (GEN 1 - GEN 9) TÍCH HỢP TRỰC TIẾP -->
+    <div class="admin-block" style="grid-column: 1 / -1; display: flex; flex-direction: column; gap: 8px; margin-top: 0; padding-top: 0; border-top: none;">
+      <label style="display:flex; justify-content:space-between; align-items:center; font-size:13px; font-weight:900; color:#ffcb05;">
+        <span>🗺️ Vùng Thám Hiểm (Gen 1 – Gen 9)</span>
+        <span id="admin-reg-current" style="font-size:11px; padding:2px 8px; border-radius:6px; background:#1e293b; color:#93c5fd; font-weight:700;"></span>
+      </label>
+
+      <!-- Phím tắt Mở khóa & Hồi máu -->
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:6px;">
+        <button id="admin-unlock-all-btn" type="button" style="padding:8px 6px; font-size:11px; background:linear-gradient(135deg, #ffcb05, #e0a800); color:#12141c; font-weight:900; border-radius:8px; border:0; cursor:pointer;">
+          🌟 Mở hết 9 Vùng
+        </button>
+        <button id="admin-heal-team-btn" type="button" style="padding:8px 6px; font-size:11px; background:#16a34a; color:#fff; font-weight:800; border-radius:8px; border:0; cursor:pointer;">
+          💖 Hồi máu Team
+        </button>
+      </div>
+
+      <!-- Chọn vùng & chuyển đến -->
+      <div style="display:grid; grid-template-columns: minmax(0, 1fr) auto auto; gap:6px; align-items:center;">
+        <select id="admin-region-select" style="min-width:0; padding:8px; border:1px solid #475569; border-radius:8px; background:#090d16; color:#fff; font:600 12px system-ui;">
+        </select>
+        <button id="admin-goto-region-btn" type="button" style="padding:8px 12px; border:0; border-radius:8px; background:#2563eb; color:#fff; font-size:12px; font-weight:800; cursor:pointer; white-space:nowrap;">
+          🚀 Đến
+        </button>
+        <button id="admin-unlock-region-btn" type="button" style="padding:8px 10px; border:0; border-radius:8px; background:#475569; color:#fff; font-size:12px; font-weight:700; cursor:pointer; white-space:nowrap;">
+          🔓 Mở
+        </button>
+      </div>
+
+      <!-- Bảng 9 Gen bấm nhanh -->
+      <div id="admin-regions-grid" style="display:grid; grid-template-columns:repeat(3, 1fr); gap:4px; margin-top:2px;">
+      </div>
+    </div>
+
+    <!-- TÀI CHÍNH & VẬT PHẨM -->
     <div class="admin-block"><label for="admin-money">Add money</label><input id="admin-money" type="number" min="1" step="100" value="10000"><button id="admin-add-money" type="button">Add ₽</button></div>
     <div class="admin-block"><label>Add item</label><div class="admin-item-row"><select id="admin-item"></select><input id="admin-item-qty" type="number" min="1" max="9999" value="1"></div><button id="admin-add-item" type="button">Add item</button></div>
     <div class="admin-block"><label>Time · Ngày / Đêm</label><div class="admin-env-grid"><button type="button" data-admin-env="time:day">☀ Day · Ngày</button><button type="button" data-admin-env="time:night">🌙 Night · Đêm</button></div></div>
@@ -2614,15 +2834,186 @@ window.addEventListener('DOMContentLoaded', function () {
   <script>
     window.addEventListener('load',function(){
       var open=document.getElementById('admin-tools-btn'),panel=document.getElementById('admin-tools-panel'),close=panel.querySelector('.admin-close'),select=document.getElementById('admin-item'),status=document.getElementById('admin-status');
-      var sleepButton=document.getElementById('sleep-btn'),topActions=sleepButton?.parentElement||document.querySelector('.topbar .tb-acts');
       var adminEnv={time:null,weather:null};
-      if(topActions)topActions.insertBefore(open,sleepButton||null);
+      
+      function mountAdminButton() {
+        var sleepButton=document.getElementById('sleep-btn');
+        var topActions=sleepButton?.parentElement||document.querySelector('.topbar .tb-acts')||document.querySelector('.topbar');
+        if(topActions && open && open.parentElement !== topActions) {
+          topActions.insertBefore(open, sleepButton||null);
+        }
+      }
+      mountAdminButton();
+      setInterval(mountAdminButton, 500);
+
       function game(){return window.PokeCatch?.Game}
       function fillItems(){var names=window.PokeCatch?.ITEM_NAMES||{},current=select.value;select.replaceChildren(...Object.keys(names).sort(function(a,b){return String(names[a]).localeCompare(String(names[b]))}).map(function(key){var option=document.createElement('option');option.value=key;option.textContent=String(names[key])+' · '+key;return option}));if(current&&names[current])select.value=current}
       function paintEnvironment(){document.querySelectorAll('[data-admin-env]').forEach(function(b){var p=b.dataset.adminEnv.split(':');b.classList.toggle('on',b.dataset.adminEnv==='auto'?!adminEnv.time&&!adminEnv.weather:adminEnv[p[0]]===p[1])})}
       function environmentReady(P){return !!(P?.Game?.S?.adv?.nodes?.length&&P?.Adventure?.state)}
       function applyEnvironment(value,quiet){var P=window.PokeCatch,parts=String(value||'auto').split(':');if(parts[0]==='time')adminEnv.time=parts[1];else if(parts[0]==='weather')adminEnv.weather=parts[1];else adminEnv={time:null,weather:null};paintEnvironment();try{adminEnv.time||adminEnv.weather?localStorage.setItem('pokecatch.admin.environment',JSON.stringify(adminEnv)):localStorage.removeItem('pokecatch.admin.environment')}catch{}if(!quiet&&environmentReady(P)){if(parts[0]==='time')P.DAYTIME?.force?.(adminEnv.time);else if(parts[0]==='weather')P.WEATHER?.force?.(adminEnv.weather);else{P.DAYTIME?.force?.(null);P.WEATHER?.force?.(null)}}if(!quiet)status.textContent='Time: '+(adminEnv.time||'auto')+' · Weather: '+(adminEnv.weather||'auto')}
-      open.onclick=function(){fillItems();panel.hidden=false;status.textContent=''};close.onclick=function(){panel.hidden=true};panel.onclick=function(event){if(event.target===panel)panel.hidden=true};
+
+      var REGIONS_DATA = [
+        { id: 'kanto', name: 'Kanto', gen: 'Gen 1', firstCh: 0, lastCh: 19, color: '#ef4444' },
+        { id: 'johto', name: 'Johto', gen: 'Gen 2', firstCh: 20, lastCh: 35, color: '#f59e0b' },
+        { id: 'hoenn', name: 'Hoenn', gen: 'Gen 3', firstCh: 36, lastCh: 51, color: '#10b981' },
+        { id: 'sinnoh', name: 'Sinnoh', gen: 'Gen 4', firstCh: 52, lastCh: 64, color: '#3b82f6' },
+        { id: 'unys', name: 'Unys / Unova', gen: 'Gen 5', firstCh: 65, lastCh: 75, color: '#6366f1' },
+        { id: 'kalos', name: 'Kalos', gen: 'Gen 6', firstCh: 76, lastCh: 85, color: '#ec4899' },
+        { id: 'alola', name: 'Alola', gen: 'Gen 7', firstCh: 86, lastCh: 96, color: '#f97316' },
+        { id: 'galar', name: 'Galar', gen: 'Gen 8', firstCh: 97, lastCh: 107, color: '#8b5cf6' },
+        { id: 'paldea', name: 'Paldea', gen: 'Gen 9', firstCh: 108, lastCh: 118, color: '#14b8a6' },
+      ];
+
+      function updateRegionUI() {
+        var P = window.PokeCatch, G = P?.Game, S = G?.S;
+        var regSelect = document.getElementById('admin-region-select');
+        var regBadge = document.getElementById('admin-reg-current');
+        var grid = document.getElementById('admin-regions-grid');
+        if (!regSelect || !grid) return;
+
+        var curCh = S?.adv?.chapter || 0;
+        var maxUnlocked = (S?.adv?.unlocked != null) ? S.adv.unlocked : 0;
+        var currentReg = REGIONS_DATA[0];
+        for (var i = 0; i < REGIONS_DATA.length; i++) {
+          if (curCh >= REGIONS_DATA[i].firstCh && curCh <= REGIONS_DATA[i].lastCh) {
+            currentReg = REGIONS_DATA[i];
+            break;
+          }
+        }
+        if (regBadge) regBadge.textContent = 'Đang ở: ' + currentReg.name;
+
+        if (!regSelect.children.length) {
+          REGIONS_DATA.forEach(function(r) {
+            var opt = document.createElement('option');
+            opt.value = r.id;
+            opt.textContent = r.gen + ' · ' + r.name + ' (Ch.' + (r.firstCh + 1) + '-' + (r.lastCh + 1) + ')';
+            regSelect.appendChild(opt);
+          });
+          regSelect.value = currentReg.id;
+        }
+
+        grid.innerHTML = '';
+        REGIONS_DATA.forEach(function(r) {
+          var isCurrent = (r.id === currentReg.id);
+          var isUnlocked = (maxUnlocked >= r.firstCh);
+          var btn = document.createElement('button');
+          btn.type = 'button';
+          btn.style.cssText = 'padding:6px 3px; border-radius:6px; border:1px solid ' + (isCurrent ? '#ffd83b' : (isUnlocked ? '#3b82f6' : '#334155')) + '; background:' + (isCurrent ? '#3b2f0b' : (isUnlocked ? '#1e293b' : '#0f172a')) + '; color:' + (isCurrent ? '#ffcb05' : (isUnlocked ? '#e2e8f0' : '#64748b')) + '; font:700 10px system-ui; text-align:center; cursor:pointer;';
+          btn.innerHTML = (isCurrent ? '📍 ' : (isUnlocked ? '✅ ' : '🔒 ')) + r.gen;
+          btn.title = r.name + ' (Ch.' + (r.firstCh + 1) + '-' + (r.lastCh + 1) + ') - Bấm để đến ngay';
+          btn.onclick = function() {
+            goToRegion(r);
+          };
+          grid.appendChild(btn);
+        });
+      }
+
+      function goToRegion(reg) {
+        var P = window.PokeCatch, G = P?.Game, S = G?.S, A = P?.Adventure;
+        if (!G || !S) {
+          status.textContent = 'Chưa sẵn sàng!';
+          return;
+        }
+        A?.ensure?.();
+        if (!S.adv) S.adv = { chapter: 0, unlocked: 0, nodes: [], node: 0 };
+        if (S.adv.unlocked < reg.firstCh) {
+          S.adv.unlocked = reg.firstCh;
+        }
+        if (Array.isArray(S.team) && S.team.length === 0) {
+          var starterMap = { kanto: 1, johto: 152, hoenn: 252, sinnoh: 387, unys: 495, kalos: 650, alola: 722, galar: 810, paldea: 906 };
+          var sid = starterMap[reg.id] || 1;
+          var lvl = Math.max(5, (reg.firstCh + 1) * 2);
+          if (typeof G.makeMon === 'function' && typeof G.receive === 'function') {
+            var newMon = G.makeMon(sid, lvl);
+            if (newMon) {
+              G.receive(newMon);
+              if (newMon.uid && !S.team.includes(newMon.uid)) S.team.push(newMon.uid);
+            }
+          }
+        }
+        document.body.classList.remove('titled');
+        if (P.Screens?.adventure?.goChapter) {
+          P.Screens.adventure.goChapter(reg.firstCh);
+        } else {
+          S.adv.chapter = reg.firstCh;
+          S.adv.node = 0;
+          if (A) {
+            A.state = 'route';
+            A.cur = { chapter: reg.firstCh, node: 0, type: 'route', steps: 0, need: 10 };
+          }
+          P.Screens?.show?.('adventure');
+        }
+        G.save?.();
+        P.App?.refresh?.();
+        status.textContent = '🚀 Đã chuyển đến ' + reg.gen + ' (' + reg.name + ')!';
+        updateRegionUI();
+      }
+
+      function unlockRegion(reg) {
+        var P = window.PokeCatch, G = P?.Game, S = G?.S, A = P?.Adventure;
+        if (!G || !S) return;
+        A?.ensure?.();
+        if (!S.adv) S.adv = { chapter: 0, unlocked: 0, nodes: [], node: 0 };
+        if (S.adv.unlocked < reg.lastCh) {
+          S.adv.unlocked = reg.lastCh;
+          G.save?.();
+          P.App?.refresh?.();
+          status.textContent = '🔓 Đã mở khóa vùng ' + reg.name + ' (đến Ch.' + (reg.lastCh + 1) + ')!';
+          updateRegionUI();
+        } else {
+          status.textContent = 'Vùng ' + reg.name + ' đã được mở khóa!';
+        }
+      }
+
+      open.onclick=function(){
+        fillItems();
+        updateRegionUI();
+        panel.hidden=false;
+        status.textContent='';
+      };
+      close.onclick=function(){panel.hidden=true};
+      panel.onclick=function(event){if(event.target===panel)panel.hidden=true};
+
+      // Region buttons event listeners
+      document.getElementById('admin-unlock-all-btn').onclick = function() {
+        var P = window.PokeCatch, G = P?.Game, S = G?.S;
+        if (!G || !S) return;
+        P.Adventure?.ensure?.();
+        if (!S.adv) S.adv = { chapter: 0, unlocked: 0, nodes: [], node: 0 };
+        S.adv.unlocked = 118;
+        G.save?.();
+        P.App?.refresh?.();
+        status.textContent = '🌟 Đã mở khóa toàn bộ 9 vùng (Gen 1 – Gen 9)!';
+        updateRegionUI();
+      };
+
+      document.getElementById('admin-heal-team-btn').onclick = function() {
+        var P = window.PokeCatch, G = P?.Game, S = G?.S;
+        if (!S || !Array.isArray(S.mons)) return;
+        var count = 0;
+        S.mons.forEach(function(m) {
+          if (m && m.hp != null && m.maxHp) {
+            m.hp = m.maxHp;
+            count++;
+          }
+        });
+        G.save?.();
+        P.App?.refresh?.();
+        status.textContent = '💖 Đã hồi phục đầy máu cho toàn bộ đội (' + count + ' con)!';
+      };
+
+      document.getElementById('admin-goto-region-btn').onclick = function() {
+        var val = document.getElementById('admin-region-select').value;
+        var reg = REGIONS_DATA.find(function(r) { return r.id === val; });
+        if (reg) goToRegion(reg);
+      };
+
+      document.getElementById('admin-unlock-region-btn').onclick = function() {
+        var val = document.getElementById('admin-region-select').value;
+        var reg = REGIONS_DATA.find(function(r) { return r.id === val; });
+        if (reg) unlockRegion(reg);
+      };
+
       document.getElementById('admin-add-money').onclick=function(){var amount=Math.max(1,Math.floor(+document.getElementById('admin-money').value||0)),G=game();if(!G)return;if(typeof G.moneyIn==='function')G.moneyIn(amount);else G.S.money=Math.max(0,(+G.S.money||0)+amount);G.save();window.PokeCatch.App?.refresh?.();status.textContent='Added '+amount.toLocaleString()+' ₽'};
       document.getElementById('admin-add-item').onclick=function(){var key=select.value,qty=Math.max(1,Math.min(9999,Math.floor(+document.getElementById('admin-item-qty').value||1))),G=game();if(!G||!key)return;G.addItem(key,qty);G.save();window.PokeCatch.App?.refresh?.();status.textContent='Added '+qty+' × '+(window.PokeCatch.ITEM_NAMES[key]||key)};
       panel.querySelectorAll('.admin-env-grid').forEach(function(grid){grid.onclick=function(event){var button=event.target.closest('[data-admin-env]');if(button)applyEnvironment(button.dataset.adminEnv,false)}});
@@ -2995,6 +3386,9 @@ window.addEventListener('DOMContentLoaded', function () {
       setInterval(injectVitaminShop,500);
     })();
   </script>
+
+
+
 
 </body>
 </html>
