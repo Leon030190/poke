@@ -6,6 +6,7 @@
 !.github/workflows/build-ios-unsigned.yml
 !dist/
 !dist/**
+dist/release/
 !ios-app/
 ios-app/*
 !ios-app/package.json

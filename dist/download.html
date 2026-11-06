@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Tải App PokéCatch Offline (iOS IPA & Android APK)</title>
+  <link rel="icon" type="image/png" href="assets/ui/shiny-charm.png">
+  <style>
+    :root {
+      --bg: #0d1222;
+      --card-bg: #161c30;
+      --border: #232c48;
+      --gold: #ffcb05;
+      --gold-hover: #ffd83b;
+      --blue: #3b82f6;
+      --green: #22c55e;
+      --text: #f1f5f9;
+      --muted: #94a3b8;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
+    body {
+      background: radial-gradient(circle at 50% 15%, #1e2644 0%, var(--bg) 100%);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 30px 16px 50px;
+    }
+    .container {
+      width: 100%;
+      max-width: 520px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 8px;
+    }
+    .logo-badge {
+      width: 80px;
+      height: 80px;
+      background: #1e294b;
+      border: 3px solid var(--gold);
+      border-radius: 24px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 8px 24px rgba(255, 203, 5, 0.25);
+      margin-bottom: 14px;
+      overflow: hidden;
+    }
+    .logo-badge img {
+      width: 60px;
+      height: 60px;
+      image-rendering: pixelated;
+    }
+    h1 {
+      font-size: 26px;
+      font-weight: 800;
+      color: #fff;
+      letter-spacing: -0.5px;
+      margin-bottom: 6px;
+    }
+    .subtitle {
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.4;
+    }
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 22px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+      position: relative;
+      overflow: hidden;
+    }
+    .card-ios {
+      border-color: rgba(59, 130, 246, 0.4);
+    }
+    .card-ios::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, #3b82f6, #60a5fa);
+    }
+    .card-android {
+      border-color: rgba(34, 197, 94, 0.4);
+    }
+    .card-android::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, #22c55e, #4ade80);
+    }
+    .card-head {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 14px;
+    }
+    .icon-box {
+      width: 48px;
+      height: 48px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+    }
+    .icon-ios { background: rgba(59, 130, 246, 0.15); color: #60a5fa; }
+    .icon-android { background: rgba(34, 197, 94, 0.15); color: #4ade80; }
+    .card-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: #fff;
+    }
+    .card-meta {
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+    .features {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 18px;
+      font-size: 13.5px;
+      color: #cbd5e1;
+    }
+    .features li {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .features li::before {
+      content: '✓';
+      color: var(--green);
+      font-weight: bold;
+    }
+    .btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      width: 100%;
+      padding: 14px;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 700;
+      text-decoration: none;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border: none;
+    }
+    .btn-ios {
+      background: linear-gradient(135deg, #2563eb, #1d4ed8);
+      color: #fff;
+      box-shadow: 0 4px 15px rgba(37, 99, 235, 0.4);
+    }
+    .btn-ios:hover { background: linear-gradient(135deg, #3b82f6, #2563eb); transform: translateY(-2px); }
+    .btn-android {
+      background: linear-gradient(135deg, #16a34a, #15803d);
+      color: #fff;
+      box-shadow: 0 4px 15px rgba(22, 163, 74, 0.4);
+    }
+    .btn-android:hover { background: linear-gradient(135deg, #22c55e, #16a34a); transform: translateY(-2px); }
+    .btn-web {
+      background: #1e294b;
+      color: var(--gold);
+      border: 1px solid var(--gold);
+    }
+    .btn-web:hover { background: #2a3765; }
+    .guide-box {
+      margin-top: 14px;
+      padding: 12px 14px;
+      background: rgba(0, 0, 0, 0.25);
+      border-radius: 10px;
+      font-size: 12px;
+      color: #94a3b8;
+      line-height: 1.5;
+    }
+    .guide-box b { color: #e2e8f0; }
+    .footer {
+      text-align: center;
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 10px;
+    }
+    .footer a { color: var(--gold); text-decoration: none; }
+    .footer a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="logo-badge">
+        <img src="assets/ui/shiny-charm.png" alt="Logo">
+      </div>
+      <h1>PokéCatch Offline</h1>
+      <p class="subtitle">Tải bản cài đặt Native độc lập cho thiết bị di động.<br>Toàn bộ dữ liệu offline, mượt mà và không lo mất save.</p>
+    </div>
+
+    <!-- iOS Card -->
+    <div class="card card-ios">
+      <div class="card-head">
+        <div class="icon-box icon-ios">🍏</div>
+        <div>
+          <div class="card-title">Bản cài đặt iOS (.IPA)</div>
+          <div class="card-meta">Dung lượng: ~397 MB • Cập nhật mới nhất</div>
+        </div>
+      </div>
+      <ul class="features">
+        <li>Bao gồm đầy đủ Gen 1 – Gen 9 & 45 Mega Pokémon hoạt họa</li>
+        <li>Tích hợp chọn vùng ADMIN topbar & nút đóng Progress nổi bật</li>
+        <li>Toàn bộ Pokémon chưa bắt hiển thị ảnh mờ trắng đen Contours</li>
+        <li>Chạy độc lập mượt mà qua WKWebView không cần Safari</li>
+      </ul>
+      <a href="/release/PokeCatch-Offline-unsigned.ipa" class="btn btn-ios" download>
+        ⬇ Tải File PokeCatch-Offline.ipa (397 MB)
+      </a>
+      <div class="guide-box">
+        <b>💡 Hướng dẫn cài đặt trên iPhone / iPad:</b><br>
+        • <b>TrollStore</b> (Khuyên dùng nếu iOS hỗ trợ): Bấm chia sẻ file vào TrollStore để cài vĩnh viễn không cần ký lại.<br>
+        • <b>AltStore / Sideloadly / Scarlet</b>: Dùng Apple ID cá nhân để ký và cài trực tiếp vào máy.
+      </div>
+    </div>
+
+    <!-- Android Card -->
+    <div class="card card-android">
+      <div class="card-head">
+        <div class="icon-box icon-android">🤖</div>
+        <div>
+          <div class="card-title">Bản cài đặt Android (.APK)</div>
+          <div class="card-meta">Dung lượng: ~487 MB • Cài trực tiếp</div>
+        </div>
+      </div>
+      <ul class="features">
+        <li>Cài trực tiếp như file APK thông thường không cần máy tính</li>
+        <li>Toàn bộ âm thanh, sprite chuyển động và save lưu tại bộ nhớ máy</li>
+      </ul>
+      <a href="/release/PokeCatch-Offline-Android.apk" class="btn btn-android" download>
+        ⬇ Tải File PokeCatch-Offline.apk (487 MB)
+      </a>
+    </div>
+
+    <!-- Play on Web -->
+    <a href="/" class="btn btn-web">
+      🎮 Quay lại Chơi trực tiếp trên Web
+    </a>
+
+    <div class="footer">
+      Build tự động bằng GitHub Actions: <a href="https://github.com/Leon030190/poke/actions" target="_blank" rel="noopener">Leon030190/poke/actions</a>
+    </div>
+  </div>
+</body>
+</html>

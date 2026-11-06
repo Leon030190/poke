@@ -2781,14 +2781,20 @@ window.addEventListener('DOMContentLoaded', function () {
     .admin-env-grid{grid-column:1/-1;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
     .admin-env-grid button{background:#28334e;color:#fff}
     .admin-env-grid button.on{background:#ffcb05;color:#12141c;font-weight:900}
-    @media(max-width:480px){#admin-tools-btn{padding:4px 8px;font-size:10px}}
+    @media(max-width:480px){#admin-tools-btn, #app-download-btn{padding:4px 7px;font-size:10px}}
   </style>
   <button id="admin-tools-btn" type="button">ADMIN</button>
+  <a id="app-download-btn" href="/download.html" target="_blank" title="Tải file IPA (iOS) và APK (Android)" style="flex:0 0 auto;padding:5px 9px;font-size:11px;font-weight:800;white-space:nowrap;background:linear-gradient(135deg, #10b981, #059669);color:#fff;border:1px solid rgba(16,185,129,0.8);border-radius:999px;box-shadow:0 2px 8px rgba(0,0,0,0.3);text-decoration:none;display:inline-flex;align-items:center;gap:3px;">📱 Tải App</a>
   <div id="admin-tools-panel" hidden><div class="admin-box" role="dialog" aria-modal="true" aria-labelledby="admin-tools-title">
     <div class="admin-head">
       <h2 id="admin-tools-title">⚙️ Game Admin</h2>
       <button class="admin-close" type="button" aria-label="Close">×</button>
     </div>
+
+    <!-- TẢI APP OFFLINE NATIVE -->
+    <a href="/download.html" target="_blank" style="display:flex;align-items:center;justify-content:center;gap:6px;padding:9px 12px;margin-bottom:12px;background:linear-gradient(135deg,#2563eb,#1d4ed8);color:#fff;border-radius:10px;text-decoration:none;font-weight:800;font-size:12.5px;box-shadow:0 3px 10px rgba(37,99,235,0.35);border:1px solid rgba(255,255,255,0.15);">
+      📱 Tải Bản Cài Đặt iOS (.IPA) & Android (.APK) ↗
+    </a>
 
     <!-- KHU VỰC VÙNG THÁM HIỂM (GEN 1 - GEN 9) TÍCH HỢP TRỰC TIẾP -->
     <div class="admin-block" style="grid-column: 1 / -1; display: flex; flex-direction: column; gap: 8px; margin-top: 0; padding-top: 0; border-top: none;">
@@ -2833,14 +2839,19 @@ window.addEventListener('DOMContentLoaded', function () {
   </div></div>
   <script>
     window.addEventListener('load',function(){
-      var open=document.getElementById('admin-tools-btn'),panel=document.getElementById('admin-tools-panel'),close=panel.querySelector('.admin-close'),select=document.getElementById('admin-item'),status=document.getElementById('admin-status');
+      var open=document.getElementById('admin-tools-btn'),appBtn=document.getElementById('app-download-btn'),panel=document.getElementById('admin-tools-panel'),close=panel.querySelector('.admin-close'),select=document.getElementById('admin-item'),status=document.getElementById('admin-status');
       var adminEnv={time:null,weather:null};
       
       function mountAdminButton() {
         var sleepButton=document.getElementById('sleep-btn');
         var topActions=sleepButton?.parentElement||document.querySelector('.topbar .tb-acts')||document.querySelector('.topbar');
-        if(topActions && open && open.parentElement !== topActions) {
-          topActions.insertBefore(open, sleepButton||null);
+        if(topActions) {
+          if(appBtn && appBtn.parentElement !== topActions) {
+            topActions.insertBefore(appBtn, sleepButton||null);
+          }
+          if(open && open.parentElement !== topActions) {
+            topActions.insertBefore(open, appBtn||sleepButton||null);
+          }
         }
       }
       mountAdminButton();
