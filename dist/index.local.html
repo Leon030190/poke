@@ -2883,18 +2883,20 @@ window.addEventListener('DOMContentLoaded', function () {
       }
 
       var REGIONS_DATA = [
-        { id: 'kanto', name: 'Kanto', gen: 'Gen 1', firstCh: 0, lastCh: 19, color: '#ef4444' },
-        { id: 'johto', name: 'Johto', gen: 'Gen 2', firstCh: 20, lastCh: 35, color: '#f59e0b' },
-        { id: 'hoenn', name: 'Hoenn', gen: 'Gen 3', firstCh: 36, lastCh: 51, color: '#10b981' },
-        { id: 'sinnoh', name: 'Sinnoh', gen: 'Gen 4', firstCh: 52, lastCh: 64, color: '#3b82f6' },
-        { id: 'unys', name: 'Unys / Unova', gen: 'Gen 5', firstCh: 65, lastCh: 75, color: '#6366f1' },
-        { id: 'kalos', name: 'Kalos', gen: 'Gen 6', firstCh: 76, lastCh: 85, color: '#ec4899' },
-        { id: 'alola', name: 'Alola', gen: 'Gen 7', firstCh: 86, lastCh: 96, color: '#f97316' },
-        { id: 'galar', name: 'Galar', gen: 'Gen 8', firstCh: 97, lastCh: 107, color: '#8b5cf6' },
-        { id: 'paldea', name: 'Paldea', gen: 'Gen 9', firstCh: 108, lastCh: 118, color: '#14b8a6' },
+        { id: 'kanto', name: 'Kanto', gen: 'Gen 1', firstCh: 0, lastCh: 13, color: '#ef4444' },
+        { id: 'johto', name: 'Johto', gen: 'Gen 2', firstCh: 14, lastCh: 30, color: '#f59e0b' },
+        { id: 'hoenn', name: 'Hoenn', gen: 'Gen 3', firstCh: 31, lastCh: 47, color: '#10b981' },
+        { id: 'sinnoh', name: 'Sinnoh', gen: 'Gen 4', firstCh: 48, lastCh: 65, color: '#3b82f6' },
+        { id: 'unys', name: 'Unys / Unova', gen: 'Gen 5', firstCh: 66, lastCh: 82, color: '#6366f1' },
+        { id: 'kalos', name: 'Kalos', gen: 'Gen 6', firstCh: 83, lastCh: 99, color: '#ec4899' },
+        { id: 'alola', name: 'Alola', gen: 'Gen 7', firstCh: 100, lastCh: 115, color: '#f97316' },
+        { id: 'galar', name: 'Galar', gen: 'Gen 8', firstCh: 116, lastCh: 128, color: '#8b5cf6' },
+        { id: 'paldea', name: 'Paldea', gen: 'Gen 9', firstCh: 129, lastCh: 146, color: '#14b8a6' },
       ];
+      try { refreshRegionBounds(); } catch(e) {}
 
       function updateRegionUI() {
+        try { refreshRegionBounds(); } catch(e) {}
         var P = window.PokeCatch, G = P?.Game, S = G?.S;
         var regSelect = document.getElementById('admin-region-select');
         var regBadge = document.getElementById('admin-reg-current');
@@ -3010,10 +3012,21 @@ window.addEventListener('DOMContentLoaded', function () {
         if (!G || !S) return;
         P.Adventure?.ensure?.();
         if (!S.adv) S.adv = { chapter: 0, unlocked: 0, nodes: [], node: 0 };
-        S.adv.unlocked = 118;
+        var maxCh = (P?.STORY?.CHAPTERS?.length ? P.STORY.CHAPTERS.length - 1 : 146);
+        S.adv.unlocked = maxCh;
+        var allBadges = [];
+        if (P?.STORY?.CHAPTERS) {
+          P.STORY.CHAPTERS.forEach(function(c) {
+            if (c.steps) c.steps.forEach(function(s) { if (s.badge && !allBadges.includes(s.badge)) allBadges.push(s.badge); });
+          });
+        }
+        if (!allBadges.length) {
+          allBadges = ["Roche","Cascade","Foudre","Prisme","Âme","Marais","Volcan","Terre","Maître","Zéphyr","Essaim","Plaine","Brume","Choc","Minéral","Glacier","Lever","Maître Johto","Légende","Roche (Hoenn)","Poing","Dynamo","Chaleur","Balance","Plume","Maître Hoenn","Esprit","Pluie","Charbon","Forêt","Fantôme","Pavé","Palustre","Mine","Glaçon","Maître Sinnoh","Phare","Trio","Basique","Élytre","Volt","Séisme","Jet","Glaive","Légende (Unys)","Maître Unys","Coléoptère","Mur","Lutte","Plante (Kalos)","Voltage","Nymphe","Psychique","Iceberg","Conseil Acier","Conseil Dragon","Maître Kalos","Cristal Combat","Cristal Roche","Cristal Ténèbres","Cristal Sol","Conseil Alola","Maître Alola","Plante","Eau","Feu","Combat","Fée","Glace","Ténèbres","Dragon","Maître Galar","Insecte","Plante (Paldea)","Électrik","Eau (Paldea)","Normal","Spectre","Psy","Conseil Paldea","Maître Paldea"];
+        }
+        S.adv.badges = Array.from(new Set((S.adv.badges || []).concat(allBadges)));
         G.save?.();
         P.App?.refresh?.();
-        status.textContent = '🌟 Đã mở khóa toàn bộ 9 vùng (Gen 1 – Gen 9)!';
+        status.textContent = '🌟 Đã mở khóa toàn bộ 9 vùng (Gen 1 – Gen 9)! Plafond Cấp: 100';
         updateRegionUI();
       };
 
