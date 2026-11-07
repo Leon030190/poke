@@ -1,4 +1,4 @@
-const VERSION = 'pokecatch-pwa-v1';
+const VERSION = 'pokecatch-pwa-v2';
 const CORE = VERSION + '-core';
 const RUNTIME = VERSION + '-runtime';
 const CORE_FILES = [
