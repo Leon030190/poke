@@ -2863,6 +2863,25 @@ window.addEventListener('DOMContentLoaded', function () {
       function environmentReady(P){return !!(P?.Game?.S?.adv?.nodes?.length&&P?.Adventure?.state)}
       function applyEnvironment(value,quiet){var P=window.PokeCatch,parts=String(value||'auto').split(':');if(parts[0]==='time')adminEnv.time=parts[1];else if(parts[0]==='weather')adminEnv.weather=parts[1];else adminEnv={time:null,weather:null};paintEnvironment();try{adminEnv.time||adminEnv.weather?localStorage.setItem('pokecatch.admin.environment',JSON.stringify(adminEnv)):localStorage.removeItem('pokecatch.admin.environment')}catch{}if(!quiet&&environmentReady(P)){if(parts[0]==='time')P.DAYTIME?.force?.(adminEnv.time);else if(parts[0]==='weather')P.WEATHER?.force?.(adminEnv.weather);else{P.DAYTIME?.force?.(null);P.WEATHER?.force?.(null)}}if(!quiet)status.textContent='Time: '+(adminEnv.time||'auto')+' · Weather: '+(adminEnv.weather||'auto')}
 
+      function refreshRegionBounds() {
+        var chs = window.PokeCatch && window.PokeCatch.STORY && window.PokeCatch.STORY.CHAPTERS;
+        if (!chs || !chs.length) return;
+        REGIONS_DATA.forEach(function(r) {
+          var first = -1, last = -1;
+          for (var i = 0; i < chs.length; i++) {
+            var reg = chs[i].reg || 'kanto';
+            if (reg === r.id) {
+              if (first === -1) first = i;
+              last = i;
+            }
+          }
+          if (first >= 0) {
+            r.firstCh = first;
+            r.lastCh = last;
+          }
+        });
+      }
+
       var REGIONS_DATA = [
         { id: 'kanto', name: 'Kanto', gen: 'Gen 1', firstCh: 0, lastCh: 19, color: '#ef4444' },
         { id: 'johto', name: 'Johto', gen: 'Gen 2', firstCh: 20, lastCh: 35, color: '#f59e0b' },
