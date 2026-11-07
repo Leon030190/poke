@@ -140,3 +140,103 @@ body.launching {
   opacity: 1 !important;
   visibility: visible !important;
 }
+
+/* ============================================================
+   6. ADVENTURE MODE: COMPACT & BORDERLESS BATTLE POKÉMON SYSTEM
+   Thu nhỏ kích thước Pokémon trong Adventures vừa vặn, cân đối.
+   Loại bỏ hoàn toàn khung viền đen, hộp đen nền quanh Pokémon và đội hình.
+   ============================================================ */
+
+/* 6.1. Giảm tỷ lệ kích thước biến --k trong sàn đấu Adventure */
+.arena {
+  --k: 1.25 !important;
+  --kt: 1.25 !important;
+  --ks: 1.0 !important;
+}
+
+@media (max-width: 640px) {
+  .arena {
+    --k: 1.1 !important;
+    --kt: 1.1 !important;
+    --ks: 0.9 !important;
+  }
+}
+
+/* 6.2. Giới hạn kích thước tối đa cho Pokémon trong sàn đấu Adventure */
+.arena .ally img,
+.arena .enemy img,
+.arena .wrap > img,
+.arena .wrap > canvas,
+.arena canvas.pokemon-sprite-battle,
+.arena .hero img,
+.arena .trainer img {
+  max-width: calc(64px * var(--k)) !important;
+  max-height: calc(64px * var(--k)) !important;
+  object-fit: contain !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  filter: none !important;
+  -webkit-filter: none !important;
+}
+
+/* 6.3. Bỏ hoàn toàn các mảng đen/viền đen bóng đổ hình elip dưới chân Pokémon và bục đấu */
+.arena .ally:before,
+.arena .enemy:before,
+.arena .trainer-slot .trainer:before,
+.arena .ally-slots .hero:before,
+.arena .platform,
+.arena .platform.enemy,
+.arena .platform.ally {
+  display: none !important;
+  opacity: 0 !important;
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+/* 6.4. Bỏ khung viền đen và nền caro/sọc đen trên thanh Pokémon bên trái (#team-rail) */
+#team-rail,
+#team-rail .tr-row,
+#team-rail .tr-face,
+#team-rail .tr-win,
+#team-rail .tr-pic,
+#team-rail .tr-slot {
+  border: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  background-image: none !important;
+  outline: none !important;
+}
+
+#team-rail .tr-row:after,
+#team-rail .tr-face:after,
+#team-rail .tr-win:after,
+#team-rail .tr-pic:after {
+  display: none !important;
+  opacity: 0 !important;
+}
+
+#team-rail .tr-row img,
+#team-rail .tr-face img,
+#team-rail .tr-row canvas,
+#team-rail .tr-face canvas {
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+/* 6.5. Tinh chỉnh thanh HP và Level mini trong Adventure cho thanh thoát, không viền đen dày */
+.mini-hp .hp {
+  border: 1.5px solid rgba(0, 0, 0, 0.35) !important;
+  height: 7px !important;
+  border-radius: 3px !important;
+}
+
+.mini-lv {
+  font-size: 12px !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8) !important;
+}
+
