@@ -2645,9 +2645,7 @@ function ensureSaveTransferPanel() {
           syncShinyMark(cell, cell.querySelector('.sprbox img'));
         });
 
-        // 5. Live battle sprites. Use the east-facing row so combatants show
-        // a readable full-body silhouette instead of the front-facing square
-        // frame that can look like a cropped portrait.
+        // 5. Live battle sprites with robust ID extraction, directional facing, and anti-aliased contours
         var battlers = document.querySelectorAll(
           '#ally-slots .ally:not(.canvas-ready), #enemy-slots .enemy:not(.canvas-ready), ' +
           '.arena .ally:not(.canvas-ready), .arena .enemy:not(.canvas-ready)'
@@ -2655,13 +2653,42 @@ function ensureSaveTransferPanel() {
         battlers.forEach(function (battler) {
           var img = battler.querySelector('.wrap > img, img');
           if (!img) return;
-          var src = img.getAttribute('src') || img.dataset.src || '';
-          var m = src.match(/pokemon\/(?:shiny\/)?(\d+)\.(?:gif|png)/);
-          if (!m) return;
 
-          var id = parseInt(m[1], 10);
+          var id = parseInt(battler.dataset.id || img.dataset.id, 10);
+          var isShiny = battler.dataset.shiny === '1' || battler.dataset.shiny === 'true';
+
+          if (!id) {
+            var src = img.getAttribute('src') || img.dataset.src || '';
+            var m = src.match(/pokemon\/(?:shiny\/)?(\d+)\.(?:gif|png)/);
+            if (m) {
+              id = parseInt(m[1], 10);
+              isShiny = isShiny || src.includes('shiny');
+            }
+          }
+
+          // Fallback: resolve ally from Game state
+          if (!id && battler.dataset.uid && window.PokeCatch?.Game?.S?.mons) {
+            var mon = window.PokeCatch.Game.S.mons.find(function (m) { return m.uid === battler.dataset.uid; });
+            if (mon) {
+              id = mon.id;
+              isShiny = isShiny || !!mon.shiny;
+            }
+          }
+
+          // Fallback: resolve enemy from Adventure state
+          if (!id && battler.classList.contains('enemy')) {
+            var enemy = window.PokeCatch?.Adventure?.state?.enemy;
+            if (enemy && enemy.id) {
+              id = enemy.id;
+              isShiny = isShiny || !!enemy.shiny;
+            }
+          }
+
           if (!id) return;
           battler.classList.add('canvas-ready');
+
+          var isEnemy = battler.classList.contains('enemy');
+          var dir = isEnemy ? 6 : 2; // Face each other: ally faces East (2), enemy faces West (6)
 
           var canvas = document.createElement('canvas');
           canvas.className = 'pokemon-sprite-battle';
@@ -2670,9 +2697,9 @@ function ensureSaveTransferPanel() {
 
           CanvasPokemonEngine.attachPlayer(canvas, {
             dex: id,
-            isShiny: src.includes('shiny'),
+            isShiny: isShiny,
             anim: 'Idle',
-            direction: 2,
+            direction: dir,
             scale: 1.0,
             onFirstDraw: function () {
               canvas.style.display = 'block';
@@ -2734,29 +2761,67 @@ function ensureSaveTransferPanel() {
         attributeFilter: ['src', 'data-src', 'hidden']
       });
 
-      // Play the actual Attack/Hurt sheets when the battle renderer marks a
-      // target as hit. The previous canvas layer stayed on Idle for every
-      // skill, which made attacks look delayed and jerky.
+      // Sync Pokémon type colors on team rail rows
+      document.querySelectorAll('#team-rail .tr-row[data-uid]:not(.color-ready)').forEach(function (row) {
+        var img = row.querySelector('img');
+        if (!img) return;
+        var m = (img.getAttribute('src') || '').match(/pokemon\/(?:shiny\/)?(\d+)\.(?:gif|png)/);
+        if (!m) return;
+        var id = parseInt(m[1], 10);
+        if (!id) return;
+        row.classList.add('color-ready');
+        if (window.CanvasPokemonEngine?.getPokemonColor) {
+          var colorInfo = CanvasPokemonEngine.getPokemonColor(id, (img.getAttribute('src') || '').includes('shiny'));
+          row.style.setProperty('--mon-color', colorInfo.hex);
+          row.style.setProperty('--mon-color-rgb', colorInfo.rgb);
+        }
+      });
+
+      // Battle Animation Manager: smooth sprite sheets + physical attack lunges & hurt recoils
       var battleAnimTimers = new WeakMap();
-      function playBattleAnim(element, animation, duration) {
-        var player = element?.querySelector('canvas.pokemon-sprite-battle')?._pokePlayer;
-        if (!player) return;
-        clearTimeout(battleAnimTimers.get(element));
-        player.setAnim(animation);
-        battleAnimTimers.set(element, setTimeout(function () {
-          player.setAnim('Idle');
-        }, duration));
-      }
+      window.playBattleAnim = function (element, animation, duration) {
+        if (!element) return;
+        var battler = element.matches?.('.ally,.enemy') ? element : element.closest?.('.ally,.enemy');
+        if (!battler) battler = element;
+        var canvas = battler.querySelector('canvas.pokemon-sprite-battle');
+        var player = canvas?._pokePlayer;
+        if (player) {
+          player.setAnim(animation);
+        }
+
+        clearTimeout(battleAnimTimers.get(battler));
+
+        if (animation === 'Attack') {
+          var isAlly = battler.classList.contains('ally');
+          var attackClass = isAlly ? 'battler-attacking-ally' : 'battler-attacking-enemy';
+          battler.classList.remove('battler-attacking-ally', 'battler-attacking-enemy');
+          // Trigger reflow to restart animation cleanly
+          void battler.offsetWidth;
+          battler.classList.add(attackClass);
+        } else if (animation === 'Hurt') {
+          battler.classList.remove('battler-recoil');
+          void battler.offsetWidth;
+          battler.classList.add('battler-recoil');
+        }
+
+        battleAnimTimers.set(battler, setTimeout(function () {
+          if (player) player.setAnim('Idle');
+          battler.classList.remove('battler-attacking-ally', 'battler-attacking-enemy', 'battler-recoil');
+        }, duration || (animation === 'Attack' ? 420 : 280)));
+      };
+
       new MutationObserver(function (mutations) {
         mutations.forEach(function (mutation) {
           var target = mutation.target;
           if (!target.classList?.contains('hit') || /(^|\s)hit(\s|$)/.test(mutation.oldValue || '')) return;
           var battler = target.matches?.('.ally,.enemy') ? target : target.closest?.('.ally,.enemy');
           if (!battler) return;
-          playBattleAnim(battler, 'Hurt', 260);
+          window.playBattleAnim(battler, 'Hurt', 280);
           var arena = battler.closest('.arena, #screen-adventure') || document;
           var attacker = arena.querySelector(battler.classList.contains('enemy') ? '.ally' : '.enemy');
-          playBattleAnim(attacker, 'Attack', 460);
+          if (attacker) {
+            window.playBattleAnim(attacker, 'Attack', 420);
+          }
         });
       }).observe(document.body, {
         subtree: true,

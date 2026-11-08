@@ -65,12 +65,14 @@
   color: var(--text-main, #e8ecf4) !important;
 }
 
-/* 4. Canvas và Image pixel rendering sắc nét, trong suốt không viền */
+/* 4. Canvas và Image sub-pixel rendering sắc nét, khử răng cưa theo màu Pokémon */
 img.art,
 .sprbox img,
 .poke-canvas,
 canvas.pokemon-sprite,
 canvas.pokemon-sprite-mini,
+canvas.pokemon-sprite-battle,
+canvas.pokemon-sprite-team,
 .fallback-img,
 .dc-hero img,
 .dc-hero canvas {
@@ -78,9 +80,7 @@ canvas.pokemon-sprite-mini,
   background: transparent !important;
   box-shadow: none !important;
   outline: none !important;
-  image-rendering: pixelated;
-  image-rendering: -moz-crisp-edges;
-  image-rendering: crisp-edges;
+  image-rendering: auto !important;
 }
 
 /* 5. Khung chứa sprite trong mon-card và Pokédex */
@@ -117,16 +117,42 @@ canvas.pokemon-sprite-mini,
 }
 
 .pokemon-sprite,
+.pokemon-sprite-battle,
 .pokemon-sprite-mini,
 .pokemon-sprite-team,
 .pokemon-sprite-canvas,
 .poke-canvas {
-  image-rendering: pixelated !important;
-  image-rendering: crisp-edges !important;
+  image-rendering: auto !important;
   border: none !important;
   outline: none !important;
   box-shadow: none !important;
   background: transparent !important;
+  filter: drop-shadow(0 0 0.75px var(--mon-color, #7ac74c))
+          drop-shadow(0 0 1.5px rgba(var(--mon-color-rgb, 122, 199, 76), 0.45)) !important;
+}
+
+/* Shiny Pokémon: type color plus radiant golden/starlight aura */
+.pokemon-sprite.is-shiny,
+.pokemon-sprite-battle.is-shiny,
+.pokemon-sprite-mini.is-shiny,
+.pokemon-sprite-team.is-shiny,
+.is-shiny > .poke-canvas,
+.shiny-detail .poke-canvas {
+  filter: drop-shadow(0 0 0.8px var(--mon-color, #f7d02c))
+          drop-shadow(0 0 2px rgba(255, 215, 0, 0.65)) !important;
+}
+
+/* Khử răng cưa cho ảnh Pokémon ở Team Rail, Pokedex, và Mon Detail */
+#team-rail .tr-row img,
+#team-rail .tr-face img,
+#team-rail .tr-row canvas,
+.dex-cell .sprbox canvas,
+.dex-cell .sprbox img,
+.dc-hero canvas,
+.dc-hero img.art {
+  image-rendering: auto !important;
+  filter: drop-shadow(0 0 0.75px var(--mon-color, #7ac74c))
+          drop-shadow(0 0 1.5px rgba(var(--mon-color-rgb, 122, 199, 76), 0.45));
 }
 
 /* Prevent offline catchup veil from blocking view */
@@ -179,8 +205,13 @@ body.launching {
   outline: none !important;
   box-shadow: none !important;
   background: transparent !important;
-  filter: none !important;
-  -webkit-filter: none !important;
+}
+
+.arena canvas.pokemon-sprite-battle,
+.arena .ally canvas,
+.arena .enemy canvas {
+  filter: drop-shadow(0 0 0.75px var(--mon-color, #7ac74c))
+          drop-shadow(0 0 1.5px rgba(var(--mon-color-rgb, 122, 199, 76), 0.45)) !important;
 }
 
 /* 6.3. Bỏ hoàn toàn các mảng đen/viền đen bóng đổ hình elip dưới chân Pokémon và bục đấu */
@@ -241,4 +272,41 @@ body.launching {
   font-size: 12px !important;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8) !important;
 }
+
+/* ============================================================
+   7. VẬT LÝ TẤN CÔNG & PHẢN HỒI VA CHẠM MƯỢT MÀ TRONG ĐẤU TRƯỜNG
+   Cử động lunge áp sát mục tiêu và recoil rung giật khi trúng đòn.
+   ============================================================ */
+.battler-attacking-ally {
+  animation: ally-attack-lunge 420ms cubic-bezier(0.2, 0.9, 0.3, 1) forwards !important;
+}
+.battler-attacking-enemy {
+  animation: enemy-attack-lunge 420ms cubic-bezier(0.2, 0.9, 0.3, 1) forwards !important;
+}
+.battler-recoil {
+  animation: battler-recoil-shake 280ms ease-out forwards !important;
+}
+
+@keyframes ally-attack-lunge {
+  0% { transform: translate3d(0, 0, 0) scale(1); }
+  35% { transform: translate3d(24px, -12px, 0) scale(1.12); }
+  65% { transform: translate3d(18px, -9px, 0) scale(1.08); }
+  100% { transform: translate3d(0, 0, 0) scale(1); }
+}
+
+@keyframes enemy-attack-lunge {
+  0% { transform: translate3d(0, 0, 0) scale(1); }
+  35% { transform: translate3d(-24px, 12px, 0) scale(1.12); }
+  65% { transform: translate3d(-18px, 9px, 0) scale(1.08); }
+  100% { transform: translate3d(0, 0, 0) scale(1); }
+}
+
+@keyframes battler-recoil-shake {
+  0% { transform: translate3d(0, 0, 0); filter: brightness(2.2) contrast(1.2) drop-shadow(0 0 4px #ff3344); }
+  25% { transform: translate3d(6px, -3px, 0); filter: brightness(1.8); }
+  50% { transform: translate3d(-4px, 2px, 0); filter: brightness(1.4); }
+  75% { transform: translate3d(2px, -1px, 0); filter: brightness(1.1); }
+  100% { transform: translate3d(0, 0, 0); filter: none; }
+}
+
 

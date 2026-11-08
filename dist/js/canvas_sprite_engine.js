@@ -2,6 +2,8 @@
  * Canvas Sprite Engine for Poke'Catch & Survivors
  * Draws and animates Pokemon using PMD SpriteCollab Spritesheets directly on Canvas 2D.
  * Supports Normal vs Shiny, Gen 1-9 species, and all Mega evolutions.
+ * High-definition sub-pixel smoothing and color-matched anti-aliasing contours across ALL generations.
+ * Instant-switching animation system with Attack lunges, Hurt reactions, and organic Idle breathing.
  * NO CSS KEYFRAMES, NO CSS ANIMATIONS, NO BLACK BORDERS.
  */
 
@@ -12,6 +14,61 @@
   const activePlayers = new Set();
   let animationRunning = false;
   let lastTimestamp = 0;
+
+  // 1025-character compact type string: index (id - 1) -> single-char type code
+  const DEX_TYPE_CODES = "gggfffwwwbbbbbbnnnnnnnppeessppppppaaffnnppgggbbbbssnnwwccffwwwyyycccgggwwrrrffwweennnwwppwwhhhryywweeggssccnppssngnwwwwwwybiefbnwwwnnwefnrrrrrniefdddyygggfffwwwnnnnbbbbpwweanaayyeeegwwrwgggnggbwwykkwhyynbbnsmaawbbbknnffiiwwwiwmkkwssnnncciefnnefwrrryfygggfffwwwkknnbbbbbwwwgggnnwwyyybbggnnnbbbnnnccnrnnkmmmmcceeeebbgppwwwwfffyynsssggndnprrwwwwssrrrrwwnnhhhhgykyiiiiiwwwwwdddmmmrimddwsdmygggfffwwwnnnnnbbeeeggrrrrbbbbbewwggwwnhhnnhknnyppmmrynnhdddnccssppppgwwwggkensgefabgisinyrhieyyymwfnhywwkgnygggfffwwwnnnnnkkggffwwyynnneerrryyssncccwwwccbbbbbbggggwsssffgbbkkyhhwwrrppkknnyyyyyywwiiinnebbggwwwbbggmmmeeeyyhhhdddiiibbsccdsskknnnkkfbkkkbbmrgveddsdwnbgggfffwwwnnnffbbbffaaaggccnyymmmaaaakkrrppwweerrrracerdddmhhhhiivvakdryfgggfffwwwnnnnnbbbccfbbrrwppsswwggggppnngggancbbhhwnnrnfehwnhdddeygwyyyyrbbemgkymcpprfemmgggfffwwwnnvvvbbbkkggnnwweerrrgggssvwweeffcchhyyykkkkmhcisaaceiiriyemmeewwmdddacpcckedihynbswckagggfffwwwnnbbbbeeennaagggnrrrfffeeeekkppggssrggbbyyaaawwvwwmmdmrrhhviiwwdcpnnksaghbesickfrdddhmkkkkdacewggggpppgmgfermnp";
+
+  const TYPE_KEY_BY_CODE = {
+    n: 'normal', f: 'fire', w: 'water', g: 'grass', e: 'electric', i: 'ice',
+    c: 'fighting', p: 'poison', s: 'ground', v: 'flying', y: 'psychic', b: 'bug',
+    r: 'rock', h: 'ghost', d: 'dragon', k: 'dark', m: 'steel', a: 'fairy'
+  };
+
+  const TYPE_COLORS = {
+    normal: '#A8A77A',
+    fire: '#EE8130',
+    water: '#6390F0',
+    grass: '#7AC74C',
+    electric: '#F7D02C',
+    ice: '#96D9D6',
+    fighting: '#C22E28',
+    poison: '#A33EA1',
+    ground: '#E2BF65',
+    flying: '#A98FF3',
+    psychic: '#F95587',
+    bug: '#A6B91A',
+    rock: '#B6A136',
+    ghost: '#735797',
+    dragon: '#6F35FC',
+    dark: '#705746',
+    steel: '#B7B7CE',
+    fairy: '#D685AD'
+  };
+
+  function hexToRgb(hex) {
+    if (!hex || typeof hex !== 'string') return '122, 199, 76';
+    const clean = hex.replace('#', '');
+    const num = parseInt(clean.length === 3 ? clean.split('').map(c => c + c).join('') : clean, 16);
+    if (isNaN(num)) return '122, 199, 76';
+    return `${(num >> 16) & 255}, ${(num >> 8) & 255}, ${num & 255}`;
+  }
+
+  function getPokemonColor(dexId, isShiny = false) {
+    let typeKey = 'normal';
+    if (global.PokeCatch?.DEX?.[dexId]?.types?.[0]) {
+      typeKey = global.PokeCatch.DEX[dexId].types[0];
+    } else if (dexId >= 1 && dexId <= DEX_TYPE_CODES.length) {
+      const code = DEX_TYPE_CODES[dexId - 1];
+      typeKey = TYPE_KEY_BY_CODE[code] || 'normal';
+    }
+    const hex = TYPE_COLORS[typeKey] || '#A8A77A';
+    return {
+      type: typeKey,
+      hex: hex,
+      rgb: hexToRgb(hex),
+      isShiny: !!isShiny
+    };
+  }
 
   // Complete mapping of all 45 Mega Pokémon IDs to their base dex ID and formKey
   const MEGA_SPRITE_MAP = {
@@ -62,8 +119,6 @@
     808073: { base: 807, formKey: 'zeraora-mega' }
   };
 
-  // Pokédex form IDs are separate from the National Dex number, while PMD
-  // sheets are stored under the base species plus a form folder.
   const FORM_SPRITE_MAP = {
     15701: { base: 157, formKey: 'hisui' },
     19401: { base: 194, formKey: 'paldea' },
@@ -79,12 +134,6 @@
     48712: { base: 487, formKey: 'giratina-origin' }
   };
 
-  // These new official forms do not yet have PMD directional sheets. Prefer
-  // their correct full-body HOME sprites instead of falling back to Raichu's
-  // base sheet or the old placeholder artwork.
-  // Regional forms that currently have no usable directional metadata still
-  // use their correct full-body normal/shiny artwork. This prevents the base
-  // species sheet (or a broken one-frame placeholder) from being shown.
   const OFFICIAL_STILL_FORMS = new Set([
     2501, 14401, 14501, 14601, 55401, 55501, 56201, 61801, 800261, 800262
   ]);
@@ -94,14 +143,12 @@
     5202, 7701, 7801, 7901, 8001, 8301
   ]);
 
-  // Fetch metadata once
   async function loadMetadata() {
     if (spritesMeta) return spritesMeta;
     try {
       const res = await fetch('/data/sprites.json');
       spritesMeta = await res.json();
     } catch (e) {
-      console.warn('[CanvasSpriteEngine] Could not load /data/sprites.json:', e);
       spritesMeta = {};
     }
     return spritesMeta;
@@ -137,7 +184,6 @@
       this.ctx = canvas.getContext('2d');
       this.rawDex = options.dex || 1;
 
-      // Resolve mega evolution sprite paths
       const formMapping = FORM_SPRITE_MAP[this.rawDex] || MEGA_SPRITE_MAP[this.rawDex];
       if (formMapping) {
         this.dex = formMapping.base;
@@ -148,23 +194,43 @@
       }
 
       this.isShiny = !!options.isShiny;
-      this.anim = options.anim || 'Idle'; // 'Idle' or 'Walk'
+      this.anim = options.anim || 'Idle';
       this.scale = options.scale || 2;
-      // PMD sheets use 8 direction rows: 0 = front, 2 = right/east.
       this.direction = Number.isInteger(options.direction) ? options.direction : 0;
       this.visible = true;
       this.img = null;
       this.frameWidth = 40;
       this.frameHeight = 40;
-      this.durations = [10, 10, 10, 10]; // in 1/60s ticks
+      this.durations = [8, 8, 8, 8];
       this.currentFrame = 0;
       this.tickProgress = 0;
       this.loaded = false;
       this.contentBounds = null;
       this.onFirstDraw = typeof options.onFirstDraw === 'function' ? options.onFirstDraw : null;
+      this.loadedSheets = {};
 
-      if (this.ctx) this.ctx.imageSmoothingEnabled = false;
+      this.setupPokemonColor();
+
+      if (this.ctx) {
+        this.ctx.imageSmoothingEnabled = true;
+        this.ctx.imageSmoothingQuality = 'high';
+      }
       this.init();
+    }
+
+    setupPokemonColor() {
+      const baseDex = this.dex || this.rawDex || 1;
+      this.colorInfo = getPokemonColor(baseDex, this.isShiny);
+      if (this.canvas) {
+        this.canvas.style.setProperty('--mon-color', this.colorInfo.hex);
+        this.canvas.style.setProperty('--mon-color-rgb', this.colorInfo.rgb);
+        this.canvas.classList.toggle('is-shiny', this.isShiny);
+        const parent = this.canvas.parentElement;
+        if (parent) {
+          parent.style.setProperty('--mon-color', this.colorInfo.hex);
+          parent.style.setProperty('--mon-color-rgb', this.colorInfo.rgb);
+        }
+      }
     }
 
     async init() {
@@ -174,25 +240,30 @@
         this.dex = dynamicMapping.base;
         this.formKey = dynamicMapping.formKey;
       }
-      const monMeta = spritesMeta ? spritesMeta[String(this.dex)] : null;
-      let animMeta = null;
 
-      if (OFFICIAL_SHEET_FORMS.has(this.rawDex)) {
-        animMeta = { frameWidth: 128, frameHeight: 128, durations: [12, 10, 12, 10] };
+      this.setupPokemonColor();
+
+      const mainSheet = await this.loadSheet(this.anim);
+      if (mainSheet) {
+        this.applySheet(mainSheet);
+        this.loaded = true;
+        this.draw();
       }
 
-      if (!OFFICIAL_SHEET_FORMS.has(this.rawDex) && this.formKey && monMeta?.forms?.[this.formKey]) {
-        const formData = monMeta.forms[this.formKey];
-        animMeta = this.isShiny ? (formData.shiny?.anims?.[this.anim] || formData.anims?.[this.anim]) : formData.anims?.[this.anim];
-      } else if (!OFFICIAL_SHEET_FORMS.has(this.rawDex) && monMeta) {
-        animMeta = this.isShiny ? (monMeta.shiny?.anims?.[this.anim] || monMeta.anims?.[this.anim]) : monMeta.anims?.[this.anim];
+      // Preload Walk, Hurt, and Attack in background so in-battle action switching is instantaneous
+      if (this.anim === 'Idle') {
+        this.loadSheet('Walk').catch(() => {});
+        this.loadSheet('Hurt').catch(() => {});
+        this.loadSheet('Attack').catch(() => {});
       }
+    }
 
-      // Try the requested colour first.
+    getAnimUrls(animName) {
       const tryUrls = [];
-      const altAnim = this.anim === 'Idle' ? 'Walk' : 'Idle';
+      const altAnim = animName === 'Idle' ? 'Walk' : 'Idle';
+
       if (OFFICIAL_SHEET_FORMS.has(this.rawDex)) {
-        const specialAnim = ['Idle', 'Attack', 'Hurt'].includes(this.anim) ? this.anim : 'Idle';
+        const specialAnim = ['Idle', 'Attack', 'Hurt'].includes(animName) ? animName : 'Idle';
         tryUrls.push(`/assets/pokemon/sheets/special/${this.rawDex}/${this.isShiny ? 'shiny/' : ''}${specialAnim}.png`);
       }
       if (OFFICIAL_STILL_FORMS.has(this.rawDex)) {
@@ -202,67 +273,94 @@
       }
       if (this.isShiny) {
         if (this.formKey) {
-          tryUrls.push(`/assets/pokemon/sheets/${this.dex}/${this.formKey}/shiny/${this.anim}.png`);
+          tryUrls.push(`/assets/pokemon/sheets/${this.dex}/${this.formKey}/shiny/${animName}.png`);
           tryUrls.push(`/assets/pokemon/sheets/${this.dex}/${this.formKey}/shiny/${altAnim}.png`);
         }
-        tryUrls.push(`/assets/pokemon/sheets/${this.dex}/shiny/${this.anim}.png`);
+        tryUrls.push(`/assets/pokemon/sheets/${this.dex}/shiny/${animName}.png`);
         tryUrls.push(`/assets/pokemon/sheets/${this.dex}/shiny/${altAnim}.png`);
         tryUrls.push(`/assets/pokemon/shiny/${this.rawDex || this.dex}.png`);
       }
       if (this.formKey) {
-        tryUrls.push(`/assets/pokemon/sheets/${this.dex}/${this.formKey}/${this.anim}.png`);
+        tryUrls.push(`/assets/pokemon/sheets/${this.dex}/${this.formKey}/${animName}.png`);
         tryUrls.push(`/assets/pokemon/sheets/${this.dex}/${this.formKey}/${altAnim}.png`);
       }
-      tryUrls.push(`/assets/pokemon/sheets/${this.dex}/${this.anim}.png`);
+      tryUrls.push(`/assets/pokemon/sheets/${this.dex}/${animName}.png`);
       tryUrls.push(`/assets/pokemon/sheets/${this.dex}/${altAnim}.png`);
       tryUrls.push(`/assets/pokemon/${this.rawDex || this.dex}.png`);
+      return tryUrls;
+    }
 
+    async loadSheet(animName) {
+      if (this.loadedSheets[animName]) return this.loadedSheets[animName];
+
+      const monMeta = spritesMeta ? spritesMeta[String(this.dex)] : null;
+      let animMeta = null;
+
+      if (OFFICIAL_SHEET_FORMS.has(this.rawDex)) {
+        animMeta = { frameWidth: 128, frameHeight: 128, durations: [8, 8, 8, 8] };
+      } else if (this.formKey && monMeta?.forms?.[this.formKey]) {
+        const formData = monMeta.forms[this.formKey];
+        animMeta = this.isShiny ? (formData.shiny?.anims?.[animName] || formData.anims?.[animName]) : formData.anims?.[animName];
+      } else if (monMeta) {
+        animMeta = this.isShiny ? (monMeta.shiny?.anims?.[animName] || monMeta.anims?.[animName]) : monMeta.anims?.[animName];
+      }
+
+      const urls = this.getAnimUrls(animName);
       let loadedImg = null;
       let loadedUrl = '';
-      for (const url of tryUrls) {
+      for (const url of urls) {
+        // If searching specifically for Attack and the URL is a static fallback /assets/pokemon/1.png, skip it so we can use Walk instead
+        if (animName === 'Attack' && !url.includes('/sheets/')) continue;
         try {
           loadedImg = await getImage(url);
           if (loadedImg && loadedImg.naturalWidth > 0) {
             loadedUrl = url;
             break;
           }
-        } catch (e) {
-          // continue to next url
-        }
+        } catch (e) {}
       }
 
-      if (!loadedImg) return;
-      this.img = loadedImg;
+      if (!loadedImg) return null;
 
+      let frameW = 40, frameH = 40, durs = [8, 8, 8, 8];
       if (animMeta?.frameWidth && animMeta?.frameHeight) {
-        this.frameWidth = animMeta.frameWidth;
-        this.frameHeight = animMeta.frameHeight;
-        this.durations = animMeta.durations || [10, 10, 10, 10];
-        // Gen 5-9 sheets have only four idle frames and their source timing is
-        // noticeably slower than the richer Gen 1-4 sheets. Keep the original
-        // poses but tighten long holds for a steadier in-game cadence.
-        if (this.dex >= 494 && this.anim === 'Idle') {
-          this.durations = this.durations.map(ticks => Math.min(ticks || 10, 10));
-        }
+        frameW = animMeta.frameWidth;
+        frameH = animMeta.frameHeight;
+        durs = (animMeta.durations || [8, 8, 8, 8]).map(ticks => Math.min(ticks || 8, 8));
+      } else if (loadedUrl.includes('/sheets/') && loadedImg.height >= 80 && loadedImg.height % 8 === 0) {
+        frameH = Math.floor(loadedImg.height / 8) || loadedImg.height;
+        const inferredCols = Math.max(1, Math.floor(loadedImg.width / frameH));
+        frameW = Math.floor(loadedImg.width / inferredCols);
+        durs = Array(inferredCols).fill(8);
       } else {
-        // Fallback calculation: 8 direction rows only if sheet is tall multiple of 8
-        if (loadedUrl.includes('/sheets/') && this.img.height >= 80 && this.img.height % 8 === 0) {
-          this.frameHeight = Math.floor(this.img.height / 8) || this.img.height;
-          const inferredCols = Math.max(1, Math.floor(this.img.width / this.frameHeight));
-          this.frameWidth = Math.floor(this.img.width / inferredCols);
-          this.durations = Array(inferredCols).fill(10);
-        } else {
-          // Single still sprite (square or custom aspect ratio)
-          this.frameWidth = this.img.width;
-          this.frameHeight = this.img.height;
-          this.durations = [60];
-        }
+        frameW = loadedImg.width;
+        frameH = loadedImg.height;
+        durs = [60];
       }
 
-      this.measureContentBounds();
+      const bounds = this.measureContentBoundsFor(loadedImg, frameW, frameH, durs.length);
+
+      const sheetData = {
+        img: loadedImg,
+        frameWidth: frameW,
+        frameHeight: frameH,
+        durations: durs,
+        contentBounds: bounds,
+        url: loadedUrl
+      };
+
+      this.loadedSheets[animName] = sheetData;
+      return sheetData;
+    }
+
+    applySheet(sheetData, isFastAttack = false) {
+      if (!sheetData) return;
+      this.img = sheetData.img;
+      this.frameWidth = sheetData.frameWidth;
+      this.frameHeight = sheetData.frameHeight;
+      this.durations = isFastAttack ? sheetData.durations.map(() => 4) : sheetData.durations;
+      this.contentBounds = sheetData.contentBounds;
       this.setupDimensions();
-      this.loaded = true;
-      this.draw();
     }
 
     setupDimensions() {
@@ -274,9 +372,7 @@
       const laterGen = this.dex >= 494 || OFFICIAL_STILL_FORMS.has(this.rawDex);
       const baseMaxW = isMini ? 54 : isPc ? 52 : isTeam ? 64 : isBattle ? 46 : 104;
       const baseMaxH = isMini ? 54 : isPc ? 52 : isTeam ? 64 : isBattle ? 46 : 104;
-      // Gen 5-9 artwork has a visibly larger occupied area than the older
-      // sheets. Pokedex thumbnails need a little more reduction than battle,
-      // Team and PC sprites to keep every generation visually consistent.
+
       const laterSize = laterGen ? (isPokedex ? 0.56 : isMini ? 0.70 : isBattle ? 0.72 : 0.82) : 1;
       const maxW = baseMaxW * laterSize;
       const maxH = baseMaxH * laterSize;
@@ -286,32 +382,38 @@
       const fittedScale = Math.min(this.scale * generationScale, maxW / visibleW, maxH / visibleH);
       const targetW = Math.max(1, Math.round(visibleW * fittedScale));
       const targetH = Math.max(1, Math.round(visibleH * fittedScale));
-      // Pokedex cells need transparent breathing room around later-generation
-      // bodies so ears, hands, feet, wings and tails never touch the crop edge.
+
       this.displayPadding = laterGen && isPokedex ? 5 : 0;
       const displayW = targetW + this.displayPadding * 2;
       const displayH = targetH + this.displayPadding * 2;
-      // A 2x backing store plus high-quality interpolation removes jagged
-      // diagonal edges on the denser Gen 5-9 sheets. Older pixel sprites keep
-      // their original crisp nearest-neighbour rendering.
-      this.renderRatio = laterGen ? Math.min(2, global.devicePixelRatio || 1.5) : 1;
+
+      // 2x backing store buffer across ALL Pokémon enables native bicubic anti-aliasing
+      this.renderRatio = Math.min(2, global.devicePixelRatio || 2);
       this.canvas.width = Math.max(1, Math.round(displayW * this.renderRatio));
       this.canvas.height = Math.max(1, Math.round(displayH * this.renderRatio));
+
       if (this.ctx) {
-        this.ctx.imageSmoothingEnabled = laterGen;
-        this.ctx.imageSmoothingQuality = laterGen ? 'high' : 'low';
+        this.ctx.imageSmoothingEnabled = true;
+        this.ctx.imageSmoothingQuality = 'high';
       }
-      this.canvas.classList.toggle('later-gen-smooth', laterGen);
+
+      this.canvas.classList.add('later-gen-smooth');
       this.canvas.style.width = `${displayW}px`;
       this.canvas.style.height = `${displayH}px`;
       this.canvas.style.background = 'transparent';
       this.canvas.style.border = 'none';
       this.canvas.style.outline = 'none';
-      if (laterGen && this.anim === 'Idle' && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+
+      // Organic continuous 60 FPS breathing float motion across ALL Pokémon in Idle state
+      if (this.anim === 'Idle' && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
         this.idleMotion?.cancel();
         this.idleMotion = this.canvas.animate(
-          [{ translate: '0 0' }, { translate: '0 -1.5px' }, { translate: '0 0' }],
-          { duration: 820, iterations: Infinity, easing: 'ease-in-out' }
+          [
+            { transform: 'translate3d(0, 0, 0)' },
+            { transform: 'translate3d(0, -2px, 0)' },
+            { transform: 'translate3d(0, 0, 0)' }
+          ],
+          { duration: 1100, iterations: Infinity, easing: 'ease-in-out' }
         );
       } else {
         this.idleMotion?.cancel();
@@ -319,27 +421,27 @@
       }
     }
 
-    measureContentBounds() {
-      if (!this.img) return;
-      const cols = Math.max(1, this.durations.length);
+    measureContentBoundsFor(img, frameWidth, frameHeight, cols) {
+      if (!img) return null;
+      const colCount = Math.max(1, cols || 1);
       const row = Math.max(0, Math.min(7, this.direction));
       const scratch = document.createElement('canvas');
-      scratch.width = this.frameWidth * cols;
-      scratch.height = this.frameHeight;
+      scratch.width = frameWidth * colCount;
+      scratch.height = frameHeight;
       const sctx = scratch.getContext('2d', { willReadFrequently: true });
-      if (!sctx) return;
+      if (!sctx) return null;
       sctx.imageSmoothingEnabled = false;
       sctx.drawImage(
-        this.img,
-        0, row * this.frameHeight, this.frameWidth * cols, this.frameHeight,
+        img,
+        0, row * frameHeight, frameWidth * colCount, frameHeight,
         0, 0, scratch.width, scratch.height
       );
       const pixels = sctx.getImageData(0, 0, scratch.width, scratch.height).data;
-      let minX = this.frameWidth, minY = this.frameHeight, maxX = -1, maxY = -1;
-      for (let y = 0; y < this.frameHeight; y++) {
+      let minX = frameWidth, minY = frameHeight, maxX = -1, maxY = -1;
+      for (let y = 0; y < frameHeight; y++) {
         for (let x = 0; x < scratch.width; x++) {
           if (pixels[(y * scratch.width + x) * 4 + 3] < 8) continue;
-          const frameX = x % this.frameWidth;
+          const frameX = x % frameWidth;
           minX = Math.min(minX, frameX);
           minY = Math.min(minY, y);
           maxX = Math.max(maxX, frameX);
@@ -347,19 +449,31 @@
         }
       }
       if (maxX >= minX && maxY >= minY) {
-        this.contentBounds = {
+        return {
           x: minX,
           y: minY,
           width: maxX - minX + 1,
           height: maxY - minY + 1
         };
       }
+      return null;
+    }
+
+    measureContentBounds() {
+      if (this.img) {
+        this.contentBounds = this.measureContentBoundsFor(
+          this.img,
+          this.frameWidth,
+          this.frameHeight,
+          this.durations.length
+        );
+      }
     }
 
     update(deltaSeconds) {
       if (!this.loaded || !this.visible) return;
       this.tickProgress += deltaSeconds * 60;
-      const targetDuration = this.durations[this.currentFrame] || 10;
+      const targetDuration = this.durations[this.currentFrame] || 8;
 
       if (this.tickProgress >= targetDuration) {
         this.tickProgress -= targetDuration;
@@ -395,16 +509,61 @@
       this.anim = anim;
       this.currentFrame = 0;
       this.tickProgress = 0;
-      this.loaded = false;
-      this.init();
+
+      if (this.anim !== 'Idle' && this.idleMotion) {
+        this.idleMotion.cancel();
+        this.idleMotion = null;
+      }
+
+      // 1. Direct hit in preloaded sheets: seamless instant switch, zero frame blanks!
+      if (this.loadedSheets[anim]) {
+        this.applySheet(this.loadedSheets[anim]);
+        this.draw();
+        return;
+      }
+
+      // 2. Fallback for Attack: use high-speed sprint Walk frames
+      if (anim === 'Attack') {
+        if (this.loadedSheets['Walk']) {
+          this.applySheet(this.loadedSheets['Walk'], true);
+          this.draw();
+          return;
+        }
+      }
+
+      // 3. Fallback for Hurt: use Idle
+      if (anim === 'Hurt') {
+        if (this.loadedSheets['Idle']) {
+          this.applySheet(this.loadedSheets['Idle']);
+          this.draw();
+          return;
+        }
+      }
+
+      // 4. Asynchronously fetch while maintaining current frame visible
+      this.loadSheet(anim).then(sheet => {
+        if (sheet && this.anim === anim) {
+          this.applySheet(sheet);
+          this.draw();
+        } else if (anim === 'Attack' && this.anim === 'Attack' && this.loadedSheets['Walk']) {
+          this.applySheet(this.loadedSheets['Walk'], true);
+          this.draw();
+        }
+      }).catch(() => {
+        if (anim === 'Attack' && this.anim === 'Attack' && this.loadedSheets['Walk']) {
+          this.applySheet(this.loadedSheets['Walk'], true);
+          this.draw();
+        }
+      });
     }
 
     setShiny(shiny) {
       if (this.isShiny === shiny) return;
       this.isShiny = shiny;
-      this.loaded = false;
+      this.loadedSheets = {};
       this.currentFrame = 0;
       this.tickProgress = 0;
+      this.setupPokemonColor();
       this.init();
     }
 
@@ -418,9 +577,10 @@
         this.dex = dex;
         this.formKey = formKey;
       }
-      this.loaded = false;
+      this.loadedSheets = {};
       this.currentFrame = 0;
       this.tickProgress = 0;
+      this.setupPokemonColor();
       this.init();
     }
 
@@ -510,6 +670,8 @@
     activePlayerCount: () => activePlayers.size,
     loadMetadata,
     MEGA_SPRITE_MAP,
-    FORM_SPRITE_MAP
+    FORM_SPRITE_MAP,
+    getPokemonColor,
+    TYPE_COLORS
   };
 })(window);
