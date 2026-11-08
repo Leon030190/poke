@@ -173,38 +173,97 @@ body.launching {
    Loại bỏ hoàn toàn khung viền đen, hộp đen nền quanh Pokémon và đội hình.
    ============================================================ */
 
-/* 6.1. Giảm tỷ lệ kích thước biến --k trong sàn đấu Adventure (thu nhỏ gọn gàng, vừa vặn) */
+/* 6.1. Tinh chỉnh kích thước trong sàn đấu Adventure:
+   - Pokémon: --k vừa vặn (~42-44px), --kh bằng --k để Boss không bị khổng lồ
+   - Nhân vật: --kt phục hồi tỷ lệ người chuẩn (~88px) */
 .arena {
   --k: 0.92 !important;
-  --kt: 0.92 !important;
+  --kt: 1.05 !important;
   --ks: 0.85 !important;
+  --kh: var(--k) !important;
 }
 
 @media (max-width: 640px) {
   .arena {
-    --k: 0.80 !important;
-    --kt: 0.80 !important;
-    --ks: 0.75 !important;
+    --k: 0.85 !important;
+    --kt: 1.0 !important;
+    --ks: 0.80 !important;
+    --kh: var(--k) !important;
   }
 }
 
-/* 6.2. Giới hạn kích thước tối đa cho Pokémon trong sàn đấu Adventure */
+/* 6.2. Kích thước Pokémon cân đối 2 bên (Ally và Enemy) chuẩn Gen 1 tới Gen 4 trong Adventure */
+.arena .ally,
+.arena .enemy,
+.arena #ally-slots .ally,
+.arena #enemy-slot .enemy,
+.arena #enemy-slots .enemy {
+  max-width: 64px !important;
+}
+
 .arena .ally img,
 .arena .enemy img,
 .arena .wrap > img,
 .arena .wrap > canvas,
 .arena canvas.pokemon-sprite-battle,
 .arena .ally canvas,
-.arena .enemy canvas,
-.arena .hero img,
-.arena .trainer img {
-  max-width: calc(46px * var(--k)) !important;
+.arena .enemy canvas {
+  max-width: calc(44px * var(--k)) !important;
   max-height: calc(46px * var(--k)) !important;
   object-fit: contain !important;
   border: none !important;
   outline: none !important;
   box-shadow: none !important;
   background: transparent !important;
+}
+
+/* Hướng xoay Pokémon trong Adventure làm theo hướng chuẩn Pokémon Gen 1 tới Gen 4:
+   - Cả Ally và Enemy đều dùng hướng Front (Row 0)
+   - Ally bên trái quay mặt sang phải về phía đối thủ (scaleX(-1))
+   - Enemy bên phải quay mặt sang trái về phía phe ta (transform: none) */
+.arena .ally canvas,
+.arena #ally-slots .ally canvas,
+.arena .ally img {
+  transform: scaleX(-1) !important;
+  transform-origin: 50% 100% !important;
+}
+
+.arena .enemy canvas,
+.arena #enemy-slot .enemy canvas,
+.arena #enemy-slots .enemy canvas,
+.arena .enemy img {
+  transform: none !important;
+  transform-origin: 50% 100% !important;
+}
+
+/* 6.3. Khôi phục kích thước chuẩn cho Nhân vật (Trainer & Hero) - KHÔNG bị thu nhỏ thành Pokémon */
+.arena .hero,
+.arena .hero img,
+.arena .trainer,
+.arena .trainer img,
+.arena .trainer-slot .trainer,
+.arena .trainer-slot .trainer img,
+.arena .ally-slots .hero,
+.arena .ally-slots .hero img {
+  width: calc(88px * var(--kt, 1.05)) !important;
+  height: calc(88px * var(--kt, 1.05)) !important;
+  max-width: none !important;
+  max-height: none !important;
+  object-fit: contain !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+}
+
+.arena .ally-slots .hero img {
+  transform: scaleX(-1) !important;
+  transform-origin: 50% 100% !important;
+}
+
+.arena .trainer-slot .trainer img {
+  transform: none !important;
+  transform-origin: 50% 100% !important;
 }
 
 .arena canvas.pokemon-sprite-battle,

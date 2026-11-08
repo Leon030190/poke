@@ -2647,7 +2647,7 @@ function ensureSaveTransferPanel() {
 
         // 5. Live battle sprites with robust ID extraction, directional facing, and anti-aliased contours
         var battlers = document.querySelectorAll(
-          '#ally-slots .ally:not(.canvas-ready), #enemy-slots .enemy:not(.canvas-ready), ' +
+          '#ally-slots .ally:not(.canvas-ready), #enemy-slot .enemy:not(.canvas-ready), #enemy-slots .enemy:not(.canvas-ready), ' +
           '.arena .ally:not(.canvas-ready), .arena .enemy:not(.canvas-ready)'
         );
         battlers.forEach(function (battler) {
@@ -2687,8 +2687,11 @@ function ensureSaveTransferPanel() {
           if (!id) return;
           battler.classList.add('canvas-ready');
 
-          var isEnemy = battler.classList.contains('enemy');
-          var dir = isEnemy ? 6 : 2; // Face each other: ally faces East (2), enemy faces West (6)
+          // Hướng xoay Pokémon trong Adventure làm theo hướng chuẩn Pokémon Gen 1 tới Gen 4:
+          // Cả Ally và Enemy đều dùng hướng Front (Row 0).
+          // Ally bên trái lật gương scaleX(-1) quay mặt sang phải về phía đối thủ.
+          // Enemy bên phải giữ nguyên scaleX(1) quay mặt sang trái về phía phe ta.
+          var dir = 0;
 
           var canvas = document.createElement('canvas');
           canvas.className = 'pokemon-sprite-battle';

@@ -370,22 +370,36 @@
       const isBattle = this.canvas.classList.contains('pokemon-sprite-battle');
       const isPokedex = isMini && !!this.canvas.closest('#screen-pokedex, .dexcard:not(.mon-card)');
       const laterGen = this.dex >= 494 || OFFICIAL_STILL_FORMS.has(this.rawDex);
-      const baseMaxW = isMini ? 54 : isPc ? 52 : isTeam ? 64 : isBattle ? 46 : 104;
-      const baseMaxH = isMini ? 54 : isPc ? 52 : isTeam ? 64 : isBattle ? 46 : 104;
 
-      const laterSize = laterGen ? (isPokedex ? 0.56 : isMini ? 0.70 : isBattle ? 0.72 : 0.82) : 1;
-      const maxW = baseMaxW * laterSize;
-      const maxH = baseMaxH * laterSize;
-      const visibleW = this.contentBounds?.width || this.frameWidth;
-      const visibleH = this.contentBounds?.height || this.frameHeight;
-      const generationScale = laterGen ? (isPokedex ? 0.50 : isMini ? 0.62 : 0.72) : 1;
-      const fittedScale = Math.min(this.scale * generationScale, maxW / visibleW, maxH / visibleH);
-      const targetW = Math.max(1, Math.round(visibleW * fittedScale));
-      const targetH = Math.max(1, Math.round(visibleH * fittedScale));
+      let targetW, targetH, displayW, displayH;
 
-      this.displayPadding = laterGen && isPokedex ? 5 : 0;
-      const displayW = targetW + this.displayPadding * 2;
-      const displayH = targetH + this.displayPadding * 2;
+      if (isBattle) {
+        // Equal & balanced size for both sides (Ally & Enemy, Gen 1-9) matching Gen 1-4 standard bounds (~40-44px)
+        const targetBattleBox = 44;
+        const visibleW = this.contentBounds?.width || this.frameWidth || 32;
+        const visibleH = this.contentBounds?.height || this.frameHeight || 32;
+        const battleScale = Math.min(targetBattleBox / visibleW, targetBattleBox / visibleH);
+        targetW = Math.max(1, Math.round(visibleW * battleScale));
+        targetH = Math.max(1, Math.round(visibleH * battleScale));
+        this.displayPadding = 0;
+        displayW = targetW;
+        displayH = targetH;
+      } else {
+        const baseMaxW = isMini ? 54 : isPc ? 52 : isTeam ? 64 : 104;
+        const baseMaxH = isMini ? 54 : isPc ? 52 : isTeam ? 64 : 104;
+        const laterSize = laterGen ? (isPokedex ? 0.56 : isMini ? 0.70 : 0.82) : 1;
+        const maxW = baseMaxW * laterSize;
+        const maxH = baseMaxH * laterSize;
+        const visibleW = this.contentBounds?.width || this.frameWidth || 32;
+        const visibleH = this.contentBounds?.height || this.frameHeight || 32;
+        const generationScale = laterGen ? (isPokedex ? 0.50 : isMini ? 0.62 : 0.82) : 1;
+        const fittedScale = Math.min(this.scale * generationScale, maxW / visibleW, maxH / visibleH);
+        targetW = Math.max(1, Math.round(visibleW * fittedScale));
+        targetH = Math.max(1, Math.round(visibleH * fittedScale));
+        this.displayPadding = laterGen && isPokedex ? 5 : 0;
+        displayW = targetW + this.displayPadding * 2;
+        displayH = targetH + this.displayPadding * 2;
+      }
 
       // 2x backing store buffer across ALL Pokémon enables native bicubic anti-aliasing
       this.renderRatio = Math.min(2, global.devicePixelRatio || 2);
@@ -405,13 +419,17 @@
       this.canvas.style.outline = 'none';
 
       // Organic continuous 60 FPS breathing float motion across ALL Pokémon in Idle state
+      // Preserve scaleX(-1) on ally battle sprite so facing direction is never lost
+      const isAlly = isBattle && !!this.canvas.closest('.ally, #ally-slots');
+      const baseTransform = isAlly ? 'scaleX(-1) ' : '';
+
       if (this.anim === 'Idle' && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
         this.idleMotion?.cancel();
         this.idleMotion = this.canvas.animate(
           [
-            { transform: 'translate3d(0, 0, 0)' },
-            { transform: 'translate3d(0, -2px, 0)' },
-            { transform: 'translate3d(0, 0, 0)' }
+            { transform: `${baseTransform}translate3d(0, 0, 0)` },
+            { transform: `${baseTransform}translate3d(0, -2px, 0)` },
+            { transform: `${baseTransform}translate3d(0, 0, 0)` }
           ],
           { duration: 1100, iterations: Infinity, easing: 'ease-in-out' }
         );
