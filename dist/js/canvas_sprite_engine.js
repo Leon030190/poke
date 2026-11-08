@@ -272,12 +272,12 @@
       const isBattle = this.canvas.classList.contains('pokemon-sprite-battle');
       const isPokedex = isMini && !!this.canvas.closest('#screen-pokedex, .dexcard:not(.mon-card)');
       const laterGen = this.dex >= 494 || OFFICIAL_STILL_FORMS.has(this.rawDex);
-      const baseMaxW = isMini ? 54 : isPc ? 52 : isTeam ? 64 : isBattle ? 70 : 104;
-      const baseMaxH = isMini ? 54 : isPc ? 52 : isTeam ? 64 : isBattle ? 70 : 104;
+      const baseMaxW = isMini ? 54 : isPc ? 52 : isTeam ? 64 : isBattle ? 46 : 104;
+      const baseMaxH = isMini ? 54 : isPc ? 52 : isTeam ? 64 : isBattle ? 46 : 104;
       // Gen 5-9 artwork has a visibly larger occupied area than the older
       // sheets. Pokedex thumbnails need a little more reduction than battle,
       // Team and PC sprites to keep every generation visually consistent.
-      const laterSize = laterGen ? (isPokedex ? 0.56 : isMini ? 0.70 : 0.82) : 1;
+      const laterSize = laterGen ? (isPokedex ? 0.56 : isMini ? 0.70 : isBattle ? 0.72 : 0.82) : 1;
       const maxW = baseMaxW * laterSize;
       const maxH = baseMaxH * laterSize;
       const visibleW = this.contentBounds?.width || this.frameWidth;

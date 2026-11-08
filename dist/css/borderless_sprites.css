@@ -147,18 +147,18 @@ body.launching {
    Loại bỏ hoàn toàn khung viền đen, hộp đen nền quanh Pokémon và đội hình.
    ============================================================ */
 
-/* 6.1. Giảm tỷ lệ kích thước biến --k trong sàn đấu Adventure */
+/* 6.1. Giảm tỷ lệ kích thước biến --k trong sàn đấu Adventure (thu nhỏ gọn gàng, vừa vặn) */
 .arena {
-  --k: 1.25 !important;
-  --kt: 1.25 !important;
-  --ks: 1.0 !important;
+  --k: 0.92 !important;
+  --kt: 0.92 !important;
+  --ks: 0.85 !important;
 }
 
 @media (max-width: 640px) {
   .arena {
-    --k: 1.1 !important;
-    --kt: 1.1 !important;
-    --ks: 0.9 !important;
+    --k: 0.80 !important;
+    --kt: 0.80 !important;
+    --ks: 0.75 !important;
   }
 }
 
@@ -168,10 +168,12 @@ body.launching {
 .arena .wrap > img,
 .arena .wrap > canvas,
 .arena canvas.pokemon-sprite-battle,
+.arena .ally canvas,
+.arena .enemy canvas,
 .arena .hero img,
 .arena .trainer img {
-  max-width: calc(64px * var(--k)) !important;
-  max-height: calc(64px * var(--k)) !important;
+  max-width: calc(46px * var(--k)) !important;
+  max-height: calc(46px * var(--k)) !important;
   object-fit: contain !important;
   border: none !important;
   outline: none !important;
